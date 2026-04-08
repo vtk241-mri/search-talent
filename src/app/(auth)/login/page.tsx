@@ -2,23 +2,31 @@
 
 import { useState } from "react";
 import {
-  buildAuthRedirectUrl,
   getAuthErrorMessage,
   getAuthFieldErrors,
   getPublicAuthErrorMessage,
   loginSchema,
   type AuthFieldErrors,
 } from "@/lib/auth/validation";
-import { useDictionary, useLocalizedHref, useLocalizedRouter } from "@/lib/i18n/client";
+import { useDictionary, useLocalizedHref } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 import LocalizedLink from "@/components/ui/localized-link";
 import { Button, ButtonLink } from "@/components/ui/Button";
 
 export default function LoginPage() {
   const supabase = createClient();
-  const router = useLocalizedRouter();
   const dictionary = useDictionary();
   const dashboardHref = useLocalizedHref("/dashboard");
+
+  const buildOAuthCallbackUrl = () => {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const callbackUrl = new URL("/api/auth/callback", baseUrl);
+
+    callbackUrl.searchParams.set("next", dashboardHref);
+
+    return callbackUrl.toString();
+  };
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -82,11 +90,7 @@ export default function LoginPage() {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: buildAuthRedirectUrl(
-          router.locale,
-          "/dashboard",
-          process.env.NEXT_PUBLIC_APP_URL,
-        ),
+        redirectTo: buildOAuthCallbackUrl(),
       },
     });
 
