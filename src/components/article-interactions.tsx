@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import FormTextarea from "@/components/ui/form-textarea";
 import { createLocalePath } from "@/lib/i18n/config";
 import type { ArticleComment } from "@/lib/articles";
 
@@ -95,7 +96,9 @@ function CommentThread({
               {comment.author?.avatarUrl ? (
                 <Image
                   src={comment.author.avatarUrl}
-                  alt={comment.author.name || comment.author.username || "author"}
+                  alt={
+                    comment.author.name || comment.author.username || "author"
+                  }
                   fill
                   className="object-cover"
                 />
@@ -122,15 +125,17 @@ function CommentThread({
                     type="button"
                     className="text-sm font-medium text-[color:var(--foreground)]"
                     onClick={() =>
-                      setReplyingTo((prev) => (prev === comment.id ? null : comment.id))
+                      setReplyingTo((prev) =>
+                        prev === comment.id ? null : comment.id,
+                      )
                     }
                   >
                     {replyLabel}
                   </button>
                   {replyingTo === comment.id ? (
                     <div className="mt-3 space-y-3">
-                      <textarea
-                        className="min-h-24 w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-sm text-[color:var(--foreground)]"
+                      <FormTextarea
+                        className="min-h-24 w-full p-4 text-sm text-[color:var(--foreground)]"
                         placeholder={replyPlaceholder}
                         value={replyDrafts[comment.id] || ""}
                         onChange={(event) =>
@@ -287,7 +292,11 @@ export default function ArticleInteractions({
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap gap-3">
-        <Button variant={liked ? "primary" : "secondary"} onClick={() => void toggleLike()} disabled={submittingLike}>
+        <Button
+          variant={liked ? "primary" : "secondary"}
+          onClick={() => void toggleLike()}
+          disabled={submittingLike}
+        >
           {locale === "uk" ? "Подобається" : "Like"} ({likesCount})
         </Button>
         <span className="rounded-full app-panel px-4 py-2 text-sm app-muted">
@@ -311,8 +320,8 @@ export default function ArticleInteractions({
         </div>
 
         <div className="rounded-[1.75rem] app-card p-5">
-          <textarea
-            className="min-h-32 w-full rounded-[1.25rem] border app-border bg-[color:var(--surface)] p-4 text-sm text-[color:var(--foreground)]"
+          <FormTextarea
+            className="min-h-32 w-full p-4 text-sm text-[color:var(--foreground)]"
             placeholder={
               locale === "uk"
                 ? "Поділіться думкою про статтю..."
@@ -322,7 +331,10 @@ export default function ArticleInteractions({
             onChange={(event) => setCommentBody(event.target.value)}
           />
           <div className="mt-4 flex justify-end">
-            <Button onClick={() => void submitComment()} disabled={submittingComment}>
+            <Button
+              onClick={() => void submitComment()}
+              disabled={submittingComment}
+            >
               {locale === "uk" ? "Опублікувати коментар" : "Post comment"}
             </Button>
           </div>

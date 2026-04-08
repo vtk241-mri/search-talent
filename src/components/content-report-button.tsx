@@ -4,9 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { buttonStyles } from "@/components/ui/button-styles";
+import FormSelect from "@/components/ui/form-select";
+import FormTextarea from "@/components/ui/form-textarea";
 import LocalizedLink from "@/components/ui/localized-link";
 import type { ModerationCopy } from "@/lib/moderation-copy";
-import { reportReasons, type ReportReason, type ReportTargetType } from "@/lib/moderation";
+import {
+  reportReasons,
+  type ReportReason,
+  type ReportTargetType,
+} from "@/lib/moderation";
 
 type ContentReportButtonProps = {
   copy: ModerationCopy;
@@ -33,7 +39,10 @@ export default function ContentReportButton({
 
   if (!isAuthenticated) {
     return (
-      <LocalizedLink href="/login" className={buttonStyles({ variant: "ghost", size: "sm" })}>
+      <LocalizedLink
+        href="/login"
+        className={buttonStyles({ variant: "ghost", size: "sm" })}
+      >
         {reportCopy.loginToReport}
       </LocalizedLink>
     );
@@ -83,7 +92,9 @@ export default function ContentReportButton({
   return (
     <>
       <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)}>
-        {targetType === "project" ? reportCopy.buttonProject : reportCopy.buttonProfile}
+        {targetType === "project"
+          ? reportCopy.buttonProject
+          : reportCopy.buttonProfile}
       </Button>
 
       {isOpen && (
@@ -101,7 +112,11 @@ export default function ContentReportButton({
                 </p>
               </div>
 
-              <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+              >
                 {reportCopy.close}
               </Button>
             </div>
@@ -111,30 +126,29 @@ export default function ContentReportButton({
                 <span className="text-sm font-medium text-[color:var(--foreground)]">
                   {reportCopy.reasonLabel}
                 </span>
-                <select
+                <FormSelect
                   value={reason}
-                  onChange={(event) => setReason(event.target.value as ReportReason)}
-                  className="mt-2 w-full rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm text-[color:var(--foreground)] outline-none transition focus:border-[color:var(--foreground)]"
-                >
-                  {reportReasons.map((item) => (
-                    <option key={item} value={item}>
-                      {copy.reasonLabels[item]}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setReason(value as ReportReason)}
+                  className="mt-2 w-full"
+                  triggerClassName="w-full text-sm"
+                  options={reportReasons.map((item) => ({
+                    value: item,
+                    label: copy.reasonLabels[item],
+                  }))}
+                />
               </label>
 
               <label className="block">
                 <span className="text-sm font-medium text-[color:var(--foreground)]">
                   {reportCopy.detailsLabel}
                 </span>
-                <textarea
+                <FormTextarea
                   value={details}
                   onChange={(event) => setDetails(event.target.value)}
                   rows={5}
                   maxLength={1200}
                   placeholder={reportCopy.detailsPlaceholder}
-                  className="mt-2 w-full rounded-[1.5rem] border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm leading-7 text-[color:var(--foreground)] outline-none transition focus:border-[color:var(--foreground)]"
+                  className="mt-2 w-full px-4 py-3 text-sm leading-7 text-[color:var(--foreground)]"
                 />
               </label>
 

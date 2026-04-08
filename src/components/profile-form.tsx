@@ -60,6 +60,8 @@ import { profilePayloadSchema } from "@/lib/validation/profile";
 import type { ProfileCategory } from "@/lib/profile-categories";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import FormSelect from "@/components/ui/form-select";
+import FormTextarea from "@/components/ui/form-textarea";
 import RichTextComposer from "@/components/rich-text-composer";
 import TagSelect from "./ui/tag-select";
 import SearchSelect from "./ui/search-select";
@@ -277,10 +279,7 @@ function getWorkFormatLabel(
   }
 }
 
-function getExperienceLevelLabel(
-  value: ExperienceLevel,
-  locale: string,
-) {
+function getExperienceLevelLabel(value: ExperienceLevel, locale: string) {
   if (locale === "uk") {
     switch (value) {
       case "no_experience":
@@ -430,9 +429,7 @@ function getExperiencePlaceholder(locale: string) {
 }
 
 function getSalaryCurrencyPlaceholder(locale: string) {
-  return locale === "uk"
-    ? "\u0412\u0430\u043b\u044e\u0442\u0430"
-    : "Currency";
+  return locale === "uk" ? "\u0412\u0430\u043b\u044e\u0442\u0430" : "Currency";
 }
 
 function getPreferredContactMethodPlaceholder(locale: string) {
@@ -448,9 +445,13 @@ function getSectionOrderLabel(
 ) {
   switch (sectionId) {
     case "contacts":
-      return locale === "uk" ? "\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u0438 \u0442\u0430 \u043f\u043e\u0441\u0438\u043b\u0430\u043d\u043d\u044f" : "Contacts and links";
+      return locale === "uk"
+        ? "\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u0438 \u0442\u0430 \u043f\u043e\u0441\u0438\u043b\u0430\u043d\u043d\u044f"
+        : "Contacts and links";
     case "projects":
-      return locale === "uk" ? "\u041f\u0440\u043e\u0454\u043a\u0442\u0438" : "Projects";
+      return locale === "uk"
+        ? "\u041f\u0440\u043e\u0454\u043a\u0442\u0438"
+        : "Projects";
     default:
       return getVisibilityLabel(sectionId as ProfileVisibilityKey, dictionary);
   }
@@ -586,7 +587,9 @@ function serializeProfileDraft({
         company_name: item.company_name.trim(),
         position: item.position.trim(),
         started_year: parseOptionalInteger(item.started_year),
-        ended_year: item.is_current ? null : parseOptionalInteger(item.ended_year),
+        ended_year: item.is_current
+          ? null
+          : parseOptionalInteger(item.ended_year),
         is_current: item.is_current,
         responsibilities: item.responsibilities.trim(),
       }))
@@ -611,7 +614,8 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     locale === "uk"
       ? {
           categoryLabel: "\u041d\u0430\u043f\u0440\u044f\u043c\u043e\u043a",
-          categoryPlaceholder: "\u041e\u0431\u0435\u0440\u0456\u0442\u044c \u043d\u0430\u043f\u0440\u044f\u043c\u043e\u043a",
+          categoryPlaceholder:
+            "\u041e\u0431\u0435\u0440\u0456\u0442\u044c \u043d\u0430\u043f\u0440\u044f\u043c\u043e\u043a",
         }
       : {
           categoryLabel: "Direction",
@@ -620,27 +624,38 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
   const customizationUi =
     locale === "uk"
       ? {
-          title: "\u0412\u0456\u0437\u0443\u0430\u043b\u044c\u043d\u0438\u0439 \u0441\u0442\u0438\u043b\u044c \u043f\u0440\u043e\u0444\u0456\u043b\u044e",
+          title:
+            "\u0412\u0456\u0437\u0443\u0430\u043b\u044c\u043d\u0438\u0439 \u0441\u0442\u0438\u043b\u044c \u043f\u0440\u043e\u0444\u0456\u043b\u044e",
           description:
             "\u0417\u0430\u0434\u0430\u0439\u0442\u0435 \u0432\u043b\u0430\u0441\u043d\u0443 \u043f\u0430\u043b\u0456\u0442\u0440\u0443, \u0448\u0440\u0438\u0444\u0442, \u0444\u043e\u043d \u0456 \u043f\u043e\u0440\u044f\u0434\u043e\u043a \u0431\u043b\u043e\u043a\u0456\u0432, \u0449\u043e\u0431 \u043f\u0443\u0431\u043b\u0456\u0447\u043d\u0438\u0439 \u043f\u0440\u043e\u0444\u0456\u043b\u044c \u0432\u0438\u0433\u043b\u044f\u0434\u0430\u0432 \u044f\u043a \u0432\u0430\u0448 \u043e\u0441\u043e\u0431\u0438\u0441\u0442\u0438\u0439 \u043f\u0440\u043e\u0441\u0442\u0456\u0440.",
           accentColor: "\u0410\u043a\u0446\u0435\u043d\u0442",
           surfaceColor: "\u041a\u043e\u043b\u0456\u0440 hero",
-          panelColor: "\u041a\u043e\u043b\u0456\u0440 \u043a\u0430\u0440\u0442\u043e\u043a",
-          textColor: "\u041e\u0441\u043d\u043e\u0432\u043d\u0438\u0439 \u0442\u0435\u043a\u0441\u0442",
-          mutedColor: "\u0414\u0440\u0443\u0433\u043e\u0440\u044f\u0434\u043d\u0438\u0439 \u0442\u0435\u043a\u0441\u0442",
+          panelColor:
+            "\u041a\u043e\u043b\u0456\u0440 \u043a\u0430\u0440\u0442\u043e\u043a",
+          textColor:
+            "\u041e\u0441\u043d\u043e\u0432\u043d\u0438\u0439 \u0442\u0435\u043a\u0441\u0442",
+          mutedColor:
+            "\u0414\u0440\u0443\u0433\u043e\u0440\u044f\u0434\u043d\u0438\u0439 \u0442\u0435\u043a\u0441\u0442",
           fontPreset: "\u0428\u0440\u0438\u0444\u0442",
-          textScale: "\u0420\u043e\u0437\u043c\u0456\u0440 \u0442\u0435\u043a\u0441\u0442\u0443",
+          textScale:
+            "\u0420\u043e\u0437\u043c\u0456\u0440 \u0442\u0435\u043a\u0441\u0442\u0443",
           backgroundMode: "\u0422\u0438\u043f \u0444\u043e\u043d\u0443",
-          backgroundUrl: "\u041f\u043e\u0441\u0438\u043b\u0430\u043d\u043d\u044f \u043d\u0430 \u0444\u043e\u043d",
+          backgroundUrl:
+            "\u041f\u043e\u0441\u0438\u043b\u0430\u043d\u043d\u044f \u043d\u0430 \u0444\u043e\u043d",
           backgroundHint:
             "\u041f\u0456\u0434\u0442\u0440\u0438\u043c\u0443\u0454\u0442\u044c\u0441\u044f URL \u0434\u043b\u044f \u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u043d\u044f \u0430\u0431\u043e \u0432\u0456\u0434\u0435\u043e. \u0414\u043b\u044f video \u0432\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u043e\u0432\u0443\u0439\u0442\u0435 \u043f\u0440\u044f\u043c\u0435 mp4/webm \u043f\u043e\u0441\u0438\u043b\u0430\u043d\u043d\u044f.",
-          overlay: "\u0421\u0438\u043b\u0430 \u043e\u0432\u0435\u0440\u043b\u0435\u044e",
-          cardStyle: "\u0421\u0442\u0438\u043b\u044c \u043a\u0430\u0440\u0442\u043e\u043a",
-          heroAlignment: "\u0412\u0438\u0440\u0456\u0432\u043d\u044e\u0432\u0430\u043d\u043d\u044f hero",
-          sectionOrder: "\u041f\u043e\u0440\u044f\u0434\u043e\u043a \u0431\u043b\u043e\u043a\u0456\u0432",
+          overlay:
+            "\u0421\u0438\u043b\u0430 \u043e\u0432\u0435\u0440\u043b\u0435\u044e",
+          cardStyle:
+            "\u0421\u0442\u0438\u043b\u044c \u043a\u0430\u0440\u0442\u043e\u043a",
+          heroAlignment:
+            "\u0412\u0438\u0440\u0456\u0432\u043d\u044e\u0432\u0430\u043d\u043d\u044f hero",
+          sectionOrder:
+            "\u041f\u043e\u0440\u044f\u0434\u043e\u043a \u0431\u043b\u043e\u043a\u0456\u0432",
           sectionOrderHint:
             "\u041f\u0435\u0440\u0435\u0441\u0443\u0432\u0430\u0439\u0442\u0435 \u0431\u043b\u043e\u043a\u0438, \u0449\u043e\u0431 \u0432\u0430\u0436\u043b\u0438\u0432\u0435 \u0431\u0443\u043b\u043e \u0432\u0438\u0449\u0435.",
-          preview: "\u041f\u0440\u0435\u0432'\u044e \u0441\u0442\u0438\u043b\u044e",
+          preview:
+            "\u041f\u0440\u0435\u0432'\u044e \u0441\u0442\u0438\u043b\u044e",
           modes: {
             gradient: "\u0413\u0440\u0430\u0434\u0456\u0454\u043d\u0442",
             image: "\u0424\u043e\u0442\u043e",
@@ -648,7 +663,8 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           },
           fonts: {
             modern: "\u0421\u0443\u0447\u0430\u0441\u043d\u0438\u0439",
-            editorial: "\u0420\u0435\u0434\u0430\u043a\u0446\u0456\u0439\u043d\u0438\u0439",
+            editorial:
+              "\u0420\u0435\u0434\u0430\u043a\u0446\u0456\u0439\u043d\u0438\u0439",
             friendly: "\u0416\u0438\u0432\u0438\u0439",
             technical: "\u0422\u0435\u0445\u043d\u0456\u0447\u043d\u0438\u0439",
           },
@@ -688,7 +704,8 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           cardStyle: "Card style",
           heroAlignment: "Hero alignment",
           sectionOrder: "Section order",
-          sectionOrderHint: "Move sections so the most important blocks stay first.",
+          sectionOrderHint:
+            "Move sections so the most important blocks stay first.",
           preview: "Style preview",
           modes: {
             gradient: "Gradient",
@@ -736,7 +753,8 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
             wide: "Широкий",
             full: "На всю ширину",
           },
-          bioHint: "Розкажіть коротко, чим ви сильні, у якому стилі працюєте і що важливо для співпраці.",
+          bioHint:
+            "Розкажіть коротко, чим ви сильні, у якому стилі працюєте і що важливо для співпраці.",
         }
       : {
           uploadBackground: "Upload background",
@@ -754,7 +772,8 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
             wide: "Wide",
             full: "Full width",
           },
-          bioHint: "Summarize what makes you strong, how you like to work, and what kind of opportunities fit you.",
+          bioHint:
+            "Summarize what makes you strong, how you like to work, and what kind of opportunities fit you.",
         };
   const workspaceUi =
     locale === "uk"
@@ -832,30 +851,30 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     additional_info: profile.additional_info || "",
   });
   const [skills, setSkills] = useState<number[]>(profile.skill_ids || []);
-  const [selectedEmploymentTypes, setSelectedEmploymentTypes] = useState<EmploymentType[]>(
-    Array.isArray(profile.employment_types) ? profile.employment_types : [],
-  );
+  const [selectedEmploymentTypes, setSelectedEmploymentTypes] = useState<
+    EmploymentType[]
+  >(Array.isArray(profile.employment_types) ? profile.employment_types : []);
   const [selectedWorkFormats, setSelectedWorkFormats] = useState<WorkFormat[]>(
     Array.isArray(profile.work_formats) ? profile.work_formats : [],
   );
-  const [visibility, setVisibility] = useState<ProfileVisibility>(
-    {
-      about: profileSettings.about,
-      professionalDetails: profileSettings.professionalDetails,
-      workExperience: profileSettings.workExperience,
-      skills: profileSettings.skills,
-      languages: profileSettings.languages,
-      education: profileSettings.education,
-      certificates: profileSettings.certificates,
-      qa: profileSettings.qa,
-      links: profileSettings.links,
-    },
-  );
+  const [visibility, setVisibility] = useState<ProfileVisibility>({
+    about: profileSettings.about,
+    professionalDetails: profileSettings.professionalDetails,
+    workExperience: profileSettings.workExperience,
+    skills: profileSettings.skills,
+    languages: profileSettings.languages,
+    education: profileSettings.education,
+    certificates: profileSettings.certificates,
+    qa: profileSettings.qa,
+    links: profileSettings.links,
+  });
   const [presentation, setPresentation] = useState<ProfilePresentation>(
     profileSettings.presentation || createDefaultProfilePresentation(),
   );
   const [languages, setLanguages] = useState<ProfileLanguageEntry[]>(
-    profile.languages?.length ? profile.languages : [createProfileLanguageEntry()],
+    profile.languages?.length
+      ? profile.languages
+      : [createProfileLanguageEntry()],
   );
   const [education, setEducation] = useState<ProfileEducationEntry[]>(
     profile.education || [],
@@ -864,21 +883,27 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     profile.certificates || [],
   );
   const [qas, setQas] = useState<ProfileQaEntry[]>(profile.qas || []);
-  const [workExperience, setWorkExperience] = useState<ProfileWorkExperienceEntry[]>(
-    profile.work_experience || [],
+  const [workExperience, setWorkExperience] = useState<
+    ProfileWorkExperienceEntry[]
+  >(profile.work_experience || []);
+  const [editorMode, setEditorMode] = useState<"content" | "builder">(
+    "content",
   );
-  const [editorMode, setEditorMode] = useState<"content" | "builder">("content");
   const [saving, setSaving] = useState(false);
-  const [uploadingCertificateId, setUploadingCertificateId] = useState<string | null>(null);
+  const [uploadingCertificateId, setUploadingCertificateId] = useState<
+    string | null
+  >(null);
   const [uploadingBackground, setUploadingBackground] = useState(false);
-  const [draggingSectionId, setDraggingSectionId] = useState<ProfileSectionId | null>(null);
+  const [draggingSectionId, setDraggingSectionId] =
+    useState<ProfileSectionId | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const initialBackgroundStoragePathRef = useRef(
     profileSettings.presentation.backgroundStoragePath,
   );
 
   const initialCertificateMap = useMemo(
-    () => new Map(profile.certificates.map((item) => [item.id, item.storage_path])),
+    () =>
+      new Map(profile.certificates.map((item) => [item.id, item.storage_path])),
     [profile.certificates],
   );
 
@@ -932,7 +957,8 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     ],
   );
   const savedDraftSnapshotRef = useRef(currentDraftSnapshot);
-  const hasUnsavedChanges = currentDraftSnapshot !== savedDraftSnapshotRef.current;
+  const hasUnsavedChanges =
+    currentDraftSnapshot !== savedDraftSnapshotRef.current;
 
   useEffect(() => {
     if (!hasUnsavedChanges) {
@@ -1005,7 +1031,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     value: number | LanguageLevel | null,
   ) => {
     setLanguages((prev) =>
-      prev.map((item) => (item.id === entryId ? { ...item, [field]: value } : item)),
+      prev.map((item) =>
+        item.id === entryId ? { ...item, [field]: value } : item,
+      ),
     );
   };
 
@@ -1015,7 +1043,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     value: string,
   ) => {
     setEducation((prev) =>
-      prev.map((item) => (item.id === entryId ? { ...item, [field]: value } : item)),
+      prev.map((item) =>
+        item.id === entryId ? { ...item, [field]: value } : item,
+      ),
     );
   };
 
@@ -1025,7 +1055,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     value: string,
   ) => {
     setCertificates((prev) =>
-      prev.map((item) => (item.id === entryId ? { ...item, [field]: value } : item)),
+      prev.map((item) =>
+        item.id === entryId ? { ...item, [field]: value } : item,
+      ),
     );
   };
 
@@ -1035,7 +1067,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     value: string,
   ) => {
     setQas((prev) =>
-      prev.map((item) => (item.id === entryId ? { ...item, [field]: value } : item)),
+      prev.map((item) =>
+        item.id === entryId ? { ...item, [field]: value } : item,
+      ),
     );
   };
 
@@ -1045,19 +1079,25 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     value: string | boolean,
   ) => {
     setWorkExperience((prev) =>
-      prev.map((item) => (item.id === entryId ? { ...item, [field]: value } : item)),
+      prev.map((item) =>
+        item.id === entryId ? { ...item, [field]: value } : item,
+      ),
     );
   };
 
   const toggleEmploymentType = (value: EmploymentType) => {
     setSelectedEmploymentTypes((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value],
+      prev.includes(value)
+        ? prev.filter((item) => item !== value)
+        : [...prev, value],
     );
   };
 
   const toggleWorkFormat = (value: WorkFormat) => {
     setSelectedWorkFormats((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value],
+      prev.includes(value)
+        ? prev.filter((item) => item !== value)
+        : [...prev, value],
     );
   };
 
@@ -1072,7 +1112,10 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     setPresentation((prev) => ({ ...prev, [field]: value }));
   };
 
-  const updateSectionSize = (sectionId: ProfileSectionId, size: ProfileSectionSize) => {
+  const updateSectionSize = (
+    sectionId: ProfileSectionId,
+    size: ProfileSectionSize,
+  ) => {
     setPresentation((prev) => {
       if (!prev.sectionSizes[sectionId]) {
         return prev;
@@ -1088,7 +1131,10 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     });
   };
 
-  const reorderSections = (draggedId: ProfileSectionId, targetId: ProfileSectionId) => {
+  const reorderSections = (
+    draggedId: ProfileSectionId,
+    targetId: ProfileSectionId,
+  ) => {
     if (draggedId === targetId) {
       return;
     }
@@ -1169,7 +1215,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     }
   };
 
-  const uploadBackgroundAsset = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadBackgroundAsset = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -1334,10 +1382,16 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
       preferred_contact_method: form.preferred_contact_method || null,
       experience_years: null,
       experience_level: form.experience_level || null,
-      employment_types: selectedEmploymentTypes.filter((item) => employmentTypes.includes(item)),
-      work_formats: selectedWorkFormats.filter((item) => workFormats.includes(item)),
+      employment_types: selectedEmploymentTypes.filter((item) =>
+        employmentTypes.includes(item),
+      ),
+      work_formats: selectedWorkFormats.filter((item) =>
+        workFormats.includes(item),
+      ),
       salary_expectations: form.salary_expectations.trim() || null,
-      salary_currency: form.salary_expectations.trim() ? form.salary_currency : null,
+      salary_currency: form.salary_expectations.trim()
+        ? form.salary_currency
+        : null,
       additional_info: form.additional_info.trim() || null,
       profile_visibility: {
         ...createDefaultProfileVisibility(),
@@ -1348,7 +1402,8 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           overlayStrength: clampOverlayStrength(presentation.overlayStrength),
           sectionOrder: normalizeSectionOrder(presentation.sectionOrder),
           backgroundUrl: presentation.backgroundUrl?.trim() || null,
-          backgroundStoragePath: presentation.backgroundStoragePath?.trim() || null,
+          backgroundStoragePath:
+            presentation.backgroundStoragePath?.trim() || null,
           sectionSizes: {
             ...createDefaultProfilePresentation().sectionSizes,
             ...presentation.sectionSizes,
@@ -1380,7 +1435,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
         company_name: item.company_name.trim(),
         position: item.position.trim(),
         started_year: parseOptionalInteger(item.started_year),
-        ended_year: item.is_current ? null : parseOptionalInteger(item.ended_year),
+        ended_year: item.is_current
+          ? null
+          : parseOptionalInteger(item.ended_year),
         is_current: item.is_current,
         responsibilities: item.responsibilities.trim(),
       }))
@@ -1427,7 +1484,10 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
     const parsedPayload = profilePayloadSchema.safeParse(payload);
 
     if (!parsedPayload.success) {
-      setErrorMessage(parsedPayload.error.issues[0]?.message || dictionary.forms.errorSavingProfile);
+      setErrorMessage(
+        parsedPayload.error.issues[0]?.message ||
+          dictionary.forms.errorSavingProfile,
+      );
       setSaving(false);
       return;
     }
@@ -1454,14 +1514,20 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
       return;
     }
 
-    const currentCertificateIds = new Set(sanitizedCertificates.map((item) => item.id));
+    const currentCertificateIds = new Set(
+      sanitizedCertificates.map((item) => item.id),
+    );
     const removedStoragePaths = profile.certificates
-      .filter((item) => item.storage_path && !currentCertificateIds.has(item.id))
+      .filter(
+        (item) => item.storage_path && !currentCertificateIds.has(item.id),
+      )
       .map((item) => item.storage_path)
       .filter(Boolean);
 
     if (removedStoragePaths.length > 0) {
-      await supabase.storage.from("profile-certificates").remove(removedStoragePaths);
+      await supabase.storage
+        .from("profile-certificates")
+        .remove(removedStoragePaths);
     }
 
     const savedBackgroundStoragePath =
@@ -1523,8 +1589,12 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           id: sectionId,
           title,
           lines: [
-            form.headline || (locale === "uk" ? "Додайте headline" : "Add a headline"),
-            form.bio || (locale === "uk" ? "Заповніть біо, щоб блок виглядав живо." : "Fill the bio so this card feels alive."),
+            form.headline ||
+              (locale === "uk" ? "Додайте headline" : "Add a headline"),
+            form.bio ||
+              (locale === "uk"
+                ? "Заповніть біо, щоб блок виглядав живо."
+                : "Fill the bio so this card feels alive."),
           ],
         };
       case "professionalDetails":
@@ -1543,7 +1613,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
                 ? "Додайте очікування по оплаті"
                 : "Add salary expectations",
             selectedEmploymentTypes.length > 0
-              ? selectedEmploymentTypes.map((item) => getEmploymentTypeLabel(item, dictionary)).join(", ")
+              ? selectedEmploymentTypes
+                  .map((item) => getEmploymentTypeLabel(item, dictionary))
+                  .join(", ")
               : locale === "uk"
                 ? "Варіанти зайнятості"
                 : "Employment types",
@@ -1555,11 +1627,18 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           title,
           lines:
             workExperience.length > 0
-              ? workExperience.slice(0, 3).map((item) =>
-                  [item.position || (locale === "uk" ? "Посада" : "Position"), item.company_name || (locale === "uk" ? "Компанія" : "Company")]
-                    .filter(Boolean)
-                    .join(" • "),
-                )
+              ? workExperience
+                  .slice(0, 3)
+                  .map((item) =>
+                    [
+                      item.position ||
+                        (locale === "uk" ? "Посада" : "Position"),
+                      item.company_name ||
+                        (locale === "uk" ? "Компанія" : "Company"),
+                    ]
+                      .filter(Boolean)
+                      .join(" • "),
+                  )
               : [locale === "uk" ? "Додайте місце роботи" : "Add a work entry"],
         };
       case "skills":
@@ -1582,8 +1661,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
             languages.length > 0
               ? languages.slice(0, 4).map((item) => {
                   const languageName =
-                    meta.languages.find((option) => option.id === item.language_id)?.name ||
-                    (locale === "uk" ? "Мова" : "Language");
+                    meta.languages.find(
+                      (option) => option.id === item.language_id,
+                    )?.name || (locale === "uk" ? "Мова" : "Language");
                   return `${languageName} • ${getLanguageLevelLabel(item.proficiency_level, dictionary)}`;
                 })
               : [locale === "uk" ? "Додайте мови" : "Add languages"],
@@ -1594,11 +1674,17 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           title,
           lines:
             education.length > 0
-              ? education.slice(0, 3).map((item) =>
-                  [item.institution || (locale === "uk" ? "Навчальний заклад" : "Institution"), item.degree || item.field_of_study || ""]
-                    .filter(Boolean)
-                    .join(" • "),
-                )
+              ? education
+                  .slice(0, 3)
+                  .map((item) =>
+                    [
+                      item.institution ||
+                        (locale === "uk" ? "Навчальний заклад" : "Institution"),
+                      item.degree || item.field_of_study || "",
+                    ]
+                      .filter(Boolean)
+                      .join(" • "),
+                  )
               : [locale === "uk" ? "Додайте освіту" : "Add education"],
         };
       case "certificates":
@@ -1607,7 +1693,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           title,
           lines:
             certificates.length > 0
-              ? certificates.slice(0, 3).map((item) => item.title || item.issuer || "Certificate")
+              ? certificates
+                  .slice(0, 3)
+                  .map((item) => item.title || item.issuer || "Certificate")
               : [locale === "uk" ? "Додайте сертифікати" : "Add certificates"],
         };
       case "qa":
@@ -1616,7 +1704,13 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           title,
           lines:
             qas.length > 0
-              ? qas.slice(0, 2).map((item) => item.question || (locale === "uk" ? "Питання" : "Question"))
+              ? qas
+                  .slice(0, 2)
+                  .map(
+                    (item) =>
+                      item.question ||
+                      (locale === "uk" ? "Питання" : "Question"),
+                  )
               : [locale === "uk" ? "Додайте Q&A" : "Add Q&A"],
         };
       case "contacts":
@@ -1624,8 +1718,14 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           id: sectionId,
           title,
           lines: [
-            form.contact_email || (locale === "uk" ? "Email не додано" : "No email yet"),
-            form.telegram_username || form.phone || form.linkedin || (locale === "uk" ? "Додайте способи зв'язку" : "Add contact methods"),
+            form.contact_email ||
+              (locale === "uk" ? "Email не додано" : "No email yet"),
+            form.telegram_username ||
+              form.phone ||
+              form.linkedin ||
+              (locale === "uk"
+                ? "Додайте способи зв'язку"
+                : "Add contact methods"),
           ],
         };
       case "projects":
@@ -1651,7 +1751,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
-              {editorMode === "content" ? workspaceUi.content : workspaceUi.builder}
+              {editorMode === "content"
+                ? workspaceUi.content
+                : workspaceUi.builder}
             </h2>
             <p className="mt-2 text-sm leading-6 app-muted">
               {editorMode === "content"
@@ -1683,14 +1785,14 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
         </h2>
 
         <input
-          className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+          className="app-input w-full"
           placeholder={dictionary.forms.username}
           value={form.username}
           onChange={(e) => update("username", e.target.value)}
         />
 
         <input
-          className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+          className="app-input w-full"
           placeholder={dictionary.forms.fullName}
           value={form.name}
           onChange={(e) => update("name", e.target.value)}
@@ -1701,24 +1803,23 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
             {profileUi.categoryLabel}
           </p>
 
-          <select
-            className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
-            value={form.category_id ?? ""}
-            onChange={(e) =>
-              update("category_id", e.target.value ? Number(e.target.value) : null)
+          <FormSelect
+            className="w-full"
+            triggerClassName="w-full"
+            value={form.category_id ? String(form.category_id) : ""}
+            placeholder={profileUi.categoryPlaceholder}
+            onChange={(value) =>
+              update("category_id", value ? Number(value) : null)
             }
-          >
-            <option value="">{profileUi.categoryPlaceholder}</option>
-            {meta.categories.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.name}
-              </option>
-            ))}
-          </select>
+            options={meta.categories.map((option) => ({
+              value: String(option.id),
+              label: option.name,
+            }))}
+          />
         </div>
 
         <input
-          className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+          className="app-input w-full"
           placeholder={dictionary.forms.headline}
           value={form.headline}
           onChange={(e) => update("headline", e.target.value)}
@@ -1743,40 +1844,38 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
         </h2>
 
         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_12rem]">
-          <select
-            className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+          <FormSelect
+            triggerClassName="w-full"
             value={form.experience_level}
-            onChange={(e) =>
-              update("experience_level", e.target.value as ExperienceLevel | "")
+            placeholder={getExperiencePlaceholder(locale)}
+            onChange={(value) =>
+              update("experience_level", value as ExperienceLevel | "")
             }
-          >
-            <option value="">{getExperiencePlaceholder(locale)}</option>
-            {experienceLevels.map((option) => (
-              <option key={option} value={option}>
-                {getExperienceLevelLabel(option, locale)}
-              </option>
-            ))}
-          </select>
+            options={experienceLevels.map((option) => ({
+              value: option,
+              label: getExperienceLevelLabel(option, locale),
+            }))}
+          />
 
           <input
-            className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="app-input"
             placeholder={dictionary.forms.salaryExpectations}
             value={form.salary_expectations}
             onChange={(e) => update("salary_expectations", e.target.value)}
           />
 
-          <select
-            className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+          <FormSelect
+            triggerClassName="w-full"
             value={form.salary_currency}
-            onChange={(e) => update("salary_currency", e.target.value as SalaryCurrency)}
-          >
-            <option value="">{getSalaryCurrencyPlaceholder(locale)}</option>
-            {salaryCurrencies.map((option) => (
-              <option key={option} value={option}>
-                {getSalaryCurrencyLabel(option, locale)}
-              </option>
-            ))}
-          </select>
+            placeholder={getSalaryCurrencyPlaceholder(locale)}
+            onChange={(value) =>
+              update("salary_currency", value as SalaryCurrency)
+            }
+            options={salaryCurrencies.map((option) => ({
+              value: option,
+              label: getSalaryCurrencyLabel(option, locale),
+            }))}
+          />
         </div>
 
         <div>
@@ -1823,15 +1922,21 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           </div>
         </div>
 
-        <textarea
-          className="min-h-24 w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+        <FormTextarea
+          className="min-h-24 w-full p-4 text-[color:var(--foreground)]"
           placeholder={dictionary.forms.additionalInfo}
           value={form.additional_info}
           onChange={(e) => update("additional_info", e.target.value)}
         />
       </section>
 
-      <section className={editorMode === "builder" ? "space-y-5 rounded-[1.75rem] app-panel p-5" : "hidden"}>
+      <section
+        className={
+          editorMode === "builder"
+            ? "space-y-5 rounded-[1.75rem] app-panel p-5"
+            : "hidden"
+        }
+      >
         <div>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -1843,10 +1948,16 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
               </p>
             </div>
             <div className="max-w-sm text-right">
-              <Button variant="secondary" size="sm" onClick={() => void resetCustomization()}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void resetCustomization()}
+              >
                 {draftUi.resetCustomization}
               </Button>
-              <p className="mt-2 text-xs app-soft">{draftUi.resetCustomizationHint}</p>
+              <p className="mt-2 text-xs app-soft">
+                {draftUi.resetCustomizationHint}
+              </p>
             </div>
           </div>
         </div>
@@ -1855,31 +1966,34 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           className="relative overflow-hidden rounded-[1.75rem] border border-white/10 p-5"
           style={{
             background:
-              presentation.backgroundMode === "gradient" || !presentation.backgroundUrl
+              presentation.backgroundMode === "gradient" ||
+              !presentation.backgroundUrl
                 ? `linear-gradient(135deg, ${presentation.surfaceColor} 0%, ${presentation.panelColor} 55%, ${presentation.accentColor} 100%)`
                 : presentation.surfaceColor,
             color: presentation.textColor,
             fontFamily: previewFontFamily,
           }}
         >
-          {presentation.backgroundUrl && presentation.backgroundMode === "image" && (
-            <Image
-              src={presentation.backgroundUrl}
-              alt=""
-              fill
-              className="object-cover"
-            />
-          )}
-          {presentation.backgroundUrl && presentation.backgroundMode === "video" && (
-            <video
-              src={presentation.backgroundUrl}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          )}
+          {presentation.backgroundUrl &&
+            presentation.backgroundMode === "image" && (
+              <Image
+                src={presentation.backgroundUrl}
+                alt=""
+                fill
+                className="object-cover"
+              />
+            )}
+          {presentation.backgroundUrl &&
+            presentation.backgroundMode === "video" && (
+              <video
+                src={presentation.backgroundUrl}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
           <div
             className="absolute inset-0"
             style={{
@@ -1975,9 +2089,18 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
               {profileFontPresets.map((fontPreset) => (
                 <Button
                   key={fontPreset}
-                  variant={presentation.fontPreset === fontPreset ? "primary" : "secondary"}
+                  variant={
+                    presentation.fontPreset === fontPreset
+                      ? "primary"
+                      : "secondary"
+                  }
                   size="sm"
-                  onClick={() => updatePresentation("fontPreset", fontPreset as ProfileFontPreset)}
+                  onClick={() =>
+                    updatePresentation(
+                      "fontPreset",
+                      fontPreset as ProfileFontPreset,
+                    )
+                  }
                 >
                   {customizationUi.fonts[fontPreset]}
                 </Button>
@@ -1993,9 +2116,18 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
               {profileTextScales.map((textScale) => (
                 <Button
                   key={textScale}
-                  variant={presentation.textScale === textScale ? "primary" : "secondary"}
+                  variant={
+                    presentation.textScale === textScale
+                      ? "primary"
+                      : "secondary"
+                  }
                   size="sm"
-                  onClick={() => updatePresentation("textScale", textScale as ProfileTextScale)}
+                  onClick={() =>
+                    updatePresentation(
+                      "textScale",
+                      textScale as ProfileTextScale,
+                    )
+                  }
                 >
                   {customizationUi.scales[textScale]}
                 </Button>
@@ -2011,9 +2143,18 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
               {profileCardStyles.map((cardStyle) => (
                 <Button
                   key={cardStyle}
-                  variant={presentation.cardStyle === cardStyle ? "primary" : "secondary"}
+                  variant={
+                    presentation.cardStyle === cardStyle
+                      ? "primary"
+                      : "secondary"
+                  }
                   size="sm"
-                  onClick={() => updatePresentation("cardStyle", cardStyle as ProfileCardStyle)}
+                  onClick={() =>
+                    updatePresentation(
+                      "cardStyle",
+                      cardStyle as ProfileCardStyle,
+                    )
+                  }
                 >
                   {customizationUi.cards[cardStyle]}
                 </Button>
@@ -2030,7 +2171,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
                 <Button
                   key={heroAlignment}
                   variant={
-                    presentation.heroAlignment === heroAlignment ? "primary" : "secondary"
+                    presentation.heroAlignment === heroAlignment
+                      ? "primary"
+                      : "secondary"
                   }
                   size="sm"
                   onClick={() =>
@@ -2057,7 +2200,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
                 <Button
                   key={backgroundMode}
                   variant={
-                    presentation.backgroundMode === backgroundMode ? "primary" : "secondary"
+                    presentation.backgroundMode === backgroundMode
+                      ? "primary"
+                      : "secondary"
                   }
                   size="sm"
                   onClick={() =>
@@ -2079,7 +2224,11 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
                     : customizationUi.backgroundHint}
                 </span>
                 {presentation.backgroundUrl && (
-                  <Button variant="ghost" size="sm" onClick={() => void clearBackgroundAsset()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => void clearBackgroundAsset()}
+                  >
                     {presentationExtrasUi.removeBackground}
                   </Button>
                 )}
@@ -2096,7 +2245,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
                   </span>
                   <input
                     type="file"
-                    accept={getBackgroundAcceptValue(presentation.backgroundMode)}
+                    accept={getBackgroundAcceptValue(
+                      presentation.backgroundMode,
+                    )}
                     disabled={uploadingBackground}
                     className="sr-only"
                     onChange={(event) => void uploadBackgroundAsset(event)}
@@ -2123,7 +2274,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
                 )
               }
             />
-            <span className="text-sm app-muted">{presentation.overlayStrength}%</span>
+            <span className="text-sm app-muted">
+              {presentation.overlayStrength}%
+            </span>
           </label>
         </div>
 
@@ -2133,7 +2286,9 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
               <h3 className="text-base font-semibold text-[color:var(--foreground)]">
                 {workspaceUi.canvasTitle}
               </h3>
-              <p className="mt-1 text-sm app-muted">{workspaceUi.canvasDescription}</p>
+              <p className="mt-1 text-sm app-muted">
+                {workspaceUi.canvasDescription}
+              </p>
             </div>
             <p className="text-sm app-soft">{presentationExtrasUi.dragHint}</p>
           </div>
@@ -2143,85 +2298,86 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
               const sectionId = card.id;
 
               return (
-              <div
-                key={sectionId}
-                draggable
-                onDragStart={() => setDraggingSectionId(sectionId)}
-                onDragEnd={() => setDraggingSectionId(null)}
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={(event) => {
-                  event.preventDefault();
+                <div
+                  key={sectionId}
+                  draggable
+                  onDragStart={() => setDraggingSectionId(sectionId)}
+                  onDragEnd={() => setDraggingSectionId(null)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => {
+                    event.preventDefault();
 
-                  if (draggingSectionId) {
-                    reorderSections(draggingSectionId, sectionId);
-                  }
+                    if (draggingSectionId) {
+                      reorderSections(draggingSectionId, sectionId);
+                    }
 
-                  setDraggingSectionId(null);
-                }}
-                className={`${getBuilderSpanClass(presentation.sectionSizes[sectionId])} flex flex-col gap-4 rounded-[1.5rem] border app-border bg-[color:var(--surface)] p-5 ${
-                  draggingSectionId === sectionId ? "opacity-60" : ""
-                }`}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div
-                      className="mb-4 h-1.5 w-18 rounded-full"
-                      style={{ backgroundColor: presentation.accentColor }}
-                    />
-                    <p className="text-sm font-medium text-[color:var(--foreground)]">
-                      {index + 1}. {card.title}
-                    </p>
-                    {sectionId === "contacts" && !visibility.links && (
-                      <p className="mt-1 text-xs app-muted">
-                        {locale === "uk"
-                          ? "\u0411\u043b\u043e\u043a \u0437\u0430\u0440\u0430\u0437 \u043f\u0440\u0438\u0445\u043e\u0432\u0430\u043d\u0438\u0439 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f\u043c \u0432\u0438\u0434\u0438\u043c\u043e\u0441\u0442\u0456."
-                          : "This block is currently hidden by your visibility settings."}
+                    setDraggingSectionId(null);
+                  }}
+                  className={`${getBuilderSpanClass(presentation.sectionSizes[sectionId])} flex flex-col gap-4 rounded-[1.5rem] border app-border bg-[color:var(--surface)] p-5 ${
+                    draggingSectionId === sectionId ? "opacity-60" : ""
+                  }`}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div
+                        className="mb-4 h-1.5 w-18 rounded-full"
+                        style={{ backgroundColor: presentation.accentColor }}
+                      />
+                      <p className="text-sm font-medium text-[color:var(--foreground)]">
+                        {index + 1}. {card.title}
                       </p>
-                    )}
+                      {sectionId === "contacts" && !visibility.links && (
+                        <p className="mt-1 text-xs app-muted">
+                          {locale === "uk"
+                            ? "\u0411\u043b\u043e\u043a \u0437\u0430\u0440\u0430\u0437 \u043f\u0440\u0438\u0445\u043e\u0432\u0430\u043d\u0438\u0439 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f\u043c \u0432\u0438\u0434\u0438\u043c\u043e\u0441\u0442\u0456."
+                            : "This block is currently hidden by your visibility settings."}
+                        </p>
+                      )}
+                    </div>
+                    <span className="cursor-grab rounded-full border app-border px-3 py-1 text-xs app-soft active:cursor-grabbing">
+                      {presentationExtrasUi.dragHandle}
+                    </span>
                   </div>
-                  <span className="cursor-grab rounded-full border app-border px-3 py-1 text-xs app-soft active:cursor-grabbing">
-                    {presentationExtrasUi.dragHandle}
-                  </span>
-                </div>
 
-                <div className="space-y-3 rounded-[1.25rem] app-panel p-4">
-                  {card.lines.map((line, lineIndex) => (
-                    <p
-                      key={`${sectionId}-${lineIndex}`}
-                      className={
-                        lineIndex === 0
-                          ? "font-semibold text-[color:var(--foreground)]"
-                          : "text-sm app-muted"
-                      }
-                    >
-                      {line}
-                    </p>
-                  ))}
-                </div>
-
-                <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] app-soft">
-                    {presentationExtrasUi.blockSize}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {profileSectionSizes.map((size) => (
-                      <Button
-                        key={`${sectionId}-${size}`}
-                        variant={
-                          presentation.sectionSizes[sectionId] === size
-                            ? "primary"
-                            : "secondary"
+                  <div className="space-y-3 rounded-[1.25rem] app-panel p-4">
+                    {card.lines.map((line, lineIndex) => (
+                      <p
+                        key={`${sectionId}-${lineIndex}`}
+                        className={
+                          lineIndex === 0
+                            ? "font-semibold text-[color:var(--foreground)]"
+                            : "text-sm app-muted"
                         }
-                        size="sm"
-                        onClick={() => updateSectionSize(sectionId, size)}
                       >
-                        {presentationExtrasUi.sizes[size]}
-                      </Button>
+                        {line}
+                      </p>
                     ))}
                   </div>
+
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] app-soft">
+                      {presentationExtrasUi.blockSize}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {profileSectionSizes.map((size) => (
+                        <Button
+                          key={`${sectionId}-${size}`}
+                          variant={
+                            presentation.sectionSizes[sectionId] === size
+                              ? "primary"
+                              : "secondary"
+                          }
+                          size="sm"
+                          onClick={() => updateSectionSize(sectionId, size)}
+                        >
+                          {presentationExtrasUi.sizes[size]}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )})}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -2235,7 +2391,10 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
             variant="secondary"
             size="sm"
             onClick={() =>
-              setWorkExperience((prev) => [...prev, createProfileWorkExperienceEntry()])
+              setWorkExperience((prev) => [
+                ...prev,
+                createProfileWorkExperienceEntry(),
+              ])
             }
           >
             {dictionary.forms.addWorkExperience}
@@ -2246,18 +2405,87 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
           {workExperience.map((item) => (
             <article key={item.id} className="rounded-[1.5rem] app-panel p-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.workCompanyName} value={item.company_name} onChange={(e) => updateWorkExperience(item.id, "company_name", e.target.value)} />
-                <input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.workPosition} value={item.position} onChange={(e) => updateWorkExperience(item.id, "position", e.target.value)} />
-                <input type="number" min="1950" max="2100" className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.workStartYear} value={item.started_year} onChange={(e) => updateWorkExperience(item.id, "started_year", e.target.value)} />
-                <input type="number" min="1950" max="2100" disabled={item.is_current} className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)] disabled:opacity-60" placeholder={dictionary.forms.workEndYear} value={item.ended_year} onChange={(e) => updateWorkExperience(item.id, "ended_year", e.target.value)} />
+                <input
+                  className="app-input"
+                  placeholder={dictionary.forms.workCompanyName}
+                  value={item.company_name}
+                  onChange={(e) =>
+                    updateWorkExperience(
+                      item.id,
+                      "company_name",
+                      e.target.value,
+                    )
+                  }
+                />
+                <input
+                  className="app-input"
+                  placeholder={dictionary.forms.workPosition}
+                  value={item.position}
+                  onChange={(e) =>
+                    updateWorkExperience(item.id, "position", e.target.value)
+                  }
+                />
+                <input
+                  type="number"
+                  min="1950"
+                  max="2100"
+                  className="app-input"
+                  placeholder={dictionary.forms.workStartYear}
+                  value={item.started_year}
+                  onChange={(e) =>
+                    updateWorkExperience(
+                      item.id,
+                      "started_year",
+                      e.target.value,
+                    )
+                  }
+                />
+                <input
+                  type="number"
+                  min="1950"
+                  max="2100"
+                  disabled={item.is_current}
+                  className="app-input disabled:opacity-60"
+                  placeholder={dictionary.forms.workEndYear}
+                  value={item.ended_year}
+                  onChange={(e) =>
+                    updateWorkExperience(item.id, "ended_year", e.target.value)
+                  }
+                />
                 <label className="inline-flex items-center gap-3 text-sm font-medium text-[color:var(--foreground)] md:col-span-2">
-                  <input type="checkbox" checked={item.is_current} onChange={(e) => updateWorkExperience(item.id, "is_current", e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    className="app-checkbox"
+                    checked={item.is_current}
+                    onChange={(e) =>
+                      updateWorkExperience(
+                        item.id,
+                        "is_current",
+                        e.target.checked,
+                      )
+                    }
+                  />
                   <span>{dictionary.forms.workCurrent}</span>
                 </label>
-                <textarea className="min-h-24 rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)] md:col-span-2" placeholder={dictionary.forms.workResponsibilities} value={item.responsibilities} onChange={(e) => updateWorkExperience(item.id, "responsibilities", e.target.value)} />
+                <FormTextarea
+                  className="min-h-24 p-4 text-[color:var(--foreground)] md:col-span-2"
+                  placeholder={dictionary.forms.workResponsibilities}
+                  value={item.responsibilities}
+                  onChange={(e) =>
+                    updateWorkExperience(
+                      item.id,
+                      "responsibilities",
+                      e.target.value,
+                    )
+                  }
+                />
               </div>
               <div className="mt-4 flex justify-end">
-                <Button variant="ghost" size="sm" onClick={() => removeWorkExperience(item.id)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeWorkExperience(item.id)}
+                >
                   {dictionary.forms.removeItem}
                 </Button>
               </div>
@@ -2267,45 +2495,434 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
       </section>
 
       <section className={editorMode === "content" ? "space-y-4" : "hidden"}>
-        <h2 className="text-lg font-semibold text-[color:var(--foreground)]">{dictionary.forms.locationContactsAndLinks}</h2>
+        <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
+          {dictionary.forms.locationContactsAndLinks}
+        </h2>
         <div>
-          <p className="mb-2 font-semibold text-[color:var(--foreground)]">{dictionary.forms.country}</p>
-          <SearchSelect options={meta.countries} value={form.country_id ?? undefined} placeholder={dictionary.forms.searchCountry} onChange={(value) => update("country_id", value)} />
+          <p className="mb-2 font-semibold text-[color:var(--foreground)]">
+            {dictionary.forms.country}
+          </p>
+          <SearchSelect
+            options={meta.countries}
+            value={form.country_id ?? undefined}
+            placeholder={dictionary.forms.searchCountry}
+            onChange={(value) => update("country_id", value)}
+          />
         </div>
-        <input className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.city} value={form.city} onChange={(e) => update("city", e.target.value)} />
+        <input
+          className="app-input w-full"
+          placeholder={dictionary.forms.city}
+          value={form.city}
+          onChange={(e) => update("city", e.target.value)}
+        />
         <div className="grid gap-4 md:grid-cols-2">
-          <input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.contactEmail} value={form.contact_email} onChange={(e) => update("contact_email", e.target.value)} />
-          <input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.telegram} value={form.telegram_username} onChange={(e) => update("telegram_username", e.target.value)} />
-          <input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.phone} value={form.phone} onChange={(e) => update("phone", e.target.value)} />
-          <select className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" value={form.preferred_contact_method} onChange={(e) => update("preferred_contact_method", e.target.value as PreferredContactMethod | "")}>
-            <option value="">{getPreferredContactMethodPlaceholder(locale)}</option>
-            {preferredContactMethods.map((option) => (
-              <option key={option} value={option}>
-                {getPreferredContactMethodLabel(option, dictionary)}
-              </option>
-            ))}
-          </select>
+          <input
+            className="app-input"
+            placeholder={dictionary.forms.contactEmail}
+            value={form.contact_email}
+            onChange={(e) => update("contact_email", e.target.value)}
+          />
+          <input
+            className="app-input"
+            placeholder={dictionary.forms.telegram}
+            value={form.telegram_username}
+            onChange={(e) => update("telegram_username", e.target.value)}
+          />
+          <input
+            className="app-input"
+            placeholder={dictionary.forms.phone}
+            value={form.phone}
+            onChange={(e) => update("phone", e.target.value)}
+          />
+          <FormSelect
+            triggerClassName="w-full"
+            value={form.preferred_contact_method}
+            placeholder={getPreferredContactMethodPlaceholder(locale)}
+            onChange={(value) =>
+              update(
+                "preferred_contact_method",
+                value as PreferredContactMethod | "",
+              )
+            }
+            options={preferredContactMethods.map((option) => ({
+              value: option,
+              label: getPreferredContactMethodLabel(option, dictionary),
+            }))}
+          />
         </div>
-        <input className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.website} value={form.website} onChange={(e) => update("website", e.target.value)} />
-        <input className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.github} value={form.github} onChange={(e) => update("github", e.target.value)} />
-        <input className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.twitter} value={form.twitter} onChange={(e) => update("twitter", e.target.value)} />
-        <input className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.linkedin} value={form.linkedin} onChange={(e) => update("linkedin", e.target.value)} />
+        <input
+          className="app-input w-full"
+          placeholder={dictionary.forms.website}
+          value={form.website}
+          onChange={(e) => update("website", e.target.value)}
+        />
+        <input
+          className="app-input w-full"
+          placeholder={dictionary.forms.github}
+          value={form.github}
+          onChange={(e) => update("github", e.target.value)}
+        />
+        <input
+          className="app-input w-full"
+          placeholder={dictionary.forms.twitter}
+          value={form.twitter}
+          onChange={(e) => update("twitter", e.target.value)}
+        />
+        <input
+          className="app-input w-full"
+          placeholder={dictionary.forms.linkedin}
+          value={form.linkedin}
+          onChange={(e) => update("linkedin", e.target.value)}
+        />
       </section>
-
-      <section className={editorMode === "content" ? "space-y-4" : "hidden"}><h2 className="text-lg font-semibold text-[color:var(--foreground)]">{dictionary.forms.skills}</h2><TagSelect options={meta.skills} value={skills} placeholder={dictionary.forms.searchSkills} onChange={(values) => setSkills(values.map(Number))} /></section>
 
       <section className={editorMode === "content" ? "space-y-4" : "hidden"}>
-        <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold text-[color:var(--foreground)]">{dictionary.forms.languagesWithLevel}</h2><Button variant="secondary" size="sm" onClick={() => setLanguages((prev) => [...prev, createProfileLanguageEntry()])}>{dictionary.forms.addLanguage}</Button></div>
-        <div className="space-y-4">{languages.map((item) => (<div key={item.id} className="rounded-[1.5rem] app-panel p-4"><div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_14rem_auto]"><SearchSelect options={meta.languages} value={item.language_id ?? undefined} placeholder={dictionary.forms.searchLanguages} onChange={(value) => updateLanguage(item.id, "language_id", value)} /><select className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" value={item.proficiency_level} onChange={(e) => updateLanguage(item.id, "proficiency_level", e.target.value as LanguageLevel)}>{languageLevels.map((level) => (<option key={level} value={level}>{getLanguageLevelLabel(level, dictionary)}</option>))}</select><Button variant="ghost" size="sm" onClick={() => removeLanguage(item.id)}>{dictionary.forms.removeItem}</Button></div></div>))}</div>
+        <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
+          {dictionary.forms.skills}
+        </h2>
+        <TagSelect
+          options={meta.skills}
+          value={skills}
+          placeholder={dictionary.forms.searchSkills}
+          onChange={(values) => setSkills(values.map(Number))}
+        />
       </section>
 
-      <section className={editorMode === "content" ? "space-y-4" : "hidden"}><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold text-[color:var(--foreground)]">{dictionary.forms.education}</h2><Button variant="secondary" size="sm" onClick={() => setEducation((prev) => [...prev, createProfileEducationEntry()])}>{dictionary.forms.addEducation}</Button></div><div className="space-y-4">{education.map((item) => (<article key={item.id} className="rounded-[1.5rem] app-panel p-4"><div className="grid gap-4 md:grid-cols-2"><input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.educationInstitution} value={item.institution} onChange={(e) => updateEducation(item.id, "institution", e.target.value)} /><input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.educationDegree} value={item.degree} onChange={(e) => updateEducation(item.id, "degree", e.target.value)} /><input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)] md:col-span-2" placeholder={dictionary.forms.educationField} value={item.field_of_study} onChange={(e) => updateEducation(item.id, "field_of_study", e.target.value)} /><input type="date" className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" value={item.started_on} onChange={(e) => updateEducation(item.id, "started_on", e.target.value)} /><input type="date" className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" value={item.completed_on} onChange={(e) => updateEducation(item.id, "completed_on", e.target.value)} /><textarea className="min-h-24 rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)] md:col-span-2" placeholder={dictionary.forms.educationDescription} value={item.description} onChange={(e) => updateEducation(item.id, "description", e.target.value)} /></div><div className="mt-4 flex justify-end"><Button variant="ghost" size="sm" onClick={() => removeEducation(item.id)}>{dictionary.forms.removeItem}</Button></div></article>))}</div></section>
+      <section className={editorMode === "content" ? "space-y-4" : "hidden"}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
+            {dictionary.forms.languagesWithLevel}
+          </h2>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() =>
+              setLanguages((prev) => [...prev, createProfileLanguageEntry()])
+            }
+          >
+            {dictionary.forms.addLanguage}
+          </Button>
+        </div>
+        <div className="space-y-4">
+          {languages.map((item) => (
+            <div key={item.id} className="rounded-[1.5rem] app-panel p-4">
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_14rem_auto]">
+                <SearchSelect
+                  options={meta.languages}
+                  value={item.language_id ?? undefined}
+                  placeholder={dictionary.forms.searchLanguages}
+                  onChange={(value) =>
+                    updateLanguage(item.id, "language_id", value)
+                  }
+                />
+                <FormSelect
+                  triggerClassName="w-full"
+                  value={item.proficiency_level}
+                  onChange={(value) =>
+                    updateLanguage(
+                      item.id,
+                      "proficiency_level",
+                      value as LanguageLevel,
+                    )
+                  }
+                  options={languageLevels.map((level) => ({
+                    value: level,
+                    label: getLanguageLevelLabel(level, dictionary),
+                  }))}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeLanguage(item.id)}
+                >
+                  {dictionary.forms.removeItem}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      <section className={editorMode === "content" ? "space-y-4" : "hidden"}><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold text-[color:var(--foreground)]">{dictionary.forms.certificates}</h2><Button variant="secondary" size="sm" onClick={() => setCertificates((prev) => [...prev, createProfileCertificateEntry()])}>{dictionary.forms.addCertificate}</Button></div><div className="space-y-4">{certificates.map((item) => (<article key={item.id} className="rounded-[1.5rem] app-panel p-4"><div className="grid gap-4 md:grid-cols-2"><input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.certificateTitle} value={item.title} onChange={(e) => updateCertificate(item.id, "title", e.target.value)} /><input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.certificateIssuer} value={item.issuer} onChange={(e) => updateCertificate(item.id, "issuer", e.target.value)} /><input type="date" className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" value={item.issued_on} onChange={(e) => updateCertificate(item.id, "issued_on", e.target.value)} /><input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.certificateUrl} value={item.credential_url} onChange={(e) => updateCertificate(item.id, "credential_url", e.target.value)} /><div className="md:col-span-2"><label className="inline-flex cursor-pointer items-center rounded-full border app-border bg-[color:var(--surface)] px-4 py-2 text-sm font-medium text-[color:var(--foreground)]"><span>{uploadingCertificateId === item.id ? dictionary.forms.uploadingCertificate : dictionary.forms.uploadCertificateFile}</span><input type="file" accept=".pdf,image/jpeg,image/png" disabled={uploadingCertificateId === item.id} className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; if (!file) { return; } void uploadCertificateFile(item.id, file); event.target.value = ""; }} /></label>{(item.file_url || item.credential_url) && (<div className="mt-3 flex flex-wrap gap-2">{item.credential_url && (<a href={item.credential_url} target="_blank" rel="noreferrer" className="rounded-full border app-border px-4 py-2 text-sm app-muted transition hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--foreground)]">{dictionary.forms.openCertificateLink}</a>)}{item.file_url && (<a href={item.file_url} target="_blank" rel="noreferrer" className="rounded-full border app-border px-4 py-2 text-sm app-muted transition hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--foreground)]">{item.file_name || dictionary.forms.openCertificateFile}</a>)}</div>)}</div></div><div className="mt-4 flex justify-end"><Button variant="ghost" size="sm" onClick={() => void removeCertificate(item.id)}>{dictionary.forms.removeItem}</Button></div></article>))}</div></section>
+      <section className={editorMode === "content" ? "space-y-4" : "hidden"}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
+            {dictionary.forms.education}
+          </h2>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() =>
+              setEducation((prev) => [...prev, createProfileEducationEntry()])
+            }
+          >
+            {dictionary.forms.addEducation}
+          </Button>
+        </div>
+        <div className="space-y-4">
+          {education.map((item) => (
+            <article key={item.id} className="rounded-[1.5rem] app-panel p-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <input
+                  className="app-input"
+                  placeholder={dictionary.forms.educationInstitution}
+                  value={item.institution}
+                  onChange={(e) =>
+                    updateEducation(item.id, "institution", e.target.value)
+                  }
+                />
+                <input
+                  className="app-input"
+                  placeholder={dictionary.forms.educationDegree}
+                  value={item.degree}
+                  onChange={(e) =>
+                    updateEducation(item.id, "degree", e.target.value)
+                  }
+                />
+                <input
+                  className="app-input md:col-span-2"
+                  placeholder={dictionary.forms.educationField}
+                  value={item.field_of_study}
+                  onChange={(e) =>
+                    updateEducation(item.id, "field_of_study", e.target.value)
+                  }
+                />
+                <input
+                  type="date"
+                  className="app-input"
+                  value={item.started_on}
+                  onChange={(e) =>
+                    updateEducation(item.id, "started_on", e.target.value)
+                  }
+                />
+                <input
+                  type="date"
+                  className="app-input"
+                  value={item.completed_on}
+                  onChange={(e) =>
+                    updateEducation(item.id, "completed_on", e.target.value)
+                  }
+                />
+                <FormTextarea
+                  className="min-h-24 p-4 text-[color:var(--foreground)] md:col-span-2"
+                  placeholder={dictionary.forms.educationDescription}
+                  value={item.description}
+                  onChange={(e) =>
+                    updateEducation(item.id, "description", e.target.value)
+                  }
+                />
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeEducation(item.id)}
+                >
+                  {dictionary.forms.removeItem}
+                </Button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
-      <section className={editorMode === "content" ? "space-y-4" : "hidden"}><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold text-[color:var(--foreground)]">{dictionary.forms.profileQa}</h2><Button variant="secondary" size="sm" onClick={() => setQas((prev) => [...prev, createProfileQaEntry()])}>{dictionary.forms.addQa}</Button></div><div className="space-y-4">{qas.map((item) => (<article key={item.id} className="rounded-[1.5rem] app-panel p-4"><div className="grid gap-4"><input className="rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.qaQuestion} value={item.question} onChange={(e) => updateQa(item.id, "question", e.target.value)} /><textarea className="min-h-24 rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]" placeholder={dictionary.forms.qaAnswer} value={item.answer} onChange={(e) => updateQa(item.id, "answer", e.target.value)} /></div><div className="mt-4 flex justify-end"><Button variant="ghost" size="sm" onClick={() => removeQa(item.id)}>{dictionary.forms.removeItem}</Button></div></article>))}</div></section>
+      <section className={editorMode === "content" ? "space-y-4" : "hidden"}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
+            {dictionary.forms.certificates}
+          </h2>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() =>
+              setCertificates((prev) => [
+                ...prev,
+                createProfileCertificateEntry(),
+              ])
+            }
+          >
+            {dictionary.forms.addCertificate}
+          </Button>
+        </div>
+        <div className="space-y-4">
+          {certificates.map((item) => (
+            <article key={item.id} className="rounded-[1.5rem] app-panel p-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <input
+                  className="app-input"
+                  placeholder={dictionary.forms.certificateTitle}
+                  value={item.title}
+                  onChange={(e) =>
+                    updateCertificate(item.id, "title", e.target.value)
+                  }
+                />
+                <input
+                  className="app-input"
+                  placeholder={dictionary.forms.certificateIssuer}
+                  value={item.issuer}
+                  onChange={(e) =>
+                    updateCertificate(item.id, "issuer", e.target.value)
+                  }
+                />
+                <input
+                  type="date"
+                  className="app-input"
+                  value={item.issued_on}
+                  onChange={(e) =>
+                    updateCertificate(item.id, "issued_on", e.target.value)
+                  }
+                />
+                <input
+                  className="app-input"
+                  placeholder={dictionary.forms.certificateUrl}
+                  value={item.credential_url}
+                  onChange={(e) =>
+                    updateCertificate(item.id, "credential_url", e.target.value)
+                  }
+                />
+                <div className="md:col-span-2">
+                  <label className="inline-flex cursor-pointer items-center rounded-full border app-border bg-[color:var(--surface)] px-4 py-2 text-sm font-medium text-[color:var(--foreground)]">
+                    <span>
+                      {uploadingCertificateId === item.id
+                        ? dictionary.forms.uploadingCertificate
+                        : dictionary.forms.uploadCertificateFile}
+                    </span>
+                    <input
+                      type="file"
+                      accept=".pdf,image/jpeg,image/png"
+                      disabled={uploadingCertificateId === item.id}
+                      className="sr-only"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (!file) {
+                          return;
+                        }
+                        void uploadCertificateFile(item.id, file);
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {(item.file_url || item.credential_url) && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {item.credential_url && (
+                        <a
+                          href={item.credential_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-full border app-border px-4 py-2 text-sm app-muted transition hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--foreground)]"
+                        >
+                          {dictionary.forms.openCertificateLink}
+                        </a>
+                      )}
+                      {item.file_url && (
+                        <a
+                          href={item.file_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-full border app-border px-4 py-2 text-sm app-muted transition hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--foreground)]"
+                        >
+                          {item.file_name ||
+                            dictionary.forms.openCertificateFile}
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void removeCertificate(item.id)}
+                >
+                  {dictionary.forms.removeItem}
+                </Button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
-      <section className={editorMode === "builder" ? "space-y-4 rounded-[1.5rem] app-panel p-5" : "hidden"}><div><h2 className="text-lg font-semibold text-[color:var(--foreground)]">{dictionary.forms.blockVisibility}</h2><p className="mt-2 text-sm app-muted">{dictionary.forms.blockVisibilityHint}</p></div><div className="flex flex-wrap gap-2">{profileVisibilityKeys.map((key) => { const active = visibility[key]; return (<Button key={key} variant={active ? "primary" : "secondary"} size="sm" aria-pressed={active} onClick={() => toggleVisibility(key)}>{getVisibilityLabel(key, dictionary)}: {active ? dictionary.forms.sectionVisible : dictionary.forms.sectionHidden}</Button>); })}</div></section>
+      <section className={editorMode === "content" ? "space-y-4" : "hidden"}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
+            {dictionary.forms.profileQa}
+          </h2>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setQas((prev) => [...prev, createProfileQaEntry()])}
+          >
+            {dictionary.forms.addQa}
+          </Button>
+        </div>
+        <div className="space-y-4">
+          {qas.map((item) => (
+            <article key={item.id} className="rounded-[1.5rem] app-panel p-4">
+              <div className="grid gap-4">
+                <input
+                  className="app-input"
+                  placeholder={dictionary.forms.qaQuestion}
+                  value={item.question}
+                  onChange={(e) =>
+                    updateQa(item.id, "question", e.target.value)
+                  }
+                />
+                <FormTextarea
+                  className="min-h-24 p-4 text-[color:var(--foreground)]"
+                  placeholder={dictionary.forms.qaAnswer}
+                  value={item.answer}
+                  onChange={(e) => updateQa(item.id, "answer", e.target.value)}
+                />
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeQa(item.id)}
+                >
+                  {dictionary.forms.removeItem}
+                </Button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section
+        className={
+          editorMode === "builder"
+            ? "space-y-4 rounded-[1.5rem] app-panel p-5"
+            : "hidden"
+        }
+      >
+        <div>
+          <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
+            {dictionary.forms.blockVisibility}
+          </h2>
+          <p className="mt-2 text-sm app-muted">
+            {dictionary.forms.blockVisibilityHint}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {profileVisibilityKeys.map((key) => {
+            const active = visibility[key];
+            return (
+              <Button
+                key={key}
+                variant={active ? "primary" : "secondary"}
+                size="sm"
+                aria-pressed={active}
+                onClick={() => toggleVisibility(key)}
+              >
+                {getVisibilityLabel(key, dictionary)}:{" "}
+                {active
+                  ? dictionary.forms.sectionVisible
+                  : dictionary.forms.sectionHidden}
+              </Button>
+            );
+          })}
+        </div>
+      </section>
 
       {hasUnsavedChanges ? (
         <div className="rounded-[1.25rem] border border-amber-500/40 bg-amber-500/10 p-4">
@@ -2316,9 +2933,15 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
         </div>
       ) : null}
 
-      <Button onClick={save} disabled={saving || Boolean(uploadingCertificateId) || uploadingBackground}>{saving ? dictionary.forms.saving : dictionary.forms.saveProfile}</Button>
+      <Button
+        onClick={save}
+        disabled={
+          saving || Boolean(uploadingCertificateId) || uploadingBackground
+        }
+      >
+        {saving ? dictionary.forms.saving : dictionary.forms.saveProfile}
+      </Button>
       {errorMessage && <p className="text-sm text-rose-500">{errorMessage}</p>}
     </div>
   );
 }
-

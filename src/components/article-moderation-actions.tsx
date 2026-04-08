@@ -3,8 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import FormTextarea from "@/components/ui/form-textarea";
 
-type ArticleModerationStatus = "approved" | "under_review" | "restricted" | "removed";
+type ArticleModerationStatus =
+  | "approved"
+  | "under_review"
+  | "restricted"
+  | "removed";
 
 export default function ArticleModerationActions({
   articleId,
@@ -18,7 +23,9 @@ export default function ArticleModerationActions({
   const router = useRouter();
   const isUkrainian = locale === "uk";
   const [note, setNote] = useState(initialNote || "");
-  const [pendingAction, setPendingAction] = useState<ArticleModerationStatus | "">("");
+  const [pendingAction, setPendingAction] = useState<
+    ArticleModerationStatus | ""
+  >("");
   const [feedback, setFeedback] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -60,7 +67,9 @@ export default function ArticleModerationActions({
           moderation_note: note.trim() || null,
         }),
       });
-      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
 
       if (!response.ok) {
         setErrorMessage(payload.error || ui.error);
@@ -78,17 +87,21 @@ export default function ArticleModerationActions({
 
   return (
     <div className="space-y-4 rounded-[1.5rem] border app-border bg-[color:var(--surface)] p-4">
-      <textarea
+      <FormTextarea
         value={note}
         onChange={(event) => setNote(event.target.value)}
         rows={4}
         maxLength={1200}
         placeholder={ui.placeholder}
-        className="w-full rounded-[1.25rem] border app-border bg-[color:var(--surface-muted)] px-4 py-3 text-sm leading-7 text-[color:var(--foreground)] outline-none transition focus:border-[color:var(--foreground)]"
+        className="w-full bg-[color:var(--surface-muted)] px-4 py-3 text-sm leading-7 text-[color:var(--foreground)]"
       />
 
       <div className="flex flex-wrap gap-2">
-        <Button disabled={Boolean(pendingAction)} size="sm" onClick={() => void applyAction("approved")}>
+        <Button
+          disabled={Boolean(pendingAction)}
+          size="sm"
+          onClick={() => void applyAction("approved")}
+        >
           {pendingAction === "approved" ? ui.saving : ui.approved}
         </Button>
         <Button
@@ -118,7 +131,9 @@ export default function ArticleModerationActions({
       </div>
 
       {feedback ? <p className="text-sm text-emerald-600">{feedback}</p> : null}
-      {errorMessage ? <p className="text-sm text-rose-600">{errorMessage}</p> : null}
+      {errorMessage ? (
+        <p className="text-sm text-rose-600">{errorMessage}</p>
+      ) : null}
     </div>
   );
 }

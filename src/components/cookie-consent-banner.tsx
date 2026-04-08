@@ -165,7 +165,7 @@ export default function CookieConsentBanner({
                 >
                   <input
                     type="checkbox"
-                    className="mt-1 h-4 w-4 accent-[color:var(--foreground)]"
+                    className="app-checkbox mt-1"
                     checked={category.checked}
                     disabled={category.disabled}
                     onChange={(event) => {

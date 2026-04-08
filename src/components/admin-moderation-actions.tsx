@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import FormTextarea from "@/components/ui/form-textarea";
 import type { ModerationCopy } from "@/lib/moderation-copy";
 import type { ModerationStatus, ReportTargetType } from "@/lib/moderation";
 
@@ -52,7 +53,9 @@ export default function AdminModerationActions({
         }),
       });
 
-      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
 
       if (!response.ok) {
         setError(payload.error || copy.actions.errorFallback);
@@ -73,13 +76,13 @@ export default function AdminModerationActions({
 
   return (
     <div className="space-y-4 rounded-[1.5rem] border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
-      <textarea
+      <FormTextarea
         value={note}
         onChange={(event) => setNote(event.target.value)}
         rows={4}
         maxLength={1200}
         placeholder={copy.actions.notePlaceholder}
-        className="w-full rounded-[1.25rem] border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-3 text-sm leading-7 text-[color:var(--foreground)] outline-none transition focus:border-[color:var(--foreground)]"
+        className="w-full bg-[color:var(--surface-muted)] px-4 py-3 text-sm leading-7 text-[color:var(--foreground)]"
       />
 
       <div className="flex flex-wrap gap-2">
@@ -94,7 +97,9 @@ export default function AdminModerationActions({
             })
           }
         >
-          {pendingAction === "approve" ? copy.actions.saving : copy.actions.saveApprove}
+          {pendingAction === "approve"
+            ? copy.actions.saving
+            : copy.actions.saveApprove}
         </Button>
         <Button
           variant="secondary"
@@ -108,7 +113,9 @@ export default function AdminModerationActions({
             })
           }
         >
-          {pendingAction === "review" ? copy.actions.saving : copy.actions.saveReview}
+          {pendingAction === "review"
+            ? copy.actions.saving
+            : copy.actions.saveReview}
         </Button>
         <Button
           variant="secondary"
@@ -122,7 +129,9 @@ export default function AdminModerationActions({
             })
           }
         >
-          {pendingAction === "restrict" ? copy.actions.saving : copy.actions.saveRestrict}
+          {pendingAction === "restrict"
+            ? copy.actions.saving
+            : copy.actions.saveRestrict}
         </Button>
         <Button
           variant="secondary"
@@ -136,7 +145,9 @@ export default function AdminModerationActions({
             })
           }
         >
-          {pendingAction === "remove" ? copy.actions.saving : copy.actions.saveRemove}
+          {pendingAction === "remove"
+            ? copy.actions.saving
+            : copy.actions.saveRemove}
         </Button>
         <Button
           variant="ghost"

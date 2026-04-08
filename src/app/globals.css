@@ -10,6 +10,10 @@
   --soft-foreground: #6d7d91;
   --ring: #94a3b8;
   --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  --scrollbar-track: rgba(215, 224, 234, 0.55);
+  --scrollbar-thumb: rgba(82, 98, 119, 0.42);
+  --scrollbar-thumb-hover: rgba(82, 98, 119, 0.62);
+  --calendar-icon-filter: none;
 }
 
 @theme inline {
@@ -29,6 +33,11 @@ html[data-theme="dark"] {
   --soft-foreground: #7b8ca3;
   --ring: #64748b;
   --shadow: 0 20px 50px rgba(0, 0, 0, 0.32);
+  --scrollbar-track: rgba(34, 49, 73, 0.78);
+  --scrollbar-thumb: rgba(147, 164, 186, 0.42);
+  --scrollbar-thumb-hover: rgba(147, 164, 186, 0.7);
+  --calendar-icon-filter: invert(92%) sepia(11%) saturate(233%)
+    hue-rotate(176deg) brightness(96%) contrast(96%);
 }
 
 html {
@@ -46,6 +55,36 @@ body {
   transition:
     background-color 180ms ease,
     color 180ms ease;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 a,
@@ -100,6 +139,281 @@ select {
   background: var(--surface-muted);
 }
 
+.app-input {
+  min-height: 3.5rem;
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: 1.35rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 97%, white 3%) 0%,
+    color-mix(in srgb, var(--surface) 90%, var(--surface-muted) 10%) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 0 rgba(15, 23, 42, 0.04);
+  padding: 0.85rem 1rem;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.app-input::placeholder {
+  color: var(--soft-foreground);
+}
+
+.app-input:hover {
+  border-color: color-mix(in srgb, var(--foreground) 16%, var(--border));
+}
+
+.app-input:focus-visible {
+  border-color: color-mix(in srgb, var(--foreground) 24%, var(--border));
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--foreground) 10%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.app-input:disabled {
+  cursor: not-allowed;
+}
+
+.app-input[type="date"] {
+  cursor: pointer;
+  color-scheme: inherit;
+}
+
+.app-input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+.app-input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.72;
+  filter: var(--calendar-icon-filter);
+}
+
+.app-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.app-input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.app-input[type="number"]::-webkit-outer-spin-button,
+.app-input[type="number"]::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.app-textarea {
+  width: 100%;
+  resize: none;
+  overflow-y: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: 1.35rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 97%, white 3%) 0%,
+    color-mix(in srgb, var(--surface) 90%, var(--surface-muted) 10%) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 0 rgba(15, 23, 42, 0.04);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  outline: none;
+}
+
+.app-textarea::placeholder {
+  color: var(--soft-foreground);
+}
+
+.app-textarea:hover {
+  border-color: color-mix(in srgb, var(--foreground) 16%, var(--border));
+}
+
+.app-textarea:focus-visible {
+  border-color: color-mix(in srgb, var(--foreground) 24%, var(--border));
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--foreground) 10%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.app-checkbox {
+  position: relative;
+  flex-shrink: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: 0.4rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 96%, white 4%) 0%,
+    color-mix(in srgb, var(--surface-muted) 76%, var(--surface) 24%) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 0 rgba(15, 23, 42, 0.04);
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.app-checkbox:hover {
+  border-color: color-mix(in srgb, var(--foreground) 18%, var(--border));
+}
+
+.app-checkbox:focus-visible {
+  border-color: color-mix(in srgb, var(--foreground) 24%, var(--border));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.app-checkbox:checked {
+  border-color: color-mix(in srgb, var(--foreground) 86%, transparent);
+  background-color: color-mix(in srgb, var(--foreground) 88%, transparent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3.5 8.5 6.5 11.5 12.5 4.5'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 0.78rem;
+}
+
+.app-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.app-select-trigger {
+  position: relative;
+  display: flex;
+  min-height: 3.5rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: 1.35rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 97%, white 3%) 0%,
+    color-mix(in srgb, var(--surface) 90%, var(--surface-muted) 10%) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 0 rgba(15, 23, 42, 0.04);
+  padding: 0.95rem 1rem;
+  text-align: left;
+  color: var(--foreground);
+  outline: none;
+}
+
+.app-select-trigger:hover {
+  border-color: color-mix(in srgb, var(--foreground) 16%, var(--border));
+}
+
+.app-select-trigger[data-open="true"] {
+  border-color: color-mix(in srgb, var(--foreground) 22%, var(--border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 92%, var(--surface-muted) 8%) 0%,
+    color-mix(in srgb, var(--surface-muted) 48%, var(--surface) 52%) 100%
+  );
+}
+
+.app-select-trigger:focus-visible {
+  border-color: color-mix(in srgb, var(--foreground) 24%, var(--border));
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--foreground) 10%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.app-select-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.app-select-chevron {
+  color: var(--soft-foreground);
+  transition:
+    transform 180ms ease,
+    color 180ms ease;
+}
+
+.app-select-trigger[data-open="true"] .app-select-chevron {
+  transform: rotate(180deg);
+  color: var(--foreground);
+}
+
+.app-select-dropdown {
+  position: absolute;
+  z-index: 40;
+  margin-top: 0.65rem;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 1.5rem;
+  background: color-mix(in srgb, var(--surface) 94%, var(--surface-muted) 6%);
+  box-shadow: 0 28px 60px rgba(2, 6, 23, 0.2);
+  backdrop-filter: blur(18px);
+}
+
+.app-select-dropdown-inner {
+  max-height: 18rem;
+  overflow-y: auto;
+  padding: 0.45rem;
+}
+
+.app-select-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 1rem;
+  padding: 0.8rem 0.95rem;
+  text-align: left;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--foreground);
+  outline: none;
+}
+
+.app-select-option:hover,
+.app-select-option:focus-visible {
+  background: color-mix(in srgb, var(--surface-muted) 84%, transparent);
+}
+
+.app-select-option[data-selected="true"] {
+  background: color-mix(in srgb, var(--foreground) 10%, var(--surface-muted));
+}
+
+.app-select-option[data-placeholder="true"] {
+  color: var(--muted-foreground);
+}
+
+.app-select-check {
+  flex-shrink: 0;
+  opacity: 0;
+  color: var(--foreground);
+  transition: opacity 180ms ease;
+}
+
+.app-select-option[data-selected="true"] .app-select-check {
+  opacity: 1;
+}
+
+.app-select-empty {
+  padding: 0.95rem 1rem;
+  font-size: 0.92rem;
+  color: var(--muted-foreground);
+}
+
 .rich-text-editor p,
 .rich-text-renderer p {
   margin: 0 0 1rem;
@@ -150,7 +464,11 @@ select {
 .rich-text-editor mark,
 .rich-text-renderer mark {
   border-radius: 0.4rem;
-  background: color-mix(in srgb, var(--rich-text-accent, #f97316) 22%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--rich-text-accent, #f97316) 22%,
+    transparent
+  );
   padding: 0.08rem 0.3rem;
   color: var(--foreground);
 }

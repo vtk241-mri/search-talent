@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ArticleCard from "@/components/article-card";
 import { ButtonLink } from "@/components/ui/Button";
+import FormSelect from "@/components/ui/form-select";
 import { getArticleFeed } from "@/lib/db/articles";
 import { isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -114,18 +115,17 @@ export default async function ArticlesPage({
                 <label className="mb-2 block text-sm font-medium text-[color:var(--foreground)]">
                   {ui.filterCategory}
                 </label>
-                <select
+                <FormSelect
                   name="category"
-                  defaultValue={category || ""}
-                  className="w-full rounded-[1.25rem] border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
-                >
-                  <option value="">{ui.allCategories}</option>
-                  {feed.categories.map((item) => (
-                    <option key={item.id} value={item.slug}>
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
+                  value={category || ""}
+                  placeholder={ui.allCategories}
+                  className="w-full"
+                  triggerClassName="w-full"
+                  options={feed.categories.map((item) => ({
+                    value: item.slug,
+                    label: item.name,
+                  }))}
+                />
               </div>
 
               <div>
@@ -144,15 +144,17 @@ export default async function ArticlesPage({
                 <label className="mb-2 block text-sm font-medium text-[color:var(--foreground)]">
                   {ui.filterSort}
                 </label>
-                <select
+                <FormSelect
                   name="sort"
-                  defaultValue={sort || "recent"}
-                  className="w-full rounded-[1.25rem] border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
-                >
-                  <option value="recent">{ui.recent}</option>
-                  <option value="popular">{ui.popular}</option>
-                  <option value="discussed">{ui.discussed}</option>
-                </select>
+                  value={sort || "recent"}
+                  className="w-full"
+                  triggerClassName="w-full"
+                  options={[
+                    { value: "recent", label: ui.recent },
+                    { value: "popular", label: ui.popular },
+                    { value: "discussed", label: ui.discussed },
+                  ]}
+                />
               </div>
 
               <div className="flex flex-wrap gap-3">
@@ -172,7 +174,11 @@ export default async function ArticlesPage({
         {feed.items.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {feed.items.map((article) => (
-              <ArticleCard key={article.id} article={article} locale={safeLocale} />
+              <ArticleCard
+                key={article.id}
+                article={article}
+                locale={safeLocale}
+              />
             ))}
           </div>
         ) : (

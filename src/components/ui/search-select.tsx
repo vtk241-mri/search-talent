@@ -54,63 +54,109 @@ export default function SearchSelect({
     <div ref={wrapperRef} className="relative">
       <button
         type="button"
+        data-open={isOpen}
         onClick={() => setIsOpen((current) => !current)}
-        className="flex min-h-12 w-full items-center justify-between rounded-2xl border app-border bg-[color:var(--surface)] px-4 py-3 text-left text-[color:var(--foreground)]"
+        className="app-select-trigger"
       >
         <span className={selectedOption ? "" : "app-muted"}>
           {selectedOption?.name || placeholder}
         </span>
-        <span className="text-xs app-muted">{isOpen ? "^" : "v"}</span>
+        <svg
+          className="app-select-chevron"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M7 10L12 15L17 10"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </button>
 
       {isOpen && (
-        <div className="absolute z-30 mt-2 w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 shadow-xl">
-          <input
-            type="text"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={placeholder}
-            className="w-full rounded-xl border app-border bg-[color:var(--surface-muted)] px-3 py-2 text-sm text-[color:var(--foreground)]"
-            autoFocus
-          />
+        <div className="app-select-dropdown">
+          <div className="app-select-dropdown-inner">
+            <input
+              type="text"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={placeholder}
+              className="w-full rounded-xl border app-border bg-[color:var(--surface-muted)] px-3 py-2 text-sm text-[color:var(--foreground)] outline-none focus-visible:border-[color:var(--ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--border)]"
+              autoFocus
+            />
 
-          <div className="mt-3 max-h-64 overflow-y-auto">
-            <button
-              type="button"
-              onClick={() => {
-                onChange(null);
-                setIsOpen(false);
-                setQuery("");
-              }}
-              className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm app-muted transition hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--foreground)]"
-            >
-              <span>{placeholder}</span>
-              {!selectedOption && <span>✓</span>}
-            </button>
+            <div className="mt-3 max-h-64 overflow-y-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  onChange(null);
+                  setIsOpen(false);
+                  setQuery("");
+                }}
+                data-selected={!selectedOption}
+                data-placeholder="true"
+                className="app-select-option"
+              >
+                <span>{placeholder}</span>
+                <span className="app-select-check" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path
+                      d="M3.5 8.5L6.5 11.5L12.5 4.5"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </button>
 
-            {filteredOptions.length > 0 ? (
-              filteredOptions.map((option) => {
-                const isSelected = option.id === value;
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((option) => {
+                  const isSelected = option.id === value;
 
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => {
-                      onChange(option.id);
-                      setIsOpen(false);
-                      setQuery("");
-                    }}
-                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[color:var(--foreground)] transition hover:bg-[color:var(--surface-muted)]"
-                  >
-                    <span>{option.name}</span>
-                    {isSelected && <span>✓</span>}
-                  </button>
-                );
-              })
-            ) : (
-              <p className="px-3 py-2 text-sm app-muted">No results found</p>
-            )}
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => {
+                        onChange(option.id);
+                        setIsOpen(false);
+                        setQuery("");
+                      }}
+                      data-selected={isSelected}
+                      className="app-select-option"
+                    >
+                      <span>{option.name}</span>
+                      <span className="app-select-check" aria-hidden="true">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                        >
+                          <path
+                            d="M3.5 8.5L6.5 11.5L12.5 4.5"
+                            stroke="currentColor"
+                            strokeWidth="1.7"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                  );
+                })
+              ) : (
+                <p className="app-select-empty">No results found</p>
+              )}
+            </div>
           </div>
         </div>
       )}

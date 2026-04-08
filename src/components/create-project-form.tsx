@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import TagSelect from "@/components/ui/tag-select";
+import FormSelect from "@/components/ui/form-select";
+import FormTextarea from "@/components/ui/form-textarea";
 import { useDictionary, useLocalizedRouter } from "@/lib/i18n/client";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { projectPayloadSchema } from "@/lib/validation/project";
@@ -66,7 +68,9 @@ function getStatusLabel(status: ProjectStatus, dictionary: Dictionary) {
   }
 }
 
-function getInitialFormState(project?: EditableProject | null): ProjectFormState {
+function getInitialFormState(
+  project?: EditableProject | null,
+): ProjectFormState {
   return {
     title: project?.title || "",
     description: project?.description || "",
@@ -98,7 +102,9 @@ export default function CreateProjectForm({
   );
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [form, setForm] = useState<ProjectFormState>(() => getInitialFormState(project));
+  const [form, setForm] = useState<ProjectFormState>(() =>
+    getInitialFormState(project),
+  );
 
   useEffect(() => {
     async function loadMeta() {
@@ -122,7 +128,11 @@ export default function CreateProjectForm({
 
     const slug = slugify(form.title);
 
-    if (form.startedOn && form.completedOn && form.completedOn < form.startedOn) {
+    if (
+      form.startedOn &&
+      form.completedOn &&
+      form.completedOn < form.startedOn
+    ) {
       setErrorMessage(dictionary.forms.invalidProjectDateRange);
       return;
     }
@@ -150,12 +160,17 @@ export default function CreateProjectForm({
     const parsedPayload = projectPayloadSchema.safeParse(payload);
 
     if (!parsedPayload.success) {
-      setErrorMessage(parsedPayload.error.issues[0]?.message || dictionary.forms.errorCreatingProject);
+      setErrorMessage(
+        parsedPayload.error.issues[0]?.message ||
+          dictionary.forms.errorCreatingProject,
+      );
       setLoading(false);
       return;
     }
 
-    const endpoint = isEditMode ? `/api/projects/${project?.id}` : "/api/projects";
+    const endpoint = isEditMode
+      ? `/api/projects/${project?.id}`
+      : "/api/projects";
     const method = isEditMode ? "PATCH" : "POST";
     const res = await fetch(endpoint, {
       method,
@@ -207,7 +222,7 @@ export default function CreateProjectForm({
           <input
             type="text"
             placeholder={dictionary.forms.projectTitlePlaceholder}
-            className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="app-input"
             value={form.title}
             onChange={(e) => update("title", e.target.value)}
             required
@@ -218,9 +233,9 @@ export default function CreateProjectForm({
           <label className="mb-2 block text-sm font-medium text-[color:var(--foreground)]">
             {dictionary.forms.description}
           </label>
-          <textarea
+          <FormTextarea
             placeholder={dictionary.forms.projectDescriptionPlaceholder}
-            className="min-h-28 w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="min-h-28 p-4 text-[color:var(--foreground)]"
             value={form.description}
             onChange={(e) => update("description", e.target.value)}
           />
@@ -233,7 +248,7 @@ export default function CreateProjectForm({
           <input
             type="text"
             placeholder={dictionary.forms.projectRolePlaceholder}
-            className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="app-input"
             value={form.role}
             onChange={(e) => update("role", e.target.value)}
           />
@@ -243,20 +258,19 @@ export default function CreateProjectForm({
           <label className="mb-2 block text-sm font-medium text-[color:var(--foreground)]">
             {dictionary.forms.projectStatus}
           </label>
-          <select
-            className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+          <FormSelect
+            className="w-full"
+            triggerClassName="w-full"
             value={form.projectStatus}
-            onChange={(e) =>
-              update("projectStatus", e.target.value as ProjectStatus | "")
+            placeholder={dictionary.forms.projectStatusPlaceholder}
+            onChange={(value) =>
+              update("projectStatus", value as ProjectStatus | "")
             }
-          >
-            <option value="">{dictionary.forms.projectStatusPlaceholder}</option>
-            {projectStatuses.map((status) => (
-              <option key={status} value={status}>
-                {getStatusLabel(status, dictionary)}
-              </option>
-            ))}
-          </select>
+            options={projectStatuses.map((status) => ({
+              value: status,
+              label: getStatusLabel(status, dictionary),
+            }))}
+          />
         </div>
 
         <div>
@@ -267,7 +281,7 @@ export default function CreateProjectForm({
             type="number"
             min="1"
             placeholder={dictionary.forms.teamSizePlaceholder}
-            className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="app-input"
             value={form.teamSize}
             onChange={(e) => update("teamSize", e.target.value)}
           />
@@ -291,7 +305,7 @@ export default function CreateProjectForm({
           </label>
           <input
             type="date"
-            className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="app-input"
             value={form.startedOn}
             onChange={(e) => update("startedOn", e.target.value)}
           />
@@ -303,7 +317,7 @@ export default function CreateProjectForm({
           </label>
           <input
             type="date"
-            className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="app-input"
             value={form.completedOn}
             onChange={(e) => update("completedOn", e.target.value)}
           />
@@ -316,7 +330,7 @@ export default function CreateProjectForm({
           <input
             type="url"
             placeholder={dictionary.forms.projectUrlPlaceholder}
-            className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="app-input"
             value={form.projectUrl}
             onChange={(e) => update("projectUrl", e.target.value)}
           />
@@ -329,7 +343,7 @@ export default function CreateProjectForm({
           <input
             type="url"
             placeholder={dictionary.forms.repositoryUrlPlaceholder}
-            className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="app-input"
             value={form.repositoryUrl}
             onChange={(e) => update("repositoryUrl", e.target.value)}
           />
@@ -339,9 +353,9 @@ export default function CreateProjectForm({
           <label className="mb-2 block text-sm font-medium text-[color:var(--foreground)]">
             {dictionary.forms.problem}
           </label>
-          <textarea
+          <FormTextarea
             placeholder={dictionary.forms.problemPlaceholder}
-            className="min-h-28 w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="min-h-28 p-4 text-[color:var(--foreground)]"
             value={form.problem}
             onChange={(e) => update("problem", e.target.value)}
           />
@@ -351,9 +365,9 @@ export default function CreateProjectForm({
           <label className="mb-2 block text-sm font-medium text-[color:var(--foreground)]">
             {dictionary.forms.solution}
           </label>
-          <textarea
+          <FormTextarea
             placeholder={dictionary.forms.solutionPlaceholder}
-            className="min-h-28 w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="min-h-28 p-4 text-[color:var(--foreground)]"
             value={form.solution}
             onChange={(e) => update("solution", e.target.value)}
           />
@@ -363,9 +377,9 @@ export default function CreateProjectForm({
           <label className="mb-2 block text-sm font-medium text-[color:var(--foreground)]">
             {dictionary.forms.results}
           </label>
-          <textarea
+          <FormTextarea
             placeholder={dictionary.forms.resultsPlaceholder}
-            className="min-h-28 w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+            className="min-h-28 p-4 text-[color:var(--foreground)]"
             value={form.results}
             onChange={(e) => update("results", e.target.value)}
           />

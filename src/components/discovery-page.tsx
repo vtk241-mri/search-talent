@@ -7,6 +7,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import LocalizedLink from "@/components/ui/localized-link";
 import SearchSelect from "@/components/ui/search-select";
 import TagSelect from "@/components/ui/tag-select";
+import FormSelect from "@/components/ui/form-select";
 import { useCurrentLocale, useDictionary } from "@/lib/i18n/client";
 import type { Locale } from "@/lib/i18n/config";
 import type { ProfileCategory } from "@/lib/profile-categories";
@@ -451,8 +452,12 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [languageIds, setLanguageIds] = useState<number[]>([]);
   const [skillIds, setSkillIds] = useState<number[]>([]);
-  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | "">("");
-  const [employmentTypeFilters, setEmploymentTypeFilters] = useState<EmploymentType[]>([]);
+  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | "">(
+    "",
+  );
+  const [employmentTypeFilters, setEmploymentTypeFilters] = useState<
+    EmploymentType[]
+  >([]);
   const [workFormatFilters, setWorkFormatFilters] = useState<WorkFormat[]>([]);
   const [projectStatus, setProjectStatus] = useState<ProjectStatus | "">("");
   const [hasMedia, setHasMedia] = useState(false);
@@ -543,7 +548,9 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
         }
 
         const response = await fetch(`/api/search?${params.toString()}`);
-        const payload = (await response.json()) as SearchResponse & { error?: string };
+        const payload = (await response.json()) as SearchResponse & {
+          error?: string;
+        };
 
         if (!response.ok) {
           throw new Error(payload.error || commonUi.searchFailed);
@@ -610,7 +617,8 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
     .filter((skill) => skillIds.includes(skill.id))
     .map((skill) => skill.name);
   const avatarFilterLabel = locale === "uk" ? "Лише з фото" : "Only with photo";
-  const anyExperienceLabel = locale === "uk" ? "Будь-який досвід" : "Any experience";
+  const anyExperienceLabel =
+    locale === "uk" ? "Будь-який досвід" : "Any experience";
   const activeFilterLabels = [
     query.trim() ? `${commonUi.queryLabel}: ${query.trim()}` : null,
     sort !== "relevance"
@@ -632,7 +640,9 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
       : null,
     mode === "creators" && hasAvatar ? avatarFilterLabel : null,
     mode === "projects" && hasMedia ? commonUi.onlyWithMedia : null,
-    ...selectedLanguageNames.map((language) => `${dictionary.forms.languages}: ${language}`),
+    ...selectedLanguageNames.map(
+      (language) => `${dictionary.forms.languages}: ${language}`,
+    ),
     ...selectedSkillNames.map((skill) => `${commonUi.filterSkills}: ${skill}`),
     ...employmentTypeFilters.map(
       (item) =>
@@ -750,15 +760,17 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
                 <p className="mb-2 text-sm font-medium text-[color:var(--foreground)]">
                   {commonUi.sortBy}
                 </p>
-                <select
-                  className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+                <FormSelect
+                  className="w-full"
+                  triggerClassName="w-full"
                   value={sort}
-                  onChange={(event) => setSort(event.target.value as Sort)}
-                >
-                  <option value="relevance">{commonUi.sortRelevance}</option>
-                  <option value="rating">{commonUi.sortRating}</option>
-                  <option value="newest">{commonUi.sortNewest}</option>
-                </select>
+                  onChange={(value) => setSort(value as Sort)}
+                  options={[
+                    { value: "relevance", label: commonUi.sortRelevance },
+                    { value: "rating", label: commonUi.sortRating },
+                    { value: "newest", label: commonUi.sortNewest },
+                  ]}
+                />
               </div>
 
               {mode === "creators" && (
@@ -806,20 +818,19 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
                   <p className="mb-2 text-sm font-medium text-[color:var(--foreground)]">
                     {commonUi.filterCategory}
                   </p>
-                  <select
-                    className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
-                    value={categoryId ?? ""}
-                    onChange={(event) =>
-                      setCategoryId(event.target.value ? Number(event.target.value) : null)
+                  <FormSelect
+                    className="w-full"
+                    triggerClassName="w-full"
+                    value={categoryId ? String(categoryId) : ""}
+                    placeholder={commonUi.anyCategory}
+                    onChange={(value) =>
+                      setCategoryId(value ? Number(value) : null)
                     }
-                  >
-                    <option value="">{commonUi.anyCategory}</option>
-                    {meta.categories.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.name}
-                      </option>
-                    ))}
-                  </select>
+                    options={meta.categories.map((option) => ({
+                      value: String(option.id),
+                      label: option.name,
+                    }))}
+                  />
                 </div>
               )}
 
@@ -828,20 +839,19 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
                   <p className="mb-2 text-sm font-medium text-[color:var(--foreground)]">
                     {dictionary.forms.totalExperienceYears}
                   </p>
-                  <select
-                    className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+                  <FormSelect
+                    className="w-full"
+                    triggerClassName="w-full"
                     value={experienceLevel}
-                    onChange={(event) =>
-                      setExperienceLevel(event.target.value as ExperienceLevel | "")
+                    placeholder={anyExperienceLabel}
+                    onChange={(value) =>
+                      setExperienceLevel(value as ExperienceLevel | "")
                     }
-                  >
-                    <option value="">{anyExperienceLabel}</option>
-                    {experienceLevels.map((option) => (
-                      <option key={option} value={option}>
-                        {getExperienceLevelLabel(option, locale)}
-                      </option>
-                    ))}
-                  </select>
+                    options={experienceLevels.map((option) => ({
+                      value: option,
+                      label: getExperienceLevelLabel(option, locale),
+                    }))}
+                  />
                 </div>
               )}
 
@@ -924,7 +934,7 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
                     type="checkbox"
                     checked={hasAvatar}
                     onChange={(event) => setHasAvatar(event.target.checked)}
-                    className="h-4 w-4"
+                    className="app-checkbox"
                   />
                 </label>
               )}
@@ -935,20 +945,23 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
                     <p className="mb-2 text-sm font-medium text-[color:var(--foreground)]">
                       {commonUi.filterProjectStatus}
                     </p>
-                    <select
-                      className="w-full rounded-2xl border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+                    <FormSelect
+                      className="w-full"
+                      triggerClassName="w-full"
                       value={projectStatus}
-                      onChange={(event) =>
-                        setProjectStatus(event.target.value as ProjectStatus | "")
+                      placeholder={commonUi.anyStatus}
+                      onChange={(value) =>
+                        setProjectStatus(value as ProjectStatus | "")
                       }
-                    >
-                      <option value="">{commonUi.anyStatus}</option>
-                      {projectStatuses.map((status) => (
-                        <option key={status} value={status}>
-                          {getStatusLabel(status, dictionary, commonUi.anyStatus)}
-                        </option>
-                      ))}
-                    </select>
+                      options={projectStatuses.map((status) => ({
+                        value: status,
+                        label: getStatusLabel(
+                          status,
+                          dictionary,
+                          commonUi.anyStatus,
+                        ),
+                      }))}
+                    />
                   </div>
 
                   <label className="flex items-center justify-between gap-3 rounded-2xl border app-border bg-[color:var(--surface)] px-4 py-3">
@@ -959,7 +972,7 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
                       type="checkbox"
                       checked={hasMedia}
                       onChange={(event) => setHasMedia(event.target.checked)}
-                      className="h-4 w-4"
+                      className="app-checkbox"
                     />
                   </label>
                 </>

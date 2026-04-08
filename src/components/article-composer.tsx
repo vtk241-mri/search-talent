@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import RichTextComposer from "@/components/rich-text-composer";
 import { Button } from "@/components/ui/Button";
+import FormSelect from "@/components/ui/form-select";
+import FormTextarea from "@/components/ui/form-textarea";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeStorageFileName } from "@/lib/profile-sections";
 import type { ArticleCategory } from "@/lib/articles";
@@ -30,17 +32,23 @@ export default function ArticleComposer({
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [categorySlug, setCategorySlug] = useState(
-    categories.find((item) => !item.adminOnly)?.slug || categories[0]?.slug || "",
+    categories.find((item) => !item.adminOnly)?.slug ||
+      categories[0]?.slug ||
+      "",
   );
   const [status, setStatus] = useState<"draft" | "published">("draft");
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
-  const [coverImageStoragePath, setCoverImageStoragePath] = useState<string | null>(null);
+  const [coverImageStoragePath, setCoverImageStoragePath] = useState<
+    string | null
+  >(null);
   const [heroVideoUrl, setHeroVideoUrl] = useState<string | null>(null);
-  const [heroVideoStoragePath, setHeroVideoStoragePath] = useState<string | null>(null);
+  const [heroVideoStoragePath, setHeroVideoStoragePath] = useState<
+    string | null
+  >(null);
   const [saving, setSaving] = useState(false);
-  const [uploadingAsset, setUploadingAsset] = useState<null | "cover" | "hero" | "inline">(
-    null,
-  );
+  const [uploadingAsset, setUploadingAsset] = useState<
+    null | "cover" | "hero" | "inline"
+  >(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const ui = isUkrainian
     ? {
@@ -65,7 +73,8 @@ export default function ArticleComposer({
         uploadCover: "Завантажити обкладинку",
         uploadHero: "Завантажити hero-відео",
         uploading: "Завантаження...",
-        contentNote: "Контент зберігається як rich text із форматуванням та медіа.",
+        contentNote:
+          "Контент зберігається як rich text із форматуванням та медіа.",
         saveDraft: "Зберегти чернетку",
         publishNow: "Опублікувати",
         remove: "Прибрати",
@@ -95,7 +104,8 @@ export default function ArticleComposer({
         uploadCover: "Upload cover",
         uploadHero: "Upload hero video",
         uploading: "Uploading...",
-        contentNote: "The body is stored as rich text with formatting and media support.",
+        contentNote:
+          "The body is stored as rich text with formatting and media support.",
         saveDraft: "Save draft",
         publishNow: "Publish now",
         remove: "Remove",
@@ -104,10 +114,7 @@ export default function ArticleComposer({
           "Start writing, add headings, quotes, lists, and drop media right into the canvas.",
       };
 
-  const uploadAsset = async (
-    file: File,
-    mode: "cover" | "hero" | "inline",
-  ) => {
+  const uploadAsset = async (file: File, mode: "cover" | "hero" | "inline") => {
     setUploadingAsset(mode);
     setErrorMessage(null);
 
@@ -176,7 +183,9 @@ export default function ArticleComposer({
     setSaving(false);
 
     if (!response.ok) {
-      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
       setErrorMessage(payload.error || ui.error);
       return;
     }
@@ -245,7 +254,7 @@ export default function ArticleComposer({
               {ui.title}
             </label>
             <input
-              className="w-full rounded-[1.15rem] border app-border bg-[color:var(--surface-muted)] px-4 py-3 text-[color:var(--foreground)]"
+              className="app-input w-full bg-[color:var(--surface-muted)]"
               placeholder={ui.titlePlaceholder}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -256,8 +265,8 @@ export default function ArticleComposer({
             <label className="text-sm font-medium text-[color:var(--foreground)]">
               {ui.excerpt}
             </label>
-            <textarea
-              className="min-h-28 w-full rounded-[1.15rem] border app-border bg-[color:var(--surface-muted)] px-4 py-3 text-[color:var(--foreground)]"
+            <FormTextarea
+              className="min-h-28 w-full bg-[color:var(--surface-muted)] px-4 py-3 text-[color:var(--foreground)]"
               placeholder={ui.excerptPlaceholder}
               value={excerpt}
               onChange={(event) => setExcerpt(event.target.value)}
@@ -268,23 +277,24 @@ export default function ArticleComposer({
             <label className="text-sm font-medium text-[color:var(--foreground)]">
               {ui.category}
             </label>
-            <select
-              className="w-full rounded-[1.15rem] border app-border bg-[color:var(--surface-muted)] px-4 py-3 text-[color:var(--foreground)]"
+            <FormSelect
+              className="w-full"
+              triggerClassName="w-full bg-[color:var(--surface-muted)]"
               value={categorySlug}
-              onChange={(event) => setCategorySlug(event.target.value)}
-            >
-              {categories
+              onChange={setCategorySlug}
+              options={categories
                 .filter((item) => isAdmin || !item.adminOnly)
-                .map((item) => (
-                  <option key={item.id} value={item.slug}>
-                    {item.name}
-                  </option>
-                ))}
-            </select>
+                .map((item) => ({
+                  value: item.slug,
+                  label: item.name,
+                }))}
+            />
           </div>
 
           <div className="space-y-3">
-            <p className="text-sm font-medium text-[color:var(--foreground)]">{ui.status}</p>
+            <p className="text-sm font-medium text-[color:var(--foreground)]">
+              {ui.status}
+            </p>
             <div className="flex flex-wrap gap-2">
               <Button
                 variant={status === "draft" ? "primary" : "secondary"}
@@ -305,7 +315,9 @@ export default function ArticleComposer({
 
           <div className="space-y-3 rounded-[1.4rem] border app-border bg-[color:var(--surface-muted)] p-4">
             <div>
-              <p className="text-sm font-medium text-[color:var(--foreground)]">{ui.coverTitle}</p>
+              <p className="text-sm font-medium text-[color:var(--foreground)]">
+                {ui.coverTitle}
+              </p>
               <p className="mt-1 text-sm app-muted">{ui.coverHint}</p>
             </div>
             <label className="inline-flex cursor-pointer">
@@ -331,7 +343,9 @@ export default function ArticleComposer({
             </label>
             {coverImageUrl ? (
               <div className="rounded-[1.15rem] border app-border bg-[color:var(--surface)] px-4 py-3 text-sm">
-                <p className="truncate text-[color:var(--foreground)]">{coverImageUrl}</p>
+                <p className="truncate text-[color:var(--foreground)]">
+                  {coverImageUrl}
+                </p>
                 <button
                   type="button"
                   className="mt-2 text-sm font-medium text-rose-400"
@@ -348,7 +362,9 @@ export default function ArticleComposer({
 
           <div className="space-y-3 rounded-[1.4rem] border app-border bg-[color:var(--surface-muted)] p-4">
             <div>
-              <p className="text-sm font-medium text-[color:var(--foreground)]">{ui.heroTitle}</p>
+              <p className="text-sm font-medium text-[color:var(--foreground)]">
+                {ui.heroTitle}
+              </p>
               <p className="mt-1 text-sm app-muted">{ui.heroHint}</p>
             </div>
             <label className="inline-flex cursor-pointer">
@@ -374,7 +390,9 @@ export default function ArticleComposer({
             </label>
             {heroVideoUrl ? (
               <div className="rounded-[1.15rem] border app-border bg-[color:var(--surface)] px-4 py-3 text-sm">
-                <p className="truncate text-[color:var(--foreground)]">{heroVideoUrl}</p>
+                <p className="truncate text-[color:var(--foreground)]">
+                  {heroVideoUrl}
+                </p>
                 <button
                   type="button"
                   className="mt-2 text-sm font-medium text-rose-400"
@@ -408,7 +426,9 @@ export default function ArticleComposer({
             >
               {ui.publishNow}
             </Button>
-            {errorMessage ? <p className="text-sm text-rose-500">{errorMessage}</p> : null}
+            {errorMessage ? (
+              <p className="text-sm text-rose-500">{errorMessage}</p>
+            ) : null}
           </div>
         </div>
       </aside>
