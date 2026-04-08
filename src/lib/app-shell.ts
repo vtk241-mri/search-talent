@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { getCookieConsentFromCookies } from "@/lib/cookie-consent-server";
 import type { CookieConsent } from "@/lib/cookie-consent";
 import type { Locale } from "@/lib/i18n/config";
@@ -12,6 +13,31 @@ export type AppViewer = {
   avatarUrl: string | null;
 } | null;
 
+function normalizeViewerAvatarUrl(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value);
+    const allowedHosts = new Set([
+      "lh3.googleusercontent.com",
+      "avatars.githubusercontent.com",
+    ]);
+    const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
+      ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+      : null;
+
+    if (supabaseHost) {
+      allowedHosts.add(supabaseHost);
+    }
+
+    return allowedHosts.has(url.hostname) ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getAppShellData(locale: Locale): Promise<{
   dictionary: Dictionary;
   initialConsent: CookieConsent | null;
@@ -19,6 +45,8 @@ export async function getAppShellData(locale: Locale): Promise<{
   isSignedIn: boolean;
   viewer: AppViewer;
 }> {
+  noStore();
+
   const supabase = await createClient();
   const [{ data: auth }, initialConsent, initialTheme] = await Promise.all([
     supabase.auth.getUser(),
@@ -41,7 +69,7 @@ export async function getAppShellData(locale: Locale): Promise<{
       displayName: profile?.name || null,
       email: user.email || null,
       username: profile?.username || null,
-      avatarUrl: profile?.avatar_url || null,
+      avatarUrl: normalizeViewerAvatarUrl(profile?.avatar_url),
     };
   }
 

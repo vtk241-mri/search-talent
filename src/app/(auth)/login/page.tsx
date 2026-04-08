@@ -9,7 +9,7 @@ import {
   loginSchema,
   type AuthFieldErrors,
 } from "@/lib/auth/validation";
-import { useDictionary, useLocalizedRouter } from "@/lib/i18n/client";
+import { useDictionary, useLocalizedHref, useLocalizedRouter } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 import LocalizedLink from "@/components/ui/localized-link";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -18,6 +18,7 @@ export default function LoginPage() {
   const supabase = createClient();
   const router = useLocalizedRouter();
   const dictionary = useDictionary();
+  const dashboardHref = useLocalizedHref("/dashboard");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,7 +67,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    window.location.assign(dashboardHref);
   };
 
   const handleOAuthLogin = async (provider: "google" | "github") => {

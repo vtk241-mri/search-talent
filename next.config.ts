@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
         hostname: supabaseHostname,
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        pathname: "/**",
+      },
     ],
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 30,
