@@ -1,0 +1,614 @@
+import { unstable_noStore as noStore } from "next/cache";
+import {
+  normalizeArticleSort,
+  normalizeArticleStatus,
+  slugifyArticleTitle,
+  type ArticleAuthor,
+  type ArticleCategory,
+  type ArticleComment,
+  type ArticleDashboardItem,
+  type ArticleDetail,
+  type ArticleFeedItem,
+} from "@/lib/articles";
+import { getCurrentViewerRole } from "@/lib/moderation-server";
+import { isPublicModerationStatus } from "@/lib/moderation";
+import { createClient } from "@/lib/supabase/server";
+
+type ArticleRow = {
+  id: string;
+  author_user_id: string;
+  category_id: number | null;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  content: string | null;
+  cover_image_url: string | null;
+  cover_image_storage_path: string | null;
+  hero_video_url: string | null;
+  hero_video_storage_path: string | null;
+  status: string | null;
+  moderation_status: string | null;
+  moderation_note: string | null;
+  views_count: number | null;
+  published_at: string | null;
+  created_at: string | null;
+};
+
+type ArticleCategoryRow = {
+  id: number;
+  slug: string;
+  name: string;
+  description: string | null;
+  admin_only: boolean | null;
+};
+
+type ArticleLikeRow = {
+  article_id: string;
+  user_id: string;
+};
+
+type ArticleCommentRow = {
+  id: string;
+  article_id: string;
+  author_user_id: string;
+  parent_id: string | null;
+  body: string | null;
+  created_at: string | null;
+};
+
+type ProfileSummaryRow = {
+  user_id: string;
+  username: string | null;
+  name: string | null;
+  avatar_url: string | null;
+};
+
+function mapCategory(row: ArticleCategoryRow | null | undefined): ArticleCategory | null {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description || null,
+    adminOnly: Boolean(row.admin_only),
+  };
+}
+
+function mapAuthor(row: ProfileSummaryRow | null | undefined): ArticleAuthor | null {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    userId: row.user_id,
+    username: row.username || null,
+    name: row.name || null,
+    avatarUrl: row.avatar_url || null,
+  };
+}
+
+function buildCountMap(rows: Array<{ article_id: string }>) {
+  const map = new Map<string, number>();
+
+  for (const row of rows) {
+    map.set(row.article_id, (map.get(row.article_id) || 0) + 1);
+  }
+
+  return map;
+}
+
+function buildCommentTree(
+  rows: ArticleCommentRow[],
+  authorMap: Map<string, ArticleAuthor>,
+): ArticleComment[] {
+  const commentMap = new Map<string, ArticleComment>();
+  const roots: ArticleComment[] = [];
+
+  for (const row of rows) {
+    commentMap.set(row.id, {
+      id: row.id,
+      parentId: row.parent_id,
+      body: row.body || "",
+      createdAt: row.created_at,
+      author: authorMap.get(row.author_user_id) || null,
+      replies: [],
+    });
+  }
+
+  for (const row of rows) {
+    const comment = commentMap.get(row.id);
+
+    if (!comment) {
+      continue;
+    }
+
+    if (row.parent_id && commentMap.has(row.parent_id)) {
+      commentMap.get(row.parent_id)?.replies.push(comment);
+    } else {
+      roots.push(comment);
+    }
+  }
+
+  return roots;
+}
+
+async function getCategoriesMap(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  categoryIds: number[],
+) {
+  if (categoryIds.length === 0) {
+    return new Map<number, ArticleCategory>();
+  }
+
+  const { data } = await supabase
+    .from("article_categories")
+    .select("id, slug, name, description, admin_only")
+    .in("id", categoryIds);
+
+  return new Map(
+    ((data || []) as ArticleCategoryRow[]).map((item) => [item.id, mapCategory(item)!]),
+  );
+}
+
+async function getAuthorsMap(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  authorIds: string[],
+) {
+  if (authorIds.length === 0) {
+    return new Map<string, ArticleAuthor>();
+  }
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("user_id, username, name, avatar_url")
+    .in("user_id", authorIds);
+
+  return new Map(
+    ((data || []) as ProfileSummaryRow[]).map((item) => [item.user_id, mapAuthor(item)!]),
+  );
+}
+
+function toFeedItem(
+  row: ArticleRow,
+  categoryMap: Map<number, ArticleCategory>,
+  authorMap: Map<string, ArticleAuthor>,
+  likesCountMap: Map<string, number>,
+  commentsCountMap: Map<string, number>,
+): ArticleFeedItem {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    excerpt: row.excerpt,
+    content: row.content,
+    coverImageUrl: row.cover_image_url,
+    heroVideoUrl: row.hero_video_url,
+    publishedAt: row.published_at,
+    createdAt: row.created_at,
+    viewsCount: row.views_count ?? 0,
+    likesCount: likesCountMap.get(row.id) || 0,
+    commentsCount: commentsCountMap.get(row.id) || 0,
+    category: row.category_id ? categoryMap.get(row.category_id) || null : null,
+    author: authorMap.get(row.author_user_id) || null,
+  };
+}
+
+export async function getArticleCategories() {
+  noStore();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("article_categories")
+    .select("id, slug, name, description, admin_only")
+    .order("name", { ascending: true });
+
+  return ((data || []) as ArticleCategoryRow[]).map((item) => mapCategory(item)!);
+}
+
+export async function getArticleFeed(params?: {
+  categorySlug?: string | null;
+  authorQuery?: string | null;
+  sort?: string | null;
+}) {
+  noStore();
+  const viewer = await getCurrentViewerRole();
+  const supabase = viewer.supabase;
+  const sort = normalizeArticleSort(params?.sort);
+
+  let query = supabase
+    .from("articles")
+    .select(
+      "id, author_user_id, category_id, title, slug, excerpt, content, cover_image_url, cover_image_storage_path, hero_video_url, hero_video_storage_path, status, moderation_status, moderation_note, views_count, published_at, created_at",
+    )
+    .eq("status", "published")
+    .limit(60);
+
+  if (params?.categorySlug) {
+    const { data: category } = await supabase
+      .from("article_categories")
+      .select("id")
+      .eq("slug", params.categorySlug)
+      .maybeSingle();
+
+    if (!category) {
+      return {
+        items: [] as ArticleFeedItem[],
+        categories: await getArticleCategories(),
+      };
+    }
+
+    query = query.eq("category_id", category.id);
+  }
+
+  const { data } = await query.order(
+    sort === "popular" ? "views_count" : "published_at",
+    { ascending: false },
+  );
+
+  let rows = ((data || []) as ArticleRow[]).filter((item) => {
+    const isOwner = viewer.user?.id === item.author_user_id;
+    return isPublicModerationStatus(item.moderation_status) || viewer.isAdmin || isOwner;
+  });
+
+  if (params?.authorQuery?.trim()) {
+    const authorQuery = params.authorQuery.trim().toLowerCase();
+    const authorsMap = await getAuthorsMap(
+      supabase,
+      Array.from(new Set(rows.map((item) => item.author_user_id))),
+    );
+
+    rows = rows.filter((item) => {
+      const author = authorsMap.get(item.author_user_id);
+      const candidate = `${author?.name || ""} ${author?.username || ""}`.toLowerCase();
+      return candidate.includes(authorQuery);
+    });
+  }
+
+  const articleIds = rows.map((item) => item.id);
+  const [likesResponse, commentsResponse, categoryMap, authorMap, categories] =
+    await Promise.all([
+      articleIds.length > 0
+        ? supabase.from("article_likes").select("article_id, user_id").in("article_id", articleIds)
+        : Promise.resolve({ data: [] }),
+      articleIds.length > 0
+        ? supabase.from("article_comments").select("article_id").in("article_id", articleIds)
+        : Promise.resolve({ data: [] }),
+      getCategoriesMap(
+        supabase,
+        Array.from(
+          new Set(
+            rows
+              .map((item) => item.category_id)
+              .filter((item): item is number => typeof item === "number"),
+          ),
+        ),
+      ),
+      getAuthorsMap(
+        supabase,
+        Array.from(new Set(rows.map((item) => item.author_user_id))),
+      ),
+      getArticleCategories(),
+    ]);
+
+  const likesCountMap = buildCountMap(
+    ((likesResponse.data || []) as ArticleLikeRow[]).map((item) => ({
+      article_id: item.article_id,
+    })),
+  );
+  const commentsCountMap = buildCountMap(
+    ((commentsResponse.data || []) as Array<{ article_id: string }>).map((item) => ({
+      article_id: item.article_id,
+    })),
+  );
+
+  const items = rows
+    .map((item) => toFeedItem(item, categoryMap, authorMap, likesCountMap, commentsCountMap))
+    .sort((left, right) => {
+      if (sort === "popular") {
+        return right.viewsCount - left.viewsCount || right.likesCount - left.likesCount;
+      }
+
+      if (sort === "discussed") {
+        return right.commentsCount - left.commentsCount || right.likesCount - left.likesCount;
+      }
+
+      return (
+        new Date(right.publishedAt || right.createdAt || 0).getTime() -
+        new Date(left.publishedAt || left.createdAt || 0).getTime()
+      );
+    });
+
+  return {
+    items,
+    categories,
+    viewerUserId: viewer.user?.id || null,
+  };
+}
+
+export async function getArticleDetail(slug: string) {
+  noStore();
+  const viewer = await getCurrentViewerRole();
+  const supabase = viewer.supabase;
+
+  const { data: row } = await supabase
+    .from("articles")
+    .select(
+      "id, author_user_id, category_id, title, slug, excerpt, content, cover_image_url, cover_image_storage_path, hero_video_url, hero_video_storage_path, status, moderation_status, moderation_note, views_count, published_at, created_at",
+    )
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!row) {
+    return null;
+  }
+
+  const article = row as ArticleRow;
+  const status = normalizeArticleStatus(article.status);
+  const isOwner = viewer.user?.id === article.author_user_id;
+  const canSeeByStatus = status === "published" || isOwner || viewer.isAdmin;
+  const canSeeByModeration =
+    isPublicModerationStatus(article.moderation_status) || isOwner || viewer.isAdmin;
+
+  if (!canSeeByStatus || !canSeeByModeration) {
+    return null;
+  }
+
+  const [categoryMap, authorMap, likesResponse, commentsResponse, currentLikeResponse] =
+    await Promise.all([
+      getCategoriesMap(
+        supabase,
+        article.category_id ? [article.category_id] : [],
+      ),
+      getAuthorsMap(supabase, [article.author_user_id]),
+      supabase.from("article_likes").select("article_id, user_id").eq("article_id", article.id),
+      supabase
+        .from("article_comments")
+        .select("id, article_id, author_user_id, parent_id, body, created_at")
+        .eq("article_id", article.id)
+        .order("created_at", { ascending: true }),
+      viewer.user
+        ? supabase
+            .from("article_likes")
+            .select("article_id")
+            .eq("article_id", article.id)
+            .eq("user_id", viewer.user.id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+
+  const commentRows = (commentsResponse.data || []) as ArticleCommentRow[];
+  const commentAuthorMap = await getAuthorsMap(
+    supabase,
+    Array.from(new Set(commentRows.map((item) => item.author_user_id))),
+  );
+  const likesCountMap = buildCountMap(
+    ((likesResponse.data || []) as ArticleLikeRow[]).map((item) => ({
+      article_id: item.article_id,
+    })),
+  );
+  const commentsCountMap = buildCountMap(
+    commentRows.map((item) => ({
+      article_id: item.article_id,
+    })),
+  );
+  const feedItem = toFeedItem(
+    article,
+    categoryMap,
+    authorMap,
+    likesCountMap,
+    commentsCountMap,
+  );
+
+  const detail: ArticleDetail = {
+    ...feedItem,
+    status,
+    moderationStatus: article.moderation_status,
+    moderationNote: article.moderation_note,
+    content: article.content || "",
+    coverImageStoragePath: article.cover_image_storage_path,
+    heroVideoStoragePath: article.hero_video_storage_path,
+    currentUserLiked: Boolean(currentLikeResponse.data),
+    comments: buildCommentTree(commentRows, commentAuthorMap),
+  };
+
+  return {
+    article: detail,
+    viewerUserId: viewer.user?.id || null,
+    isOwner,
+    isAdmin: viewer.isAdmin,
+  };
+}
+
+export async function getDashboardArticles() {
+  noStore();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data } = await supabase
+    .from("articles")
+    .select(
+      "id, category_id, title, slug, status, moderation_status, moderation_note, views_count, published_at, created_at",
+    )
+    .eq("author_user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  const rows = (data || []) as Array<{
+    id: string;
+    category_id: number | null;
+    title: string;
+    slug: string;
+    status: string | null;
+    moderation_status: string | null;
+    moderation_note: string | null;
+    views_count: number | null;
+    published_at: string | null;
+    created_at: string | null;
+  }>;
+
+  const articleIds = rows.map((item) => item.id);
+  const [likesResponse, commentsResponse, categoryMap, categories] = await Promise.all([
+    articleIds.length > 0
+      ? supabase.from("article_likes").select("article_id").in("article_id", articleIds)
+      : Promise.resolve({ data: [] }),
+    articleIds.length > 0
+      ? supabase.from("article_comments").select("article_id").in("article_id", articleIds)
+      : Promise.resolve({ data: [] }),
+    getCategoriesMap(
+      supabase,
+      Array.from(
+        new Set(
+          rows
+            .map((item) => item.category_id)
+            .filter((item): item is number => typeof item === "number"),
+        ),
+      ),
+    ),
+    getArticleCategories(),
+  ]);
+
+  const likesCountMap = buildCountMap(
+    ((likesResponse.data || []) as Array<{ article_id: string }>).map((item) => ({
+      article_id: item.article_id,
+    })),
+  );
+  const commentsCountMap = buildCountMap(
+    ((commentsResponse.data || []) as Array<{ article_id: string }>).map((item) => ({
+      article_id: item.article_id,
+    })),
+  );
+
+  return {
+    userId: user.id,
+    items: rows.map(
+      (item): ArticleDashboardItem => ({
+        id: item.id,
+        slug: item.slug,
+        title: item.title,
+        status: normalizeArticleStatus(item.status),
+        createdAt: item.created_at,
+        publishedAt: item.published_at,
+        viewsCount: item.views_count ?? 0,
+        likesCount: likesCountMap.get(item.id) || 0,
+        commentsCount: commentsCountMap.get(item.id) || 0,
+        categoryName: item.category_id ? categoryMap.get(item.category_id)?.name || null : null,
+        moderationStatus: item.moderation_status,
+        moderationNote: item.moderation_note,
+      }),
+    ),
+    categories,
+  };
+}
+
+export async function getArticleModerationQueue() {
+  noStore();
+  const viewer = await getCurrentViewerRole();
+
+  if (!viewer.user || !viewer.isAdmin) {
+    return null;
+  }
+
+  const supabase = viewer.supabase;
+  const { data } = await supabase
+    .from("articles")
+    .select(
+      "id, author_user_id, category_id, title, slug, excerpt, content, cover_image_url, cover_image_storage_path, hero_video_url, hero_video_storage_path, status, moderation_status, moderation_note, views_count, published_at, created_at",
+    )
+    .order("created_at", { ascending: false })
+    .limit(60);
+
+  const rows = (data || []) as ArticleRow[];
+  const articleIds = rows.map((item) => item.id);
+  const [likesResponse, commentsResponse, categoryMap, authorMap] = await Promise.all([
+    articleIds.length > 0
+      ? supabase.from("article_likes").select("article_id, user_id").in("article_id", articleIds)
+      : Promise.resolve({ data: [] }),
+    articleIds.length > 0
+      ? supabase.from("article_comments").select("article_id").in("article_id", articleIds)
+      : Promise.resolve({ data: [] }),
+    getCategoriesMap(
+      supabase,
+      Array.from(
+        new Set(
+          rows
+            .map((item) => item.category_id)
+            .filter((item): item is number => typeof item === "number"),
+        ),
+      ),
+    ),
+    getAuthorsMap(
+      supabase,
+      Array.from(new Set(rows.map((item) => item.author_user_id))),
+    ),
+  ]);
+
+  const likesCountMap = buildCountMap(
+    ((likesResponse.data || []) as ArticleLikeRow[]).map((item) => ({
+      article_id: item.article_id,
+    })),
+  );
+  const commentsCountMap = buildCountMap(
+    ((commentsResponse.data || []) as Array<{ article_id: string }>).map((item) => ({
+      article_id: item.article_id,
+    })),
+  );
+
+  const moderationRank = {
+    under_review: 3,
+    restricted: 2,
+    removed: 1,
+    approved: 0,
+  } as const;
+
+  return rows
+    .map((item) => ({
+      ...toFeedItem(item, categoryMap, authorMap, likesCountMap, commentsCountMap),
+      status: normalizeArticleStatus(item.status),
+      moderationStatus: item.moderation_status,
+      moderationNote: item.moderation_note,
+    }))
+    .sort(
+      (left, right) =>
+        (moderationRank[right.moderationStatus as keyof typeof moderationRank] || 0) -
+          (moderationRank[left.moderationStatus as keyof typeof moderationRank] || 0) ||
+        new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime(),
+    );
+}
+
+export async function ensureUniqueArticleSlug(
+  title: string,
+  excludeId?: string,
+) {
+  const supabase = await createClient();
+  const baseSlug = slugifyArticleTitle(title);
+  const { data } = await supabase
+    .from("articles")
+    .select("id, slug")
+    .ilike("slug", `${baseSlug}%`);
+
+  const existing = new Set(
+    ((data || []) as Array<{ id: string; slug: string | null }>)
+      .filter((item) => item.id !== excludeId)
+      .map((item) => item.slug)
+      .filter((item): item is string => Boolean(item)),
+  );
+
+  if (!existing.has(baseSlug)) {
+    return baseSlug;
+  }
+
+  let suffix = 2;
+
+  while (existing.has(`${baseSlug}-${suffix}`)) {
+    suffix += 1;
+  }
+
+  return `${baseSlug}-${suffix}`;
+}

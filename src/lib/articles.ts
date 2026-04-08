@@ -1,0 +1,122 @@
+export const articleStatuses = ["draft", "published"] as const;
+export const articleSortOptions = ["recent", "popular", "discussed"] as const;
+
+export type ArticleStatus = (typeof articleStatuses)[number];
+export type ArticleSortOption = (typeof articleSortOptions)[number];
+
+export type ArticleCategory = {
+  id: number;
+  slug: string;
+  name: string;
+  description: string | null;
+  adminOnly: boolean;
+};
+
+export type ArticleAuthor = {
+  userId: string;
+  username: string | null;
+  name: string | null;
+  avatarUrl: string | null;
+};
+
+export type ArticleFeedItem = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  content: string | null;
+  coverImageUrl: string | null;
+  heroVideoUrl: string | null;
+  publishedAt: string | null;
+  createdAt: string | null;
+  viewsCount: number;
+  likesCount: number;
+  commentsCount: number;
+  category: ArticleCategory | null;
+  author: ArticleAuthor | null;
+};
+
+export type ArticleComment = {
+  id: string;
+  parentId: string | null;
+  body: string;
+  createdAt: string | null;
+  author: ArticleAuthor | null;
+  replies: ArticleComment[];
+};
+
+export type ArticleDetail = ArticleFeedItem & {
+  status: ArticleStatus;
+  moderationStatus: string | null;
+  moderationNote: string | null;
+  content: string;
+  coverImageStoragePath: string | null;
+  heroVideoStoragePath: string | null;
+  currentUserLiked: boolean;
+  comments: ArticleComment[];
+};
+
+export type ArticleDashboardItem = {
+  id: string;
+  slug: string;
+  title: string;
+  status: ArticleStatus;
+  createdAt: string | null;
+  publishedAt: string | null;
+  viewsCount: number;
+  likesCount: number;
+  commentsCount: number;
+  categoryName: string | null;
+  moderationStatus: string | null;
+  moderationNote: string | null;
+};
+
+export function normalizeArticleStatus(value: unknown): ArticleStatus {
+  return typeof value === "string" && articleStatuses.includes(value as ArticleStatus)
+    ? (value as ArticleStatus)
+    : "draft";
+}
+
+export function normalizeArticleSort(value: unknown): ArticleSortOption {
+  return typeof value === "string" && articleSortOptions.includes(value as ArticleSortOption)
+    ? (value as ArticleSortOption)
+    : "recent";
+}
+
+export function slugifyArticleTitle(value: string) {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[^a-z0-9\s-]+/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "") || "article"
+  );
+}
+
+export function formatArticleDate(value: string | null, locale: string) {
+  if (!value) {
+    return locale === "uk" ? "Без дати" : "No date";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(locale === "uk" ? "uk-UA" : "en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+export function getArticleReadingTime(content: string, locale: string) {
+  const words = content.trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.round(words / 180));
+
+  return locale === "uk" ? `${minutes} хв читання` : `${minutes} min read`;
+}

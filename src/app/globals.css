@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f7fb;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-muted: #eef3f8;
+  --border: #d7e0ea;
+  --muted-foreground: #526277;
+  --soft-foreground: #6d7d91;
+  --ring: #94a3b8;
+  --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
 }
 
 @theme inline {
@@ -12,15 +19,190 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html[data-theme="dark"] {
+  --background: #020817;
+  --foreground: #e5edf7;
+  --surface: #0d1726;
+  --surface-muted: #132033;
+  --border: #223149;
+  --muted-foreground: #93a4ba;
+  --soft-foreground: #7b8ca3;
+  --ring: #64748b;
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.32);
+}
+
+html {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+::selection {
+  background: rgba(100, 116, 139, 0.22);
+}
+
+.app-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.app-panel {
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.app-panel-dashed {
+  border: 1px dashed var(--border);
+  background: var(--surface);
+}
+
+.app-border {
+  border-color: var(--border);
+}
+
+.app-muted {
+  color: var(--muted-foreground);
+}
+
+.app-soft {
+  color: var(--soft-foreground);
+}
+
+.app-surface {
+  background: var(--surface);
+}
+
+.app-surface-muted {
+  background: var(--surface-muted);
+}
+
+.rich-text-editor p,
+.rich-text-renderer p {
+  margin: 0 0 1rem;
+}
+
+.rich-text-editor h3,
+.rich-text-renderer h3 {
+  margin: 0 0 1rem;
+  color: var(--rich-text-accent, var(--foreground));
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.rich-text-editor blockquote,
+.rich-text-renderer blockquote {
+  margin: 0 0 1rem;
+  border-left: 4px solid var(--rich-text-accent, var(--border));
+  border-radius: 1rem;
+  background: var(--surface-muted);
+  padding: 0.9rem 1rem;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+
+.rich-text-editor ul,
+.rich-text-renderer ul,
+.rich-text-editor ol,
+.rich-text-renderer ol {
+  margin: 0 0 1rem;
+  padding-left: 1.4rem;
+}
+
+.rich-text-editor li,
+.rich-text-renderer li {
+  margin-bottom: 0.45rem;
+}
+
+.rich-text-editor code,
+.rich-text-renderer code {
+  border-radius: 0.5rem;
+  background: var(--surface-muted);
+  padding: 0.15rem 0.45rem;
+  font-family: var(--font-geist-mono), Consolas, monospace;
+  color: var(--foreground);
+}
+
+.rich-text-editor mark,
+.rich-text-renderer mark {
+  border-radius: 0.4rem;
+  background: color-mix(in srgb, var(--rich-text-accent, #f97316) 22%, transparent);
+  padding: 0.08rem 0.3rem;
+  color: var(--foreground);
+}
+
+.rich-text-editor a,
+.rich-text-renderer a {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 0.24rem;
+}
+
+.rich-text-editor figure,
+.rich-text-renderer figure {
+  margin: 0 0 1.25rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--surface-muted);
+}
+
+.rich-text-editor img,
+.rich-text-renderer img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 28rem;
+  object-fit: cover;
+  background: #000;
+}
+
+.rich-text-editor iframe,
+.rich-text-renderer iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+
+.rich-text-editor ul,
+.rich-text-renderer ul {
+  list-style-type: disc;
+}
+
+.rich-text-editor ol,
+.rich-text-renderer ol {
+  list-style-type: decimal;
+}
+
+.rich-text-editor figcaption,
+.rich-text-renderer figcaption {
+  padding: 0.85rem 1rem;
+  font-size: 0.92rem;
+  color: var(--muted-foreground);
 }

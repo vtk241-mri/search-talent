@@ -1,0 +1,196 @@
+import type { Locale } from "@/lib/i18n/config";
+import type {
+  ModerationPriority,
+  ModerationStatus,
+  ReportReason,
+  ReportStatus,
+  ReportTargetType,
+} from "@/lib/moderation";
+
+export function getModerationCopy(locale: Locale) {
+  if (locale === "uk") {
+    return {
+      dashboard: {
+        eyebrow: "Модерація",
+        title: "Черга перевірки контенту",
+        description:
+          "Тут зібрані скарги, поточні статуси та швидкі дії для профілів і проєктів. Основа вже розрахована на великий потік перевірок.",
+        openQueue: "Відкрити модерацію",
+        noAccess: "Ця сторінка доступна лише адміністраторам.",
+        empty: "У черзі немає активних скарг.",
+        reportsCount: "Активні скарги",
+        urgentCount: "Термінові",
+        profilesCount: "На профілі",
+        projectsCount: "На проєкти",
+        reportDetails: "Деталі скарги",
+        targetStatus: "Статус контенту",
+        reportStatus: "Статус скарги",
+        reportReason: "Причина",
+        reporter: "Хто поскаржився",
+        createdAt: "Створено",
+        targetOwner: "Власник контенту",
+        resolutionNote: "Нотатка модератора",
+        openTarget: "Відкрити сторінку",
+        reviewActions: "Дії модерації",
+      },
+      report: {
+        buttonProject: "Поскаржитися на проєкт",
+        buttonProfile: "Поскаржитися на профіль",
+        titleProject: "Скарга на проєкт",
+        titleProfile: "Скарга на профіль",
+        description:
+          "Опишіть проблему коротко й по суті. Це допоможе швидше пріоритезувати перевірку.",
+        reasonLabel: "Причина скарги",
+        detailsLabel: "Деталі",
+        detailsPlaceholder:
+          "Додайте контекст: що саме порушує правила, де це видно і чому потрібна перевірка.",
+        submit: "Надіслати скаргу",
+        sending: "Надсилання...",
+        close: "Закрити",
+        cancel: "Скасувати",
+        success: "Скаргу прийнято. Вона з'явилася в черзі модерації.",
+        duplicate:
+          "Схожа активна скарга від вас уже є. Не потрібно дублювати її ще раз.",
+        errorFallback: "Не вдалося надіслати скаргу.",
+        loginToReport: "Увійдіть, щоб поскаржитися",
+      },
+      actions: {
+        notePlaceholder:
+          "Коротка службова примітка: що знайшли, чому змінюєте статус, що ще потрібно перевірити.",
+        saveApprove: "Підтвердити як нормальний",
+        saveReview: "Перенести на перевірку",
+        saveRestrict: "Обмежити показ",
+        saveRemove: "Прибрати з публічного доступу",
+        dismissReport: "Відхилити скаргу",
+        resolveReport: "Закрити скаргу",
+        saving: "Збереження...",
+        success: "Дію застосовано.",
+        errorFallback: "Не вдалося оновити модерацію.",
+      },
+      statusLabels: {
+        approved: "Схвалено",
+        under_review: "На перевірці",
+        restricted: "Обмежено",
+        removed: "Прибрано",
+      } satisfies Record<ModerationStatus, string>,
+      reportStatusLabels: {
+        open: "Відкрита",
+        triaged: "В роботі",
+        resolved: "Закрита",
+        dismissed: "Відхилена",
+      } satisfies Record<ReportStatus, string>,
+      reasonLabels: {
+        copyright_infringement: "Порушення авторських прав",
+        inappropriate_content: "Неприйнятний контент",
+        harmful_or_dangerous: "Шкідливий або небезпечний контент",
+        sexual_content: "Сексуальний контент",
+        harassment_or_hate: "Переслідування, ненависть або образи",
+        spam_or_scam: "Спам або шахрайство",
+        impersonation: "Видавання себе за іншу особу",
+        other: "Інша причина",
+      } satisfies Record<ReportReason, string>,
+      priorityLabels: {
+        normal: "Звичайний",
+        high: "Високий",
+        urgent: "Терміновий",
+      } satisfies Record<ModerationPriority, string>,
+      targetLabels: {
+        profile: "Профіль",
+        project: "Проєкт",
+      } satisfies Record<ReportTargetType, string>,
+    };
+  }
+
+  return {
+    dashboard: {
+      eyebrow: "Moderation",
+      title: "Content review queue",
+      description:
+        "Reports, current statuses, and quick actions for profiles and projects. The structure is ready for a much larger review flow later.",
+      openQueue: "Open moderation",
+      noAccess: "This page is available only to administrators.",
+      empty: "There are no active reports in the queue.",
+      reportsCount: "Active reports",
+      urgentCount: "Urgent",
+      profilesCount: "Against profiles",
+      projectsCount: "Against projects",
+      reportDetails: "Report details",
+      targetStatus: "Content status",
+      reportStatus: "Report status",
+      reportReason: "Reason",
+      reporter: "Reporter",
+      createdAt: "Created",
+      targetOwner: "Content owner",
+      resolutionNote: "Moderator note",
+      openTarget: "Open page",
+      reviewActions: "Moderation actions",
+    },
+    report: {
+      buttonProject: "Report project",
+      buttonProfile: "Report profile",
+      titleProject: "Report project",
+      titleProfile: "Report profile",
+      description:
+        "Describe the issue clearly and briefly. That makes prioritization and review much easier.",
+      reasonLabel: "Report reason",
+      detailsLabel: "Details",
+      detailsPlaceholder:
+        "Add useful context: what is wrong, where it appears, and why it should be reviewed.",
+      submit: "Send report",
+      sending: "Sending...",
+      close: "Close",
+      cancel: "Cancel",
+      success: "Report submitted. It is now in the moderation queue.",
+      duplicate:
+        "You already have a similar active report for this item. No need to submit it again.",
+      errorFallback: "Could not submit the report.",
+      loginToReport: "Log in to report",
+    },
+    actions: {
+      notePlaceholder:
+        "Short internal note: what was found, why the status changes, and what still needs review.",
+      saveApprove: "Mark as approved",
+      saveReview: "Move to review",
+      saveRestrict: "Restrict visibility",
+      saveRemove: "Remove from public access",
+      dismissReport: "Dismiss report",
+      resolveReport: "Resolve report",
+      saving: "Saving...",
+      success: "Moderation action applied.",
+      errorFallback: "Could not update moderation.",
+    },
+    statusLabels: {
+      approved: "Approved",
+      under_review: "Under review",
+      restricted: "Restricted",
+      removed: "Removed",
+    } satisfies Record<ModerationStatus, string>,
+    reportStatusLabels: {
+      open: "Open",
+      triaged: "Triaged",
+      resolved: "Resolved",
+      dismissed: "Dismissed",
+    } satisfies Record<ReportStatus, string>,
+    reasonLabels: {
+      copyright_infringement: "Copyright infringement",
+      inappropriate_content: "Inappropriate content",
+      harmful_or_dangerous: "Harmful or dangerous content",
+      sexual_content: "Sexual content",
+      harassment_or_hate: "Harassment, hate, or abuse",
+      spam_or_scam: "Spam or scam",
+      impersonation: "Impersonation",
+      other: "Other",
+    } satisfies Record<ReportReason, string>,
+    priorityLabels: {
+      normal: "Normal",
+      high: "High",
+      urgent: "Urgent",
+    } satisfies Record<ModerationPriority, string>,
+    targetLabels: {
+      profile: "Profile",
+      project: "Project",
+    } satisfies Record<ReportTargetType, string>,
+  };
+}
+
+export type ModerationCopy = ReturnType<typeof getModerationCopy>;

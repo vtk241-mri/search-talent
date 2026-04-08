@@ -1,0 +1,100 @@
+import { NextResponse } from "next/server";
+import { getProjectVoteSummary } from "@/lib/db/project-votes";
+import { createClient } from "@/lib/supabase/server";
+import { parseJsonRequest } from "@/lib/validation/request";
+import { projectVoteSchema } from "@/lib/validation/vote";
+
+export async function POST(request: Request) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const parsed = await parseJsonRequest(request, projectVoteSchema);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+
+  const { projectId, value } = parsed.data;
+
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("id")
+    .eq("id", projectId)
+    .maybeSingle();
+
+  if (projectError) {
+    return NextResponse.json({ error: projectError.message }, { status: 400 });
+  }
+
+  if (!project) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
+
+  const { data: existingVotes, error: existingVoteError } = await supabase
+    .from("votes")
+    .select("value")
+    .eq("project_id", projectId)
+    .eq("user_id", user.id)
+    .limit(1);
+
+  if (existingVoteError) {
+    return NextResponse.json(
+      { error: existingVoteError.message },
+      { status: 400 },
+    );
+  }
+
+  const existingVote = existingVotes?.[0] ?? null;
+
+  if (existingVote?.value === value) {
+    const { error: deleteError } = await supabase
+      .from("votes")
+      .delete()
+      .eq("project_id", projectId)
+      .eq("user_id", user.id);
+
+    if (deleteError) {
+      return NextResponse.json({ error: deleteError.message }, { status: 400 });
+    }
+  } else if (existingVote) {
+    const { error: updateError } = await supabase
+      .from("votes")
+      .update({ value })
+      .eq("project_id", projectId)
+      .eq("user_id", user.id);
+
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 400 });
+    }
+  } else {
+    const { error: insertError } = await supabase.from("votes").insert({
+      project_id: projectId,
+      user_id: user.id,
+      value,
+    });
+
+    if (insertError) {
+      return NextResponse.json({ error: insertError.message }, { status: 400 });
+    }
+  }
+
+  const summary = await getProjectVoteSummary(supabase, projectId, user.id);
+
+  const { error: scoreError } = await supabase
+    .from("projects")
+    .update({ score: summary.score })
+    .eq("id", projectId);
+
+  if (scoreError) {
+    return NextResponse.json({ error: scoreError.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ success: true, ...summary });
+}
