@@ -29,11 +29,17 @@ export async function POST(request: Request) {
           .select("id, user_id, moderation_status")
           .eq("id", payload.targetId)
           .maybeSingle()
-      : await supabase
-          .from("projects")
-          .select("id, owner_id, moderation_status")
-          .eq("id", payload.targetId)
-          .maybeSingle();
+      : payload.targetType === "article"
+        ? await supabase
+            .from("articles")
+            .select("id, author_user_id, moderation_status")
+            .eq("id", payload.targetId)
+            .maybeSingle()
+        : await supabase
+            .from("projects")
+            .select("id, owner_id, moderation_status")
+            .eq("id", payload.targetId)
+            .maybeSingle();
 
   const target = targetResponse.data;
 
@@ -44,7 +50,9 @@ export async function POST(request: Request) {
   const ownerUserId =
     payload.targetType === "profile"
       ? (target as { user_id: string }).user_id
-      : (target as { owner_id: string }).owner_id;
+      : payload.targetType === "article"
+        ? (target as { author_user_id: string }).author_user_id
+        : (target as { owner_id: string }).owner_id;
 
   if (ownerUserId === user.id) {
     return NextResponse.json(
@@ -53,24 +61,21 @@ export async function POST(request: Request) {
     );
   }
 
-  const duplicateQuery =
+  const targetColumn =
     payload.targetType === "profile"
-      ? supabase
-          .from("content_reports")
-          .select("id")
-          .eq("reporter_user_id", user.id)
-          .eq("target_profile_id", payload.targetId)
-          .eq("reason", payload.reason)
-          .in("status", ["open", "triaged"])
-          .maybeSingle()
-      : supabase
-          .from("content_reports")
-          .select("id")
-          .eq("reporter_user_id", user.id)
-          .eq("target_project_id", payload.targetId)
-          .eq("reason", payload.reason)
-          .in("status", ["open", "triaged"])
-          .maybeSingle();
+      ? "target_profile_id"
+      : payload.targetType === "article"
+        ? "target_article_id"
+        : "target_project_id";
+
+  const duplicateQuery = supabase
+    .from("content_reports")
+    .select("id")
+    .eq("reporter_user_id", user.id)
+    .eq(targetColumn, payload.targetId)
+    .eq("reason", payload.reason)
+    .in("status", ["open", "triaged"])
+    .maybeSingle();
 
   const { data: duplicateReport } = await duplicateQuery;
 
@@ -86,6 +91,7 @@ export async function POST(request: Request) {
     target_type: payload.targetType,
     target_profile_id: payload.targetType === "profile" ? payload.targetId : null,
     target_project_id: payload.targetType === "project" ? payload.targetId : null,
+    target_article_id: payload.targetType === "article" ? payload.targetId : null,
     target_owner_user_id: ownerUserId,
     reporter_user_id: user.id,
     reason: payload.reason,
@@ -114,6 +120,8 @@ export async function POST(request: Request) {
 
     if (payload.targetType === "profile") {
       await supabase.from("profiles").update(updatePayload).eq("id", payload.targetId);
+    } else if (payload.targetType === "article") {
+      await supabase.from("articles").update(updatePayload).eq("id", payload.targetId);
     } else {
       await supabase.from("projects").update(updatePayload).eq("id", payload.targetId);
     }

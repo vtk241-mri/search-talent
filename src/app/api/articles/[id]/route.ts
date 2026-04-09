@@ -1,6 +1,130 @@
 import { NextResponse } from "next/server";
+import { getCurrentViewerRole } from "@/lib/moderation-server";
 import { createClient } from "@/lib/supabase/server";
-import { routeArticleIdSchema } from "@/lib/validation/articles";
+import { articlePayloadSchema, routeArticleIdSchema } from "@/lib/validation/articles";
+import { ensureUniqueArticleSlug } from "@/lib/db/articles";
+import { parseJsonRequest } from "@/lib/validation/request";
+import { z } from "zod";
+
+const pinSchema = z.object({
+  pinned_until: z.string().nullable(),
+});
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const routeParams = routeArticleIdSchema.safeParse(await params);
+
+  if (!routeParams.success) {
+    return NextResponse.json({ error: "Invalid article id" }, { status: 400 });
+  }
+
+  const { id } = routeParams.data;
+  const context = await getCurrentViewerRole();
+
+  if (!context.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data: existing } = await context.supabase
+    .from("articles")
+    .select("id, author_user_id, slug")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!existing) {
+    return NextResponse.json({ error: "Article not found" }, { status: 404 });
+  }
+
+  if (existing.author_user_id !== context.user.id && !context.isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const parsed = await parseJsonRequest(request, articlePayloadSchema);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+
+  const payload = parsed.data;
+  const { data: category } = await context.supabase
+    .from("article_categories")
+    .select("id, admin_only")
+    .eq("slug", payload.category_slug)
+    .maybeSingle();
+
+  if (!category) {
+    return NextResponse.json({ error: "Category not found" }, { status: 404 });
+  }
+
+  if (category.admin_only && !context.isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const slug = await ensureUniqueArticleSlug(payload.title, id);
+  const now = new Date().toISOString();
+
+  const { data, error } = await context.supabase
+    .from("articles")
+    .update({
+      category_id: category.id,
+      title: payload.title,
+      slug,
+      excerpt: payload.excerpt,
+      content: payload.content,
+      cover_image_url: payload.cover_image_url,
+      cover_image_storage_path: payload.cover_image_storage_path,
+      hero_video_url: payload.hero_video_url,
+      hero_video_storage_path: payload.hero_video_storage_path,
+      status: payload.status,
+      published_at: payload.status === "published" ? now : null,
+    })
+    .eq("id", id)
+    .select("id, slug")
+    .maybeSingle();
+
+  if (error || !data) {
+    return NextResponse.json({ error: error?.message || "Could not update article" }, { status: 400 });
+  }
+
+  return NextResponse.json({ article: data });
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const routeParams = routeArticleIdSchema.safeParse(await params);
+
+  if (!routeParams.success) {
+    return NextResponse.json({ error: "Invalid article id" }, { status: 400 });
+  }
+
+  const { id } = routeParams.data;
+  const context = await getCurrentViewerRole();
+
+  if (!context.user || !context.isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const parsed = await parseJsonRequest(request, pinSchema);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+
+  const { error } = await context.supabase
+    .from("articles")
+    .update({ pinned_until: parsed.data.pinned_until })
+    .eq("id", id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ success: true });
+}
 
 export async function DELETE(
   _request: Request,

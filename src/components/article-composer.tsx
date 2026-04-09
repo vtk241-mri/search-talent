@@ -1,58 +1,94 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import RichTextComposer from "@/components/rich-text-composer";
 import { Button } from "@/components/ui/Button";
 import FormSelect from "@/components/ui/form-select";
 import FormTextarea from "@/components/ui/form-textarea";
+import {
+  getCategoryDisplayName,
+  sortArticleCategories,
+  type ArticleCategory,
+} from "@/lib/articles";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeStorageFileName } from "@/lib/profile-sections";
-import type { ArticleCategory } from "@/lib/articles";
 
 function inferAssetKind(file: File) {
   return file.type.startsWith("video/") ? "video" : "image";
 }
+
+type EditableArticle = {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  content: string;
+  categorySlug: string;
+  status: "draft" | "published";
+  coverImageUrl: string | null;
+  coverImageStoragePath: string | null;
+  heroVideoUrl: string | null;
+  heroVideoStoragePath: string | null;
+};
 
 export default function ArticleComposer({
   locale,
   userId,
   categories,
   isAdmin,
+  editArticle,
 }: {
   locale: string;
   userId: string;
   categories: ArticleCategory[];
   isAdmin: boolean;
+  editArticle?: EditableArticle | null;
 }) {
   const supabase = createClient();
   const router = useRouter();
   const isUkrainian = locale === "uk";
-  const [title, setTitle] = useState("");
-  const [excerpt, setExcerpt] = useState("");
-  const [content, setContent] = useState("");
+  const availableCategories = useMemo(
+    () =>
+      sortArticleCategories(
+        categories.filter((item) => isAdmin || !item.adminOnly),
+        locale,
+      ),
+    [categories, isAdmin, locale],
+  );
+  const [title, setTitle] = useState(editArticle?.title || "");
+  const [excerpt, setExcerpt] = useState(editArticle?.excerpt || "");
+  const [content, setContent] = useState(editArticle?.content || "");
   const [categorySlug, setCategorySlug] = useState(
-    categories.find((item) => !item.adminOnly)?.slug ||
-      categories[0]?.slug ||
+    editArticle?.categorySlug ||
+      availableCategories[0]?.slug ||
       "",
   );
-  const [status, setStatus] = useState<"draft" | "published">("draft");
-  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const [status, setStatus] = useState<"draft" | "published">(editArticle?.status || "draft");
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(editArticle?.coverImageUrl || null);
   const [coverImageStoragePath, setCoverImageStoragePath] = useState<
     string | null
-  >(null);
-  const [heroVideoUrl, setHeroVideoUrl] = useState<string | null>(null);
+  >(editArticle?.coverImageStoragePath || null);
+  const [heroVideoUrl, setHeroVideoUrl] = useState<string | null>(editArticle?.heroVideoUrl || null);
   const [heroVideoStoragePath, setHeroVideoStoragePath] = useState<
     string | null
-  >(null);
+  >(editArticle?.heroVideoStoragePath || null);
   const [saving, setSaving] = useState(false);
   const [uploadingAsset, setUploadingAsset] = useState<
     null | "cover" | "hero" | "inline"
   >(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const isEditing = Boolean(editArticle?.id);
+
+  useEffect(() => {
+    if (availableCategories.some((item) => item.slug === categorySlug)) {
+      return;
+    }
+
+    setCategorySlug(availableCategories[0]?.slug || "");
+  }, [availableCategories, categorySlug]);
   const ui = isUkrainian
     ? {
-        pageTitle: "Нова стаття",
+        pageTitle: isEditing ? "Редагувати статтю" : "Нова стаття",
         editorLabel: "Зміст",
         editorHint:
           "Один редактор для заголовків, цитат, списків, виділень, посилань та медіа-блоків. Працює як справжнє полотно для написання.",
@@ -83,7 +119,7 @@ export default function ArticleComposer({
           "Почніть писати, додайте заголовки, цитати, списки й вставляйте медіа прямо в полотно.",
       }
     : {
-        pageTitle: "New article",
+        pageTitle: isEditing ? "Edit article" : "New article",
         editorLabel: "Content",
         editorHint:
           "One editor for headings, quotes, lists, emphasis, links, and media blocks. It behaves like a real writing canvas.",
@@ -162,8 +198,11 @@ export default function ArticleComposer({
     setSaving(true);
     setErrorMessage(null);
 
-    const response = await fetch("/api/articles", {
-      method: "POST",
+    const url = isEditing ? `/api/articles/${editArticle!.id}` : "/api/articles";
+    const method = isEditing ? "PUT" : "POST";
+
+    const response = await fetch(url, {
+      method,
       headers: {
         "Content-Type": "application/json",
       },
@@ -187,6 +226,11 @@ export default function ArticleComposer({
         error?: string;
       };
       setErrorMessage(payload.error || ui.error);
+      return;
+    }
+
+    if (isEditing) {
+      router.refresh();
       return;
     }
 
@@ -282,11 +326,9 @@ export default function ArticleComposer({
               triggerClassName="w-full bg-[color:var(--surface-muted)]"
               value={categorySlug}
               onChange={setCategorySlug}
-              options={categories
-                .filter((item) => isAdmin || !item.adminOnly)
-                .map((item) => ({
+              options={availableCategories.map((item) => ({
                   value: item.slug,
-                  label: item.name,
+                  label: getCategoryDisplayName(item, locale),
                 }))}
             />
           </div>

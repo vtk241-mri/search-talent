@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { isLocale, locales } from "@/lib/i18n/config";
+import { isLocale } from "@/lib/i18n/config";
 
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
-}
 
 const DiscoveryPage = dynamic(() => import("@/components/discovery-page"), {
   loading: () => (

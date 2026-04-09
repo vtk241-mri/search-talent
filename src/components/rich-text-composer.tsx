@@ -9,11 +9,14 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import dynamic from "next/dynamic";
 import {
   extractPlainTextFromRichText,
   extractYouTubeVideoId,
   sanitizeRichTextHtml,
 } from "@/lib/rich-text";
+
+const EmojiPicker = dynamic(() => import("@emoji-mart/react").then((m) => m.default), { ssr: false });
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -187,6 +190,8 @@ export default function RichTextComposer({
   const [popover, setPopover] = useState<PopoverKind>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [activeFormats, setActiveFormats] = useState({ bold: false, italic: false });
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const emojiRef = useRef<HTMLDivElement | null>(null);
 
   const isUk = locale === "uk";
   const ui = useMemo(
@@ -203,7 +208,7 @@ export default function RichTextComposer({
             bold: "Жирний (Ctrl+B)",
             italic: "Курсив (Ctrl+I)",
             link: "Посилання (Ctrl+K)",
-            highlight: "Підсвітка",
+            emoji: "Емодзі",
             code: "Код",
             image: "Фото",
             youtube: "YouTube відео",
@@ -221,7 +226,7 @@ export default function RichTextComposer({
             bold: "Bold (Ctrl+B)",
             italic: "Italic (Ctrl+I)",
             link: "Link (Ctrl+K)",
-            highlight: "Highlight",
+            emoji: "Emoji",
             code: "Code",
             image: "Image",
             youtube: "YouTube video",
@@ -263,7 +268,19 @@ export default function RichTextComposer({
   }, []);
 
   /* ---- core editor helpers ---- */
-  const syncEditorValue = useCallback(() => {
+
+  // Emit sanitized value to parent WITHOUT touching editor DOM.
+  // Replacing innerHTML during editing kills cursor and formatting.
+  const emitChange = useCallback(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    const sanitized = sanitizeRichTextHtml(el.innerHTML);
+    lastSyncRef.current = sanitized;
+    onChange(sanitized);
+  }, [onChange]);
+
+  // Normalize editor DOM — only called on blur when user is done editing.
+  const normalizeEditorDom = useCallback(() => {
     const el = editorRef.current;
     if (!el) return;
     const sanitized = sanitizeRichTextHtml(el.innerHTML);
@@ -278,33 +295,58 @@ export default function RichTextComposer({
     el.focus();
     if (!el.innerHTML.trim()) {
       el.innerHTML = "<p><br></p>";
-      syncEditorValue();
+      emitChange();
     }
-    restoreSelection(savedRangeRef.current);
-  }, [syncEditorValue]);
+    const range = savedRangeRef.current;
+    if (range && el.contains(range.startContainer)) {
+      restoreSelection(range);
+    }
+  }, [emitChange]);
 
   const exec = useCallback(
     (command: string, arg?: string) => {
-      focusEditor();
-      if (command === "hiliteColor")
-        document.execCommand("styleWithCSS", false, "true");
+      const el = editorRef.current;
+      if (!el) return;
+      el.focus();
+
+      // Restore saved range if still valid inside editor
+      const range = savedRangeRef.current;
+      if (range && el.contains(range.startContainer)) {
+        restoreSelection(range);
+      }
+
       document.execCommand(command, false, arg);
       savedRangeRef.current = saveSelection();
-      syncEditorValue();
+      emitChange();
       refreshActiveFormats();
     },
-    [focusEditor, syncEditorValue, refreshActiveFormats],
+    [emitChange, refreshActiveFormats],
   );
 
   const insertHtml = useCallback(
     (html: string) => {
-      focusEditor();
-      restoreSelection(savedRangeRef.current);
+      const el = editorRef.current;
+      if (!el) return;
+      el.focus();
+
+      // Restore saved range if it's still inside the editor
+      const range = savedRangeRef.current;
+      if (range && el.contains(range.startContainer)) {
+        restoreSelection(range);
+      } else {
+        // Place cursor at the end if saved range is stale
+        const sel = window.getSelection();
+        if (sel) {
+          sel.selectAllChildren(el);
+          sel.collapseToEnd();
+        }
+      }
+
       document.execCommand("insertHTML", false, html);
       savedRangeRef.current = saveSelection();
-      syncEditorValue();
+      emitChange();
     },
-    [focusEditor, syncEditorValue],
+    [emitChange],
   );
 
   /* ---- toolbar actions ---- */
@@ -387,6 +429,26 @@ export default function RichTextComposer({
     },
     [exec, openPopover],
   );
+
+  /* ---- emoji picker ---- */
+  const handleEmojiSelect = useCallback(
+    (emoji: { native: string }) => {
+      insertHtml(emoji.native);
+      setEmojiOpen(false);
+    },
+    [insertHtml],
+  );
+
+  useEffect(() => {
+    if (!emojiOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (!(e.target instanceof Node)) return;
+      if (emojiRef.current?.contains(e.target)) return;
+      setEmojiOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [emojiOpen]);
 
   /* ---- selection tracking ---- */
   const trackSelection = useCallback(() => {
@@ -491,12 +553,23 @@ export default function RichTextComposer({
               </svg>
             </button>
 
-            {/* Highlight */}
-            <button type="button" className={cls(btnBase, btnIdle)} onMouseDown={pd} onClick={() => exec("hiliteColor", "#f9731655")} title={ui.highlight}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-                <path fillRule="evenodd" d="M5.5 3A2.5 2.5 0 0 0 3 5.5v2.879a2.5 2.5 0 0 0 .732 1.767l7.5 7.5a2.5 2.5 0 0 0 3.536 0l2.878-2.878a2.5 2.5 0 0 0 0-3.536l-7.5-7.5A2.5 2.5 0 0 0 8.38 3H5.5ZM6 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
-              </svg>
-            </button>
+            {/* Emoji */}
+            <div className="relative" ref={emojiRef}>
+              <button type="button" className={cls(btnBase, emojiOpen ? btnActive : btnIdle)} onMouseDown={pd} onClick={() => { savedRangeRef.current = saveSelection(); setEmojiOpen((v) => !v); }} title={ui.emoji}>
+                <span className="text-sm">😊</span>
+              </button>
+              {emojiOpen && (
+                <div className="absolute left-0 top-[calc(100%+0.5rem)] z-30">
+                  <EmojiPicker
+                    locale={isUk ? "uk" : "en"}
+                    theme="dark"
+                    previewPosition="none"
+                    skinTonePosition="search"
+                    onEmojiSelect={handleEmojiSelect}
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Code */}
             <button type="button" className={cls(btnBase, btnIdle)} onMouseDown={pd} onClick={() => insertHtml("<code>code</code>")} title={ui.code}>
@@ -588,14 +661,18 @@ export default function RichTextComposer({
             }}
             onBlur={() => {
               savedRangeRef.current = saveSelection();
-              syncEditorValue();
+              // Don't normalize DOM when a popover or upload is active —
+              // it would invalidate the saved cursor position
+              if (!popover && !uploadingImage && !emojiOpen) {
+                normalizeEditorDom();
+              }
             }}
             onKeyDown={handleKeyDown}
             onKeyUp={trackSelection}
             onMouseUp={trackSelection}
             onInput={() => {
               trackSelection();
-              syncEditorValue();
+              emitChange();
             }}
           />
         </div>

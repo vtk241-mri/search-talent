@@ -3,6 +3,7 @@ import LocalizedLink from "@/components/ui/localized-link";
 import {
   formatArticleDate,
   getArticleReadingTime,
+  getCategoryDisplayName,
   type ArticleFeedItem,
 } from "@/lib/articles";
 
@@ -19,7 +20,8 @@ export default function ArticleCard({
   const authorInitial = authorLabel.slice(0, 1).toUpperCase();
   const publishedLabel = formatArticleDate(article.publishedAt || article.createdAt, locale);
   const readingTime = getArticleReadingTime(article.content || article.excerpt || "", locale);
-  const categoryLabel = article.category?.name || (isUkrainian ? "Стаття" : "Article");
+  const categoryLabel = getCategoryDisplayName(article.category, locale) || (isUkrainian ? "Стаття" : "Article");
+  const isPinned = article.pinnedUntil && new Date(article.pinnedUntil) > new Date();
 
   return (
     <LocalizedLink
@@ -27,6 +29,11 @@ export default function ArticleCard({
       className="group block overflow-hidden rounded-[2rem] app-card transition hover:-translate-y-0.5 hover:shadow-xl"
     >
       <div className="relative aspect-[16/10] bg-[color:var(--surface-muted)]">
+        {isPinned && (
+          <span className="absolute left-4 top-4 z-10 rounded-full bg-orange-500/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
+            {isUkrainian ? "Закріплено" : "Pinned"}
+          </span>
+        )}
         {article.coverImageUrl ? (
           <Image
             src={article.coverImageUrl}

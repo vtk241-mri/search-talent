@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ArticleCard from "@/components/article-card";
 import { ButtonLink } from "@/components/ui/Button";
 import FormSelect from "@/components/ui/form-select";
+import { getCategoryDisplayName, sortArticleCategories } from "@/lib/articles";
 import { getArticleFeed } from "@/lib/db/articles";
 import { isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -48,6 +49,7 @@ export default async function ArticlesPage({
     authorQuery: author || null,
     sort: sort || null,
   });
+  const sortedCategories = sortArticleCategories(feed.categories, safeLocale);
   const ui =
     safeLocale === "uk"
       ? {
@@ -89,7 +91,7 @@ export default async function ArticlesPage({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <section className="overflow-hidden rounded-[2.25rem] app-card">
+      <section className="relative rounded-[2.25rem] app-card">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
           <div className="p-6 sm:p-8">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-400">
@@ -109,10 +111,10 @@ export default async function ArticlesPage({
             </div>
           </div>
 
-          <div className="border-l app-border bg-[radial-gradient(circle_at_top_right,_rgba(249,115,22,0.22),_transparent_35%),linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(15,23,42,0.72))] p-6 sm:p-8">
+          <div className="rounded-[1.9rem] border app-border bg-[radial-gradient(circle_at_top_right,_rgba(249,115,22,0.24),_transparent_35%),linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.82))] p-6 text-white shadow-[0_22px_70px_rgba(15,23,42,0.18)] sm:p-8 lg:-my-px lg:-mr-px lg:rounded-l-[1.9rem] lg:rounded-r-[2.25rem]">
             <form className="space-y-4">
               <div>
-                <label className="mb-2 block text-sm font-medium text-[color:var(--foreground)]">
+                <label className="mb-2 block text-sm font-medium text-white/78">
                   {ui.filterCategory}
                 </label>
                 <FormSelect
@@ -120,35 +122,37 @@ export default async function ArticlesPage({
                   value={category || ""}
                   placeholder={ui.allCategories}
                   className="w-full"
-                  triggerClassName="w-full"
-                  options={feed.categories.map((item) => ({
+                  triggerClassName="w-full border-white/12 bg-white/96 text-slate-900 shadow-[0_12px_30px_rgba(15,23,42,0.14)]"
+                  dropdownClassName="bg-white text-slate-900"
+                  options={sortedCategories.map((item) => ({
                     value: item.slug,
-                    label: item.name,
+                    label: getCategoryDisplayName(item, safeLocale),
                   }))}
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-[color:var(--foreground)]">
+                <label className="mb-2 block text-sm font-medium text-white/78">
                   {ui.filterAuthor}
                 </label>
                 <input
                   name="author"
                   defaultValue={author || ""}
                   placeholder={ui.authorPlaceholder}
-                  className="w-full rounded-[1.25rem] border app-border bg-[color:var(--surface)] p-3 text-[color:var(--foreground)]"
+                  className="w-full rounded-[1.25rem] border border-white/12 bg-white/96 p-3 text-slate-900 placeholder:text-slate-500"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-[color:var(--foreground)]">
+                <label className="mb-2 block text-sm font-medium text-white/78">
                   {ui.filterSort}
                 </label>
                 <FormSelect
                   name="sort"
                   value={sort || "recent"}
                   className="w-full"
-                  triggerClassName="w-full"
+                  triggerClassName="w-full border-white/12 bg-white/96 text-slate-900 shadow-[0_12px_30px_rgba(15,23,42,0.14)]"
+                  dropdownClassName="bg-white text-slate-900"
                   options={[
                     { value: "recent", label: ui.recent },
                     { value: "popular", label: ui.popular },
@@ -158,10 +162,14 @@ export default async function ArticlesPage({
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <button className="rounded-full bg-[color:var(--foreground)] px-5 py-2.5 text-sm font-medium text-[color:var(--background)]">
+                <button className="rounded-full bg-white px-5 py-2.5 text-sm font-medium text-slate-950 shadow-sm transition hover:bg-white/90">
                   {ui.apply}
                 </button>
-                <ButtonLink href="/articles" variant="ghost">
+                <ButtonLink
+                  href="/articles"
+                  variant="secondary"
+                  className="border-white/16 bg-white/10 text-white hover:bg-white/16 hover:text-white"
+                >
                   {ui.reset}
                 </ButtonLink>
               </div>

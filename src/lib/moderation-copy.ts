@@ -97,6 +97,7 @@ export function getModerationCopy(locale: Locale) {
       targetLabels: {
         profile: "Профіль",
         project: "Проєкт",
+        article: "Стаття",
       } satisfies Record<ReportTargetType, string>,
     };
   }
@@ -189,6 +190,7 @@ export function getModerationCopy(locale: Locale) {
     targetLabels: {
       profile: "Profile",
       project: "Project",
+      article: "Article",
     } satisfies Record<ReportTargetType, string>,
   };
 }

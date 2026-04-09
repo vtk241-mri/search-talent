@@ -361,6 +361,7 @@ select {
   background: color-mix(in srgb, var(--surface) 94%, var(--surface-muted) 6%);
   box-shadow: 0 28px 60px rgba(2, 6, 23, 0.2);
   backdrop-filter: blur(18px);
+  color: var(--foreground);
 }
 
 .app-select-dropdown-inner {
@@ -391,6 +392,7 @@ select {
 
 .app-select-option[data-selected="true"] {
   background: color-mix(in srgb, var(--foreground) 10%, var(--surface-muted));
+  color: var(--foreground);
 }
 
 .app-select-option[data-placeholder="true"] {
@@ -417,6 +419,21 @@ select {
 .rich-text-editor p,
 .rich-text-renderer p {
   margin: 0 0 1rem;
+}
+
+.rich-text-editor p:last-child,
+.rich-text-renderer p:last-child {
+  margin-bottom: 0;
+}
+
+.rich-text-editor li > p,
+.rich-text-renderer li > p {
+  margin-bottom: 0;
+}
+
+.rich-text-editor blockquote > p:last-child,
+.rich-text-renderer blockquote > p:last-child {
+  margin-bottom: 0;
 }
 
 .rich-text-editor h3,
@@ -461,17 +478,6 @@ select {
   color: var(--foreground);
 }
 
-.rich-text-editor mark,
-.rich-text-renderer mark {
-  border-radius: 0.4rem;
-  background: color-mix(
-    in srgb,
-    var(--rich-text-accent, #f97316) 22%,
-    transparent
-  );
-  padding: 0.08rem 0.3rem;
-  color: var(--foreground);
-}
 
 .rich-text-editor a,
 .rich-text-renderer a {

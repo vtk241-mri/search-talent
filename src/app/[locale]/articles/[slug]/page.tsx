@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import ArticleInteractions from "@/components/article-interactions";
+import ArticlePinButton from "@/components/article-pin-button";
+import ReportArticleButton from "@/components/report-article-button";
 import DeleteArticleButton from "@/components/delete-article-button";
 import RichTextRenderer from "@/components/rich-text-renderer";
 import { ButtonLink } from "@/components/ui/Button";
-import { formatArticleDate, getArticleReadingTime } from "@/lib/articles";
+import { formatArticleDate, getArticleReadingTime, getCategoryDisplayName } from "@/lib/articles";
 import { getArticleDetail } from "@/lib/db/articles";
 import { isLocale } from "@/lib/i18n/config";
 import { normalizeModerationStatus } from "@/lib/moderation";
@@ -101,6 +104,19 @@ export default async function ArticleDetailPage({
             <ButtonLink href="/articles" variant="ghost">
               {ui.back}
             </ButtonLink>
+            {!isOwner && viewerUserId && (
+              <ReportArticleButton
+                articleId={article.id}
+                locale={safeLocale}
+              />
+            )}
+            {isAdmin && (
+              <ArticlePinButton
+                articleId={article.id}
+                currentPinnedUntil={article.pinnedUntil}
+                locale={safeLocale}
+              />
+            )}
             {isOwner ? (
               <DeleteArticleButton
                 articleId={article.id}
@@ -113,8 +129,8 @@ export default async function ArticleDetailPage({
               />
             ) : null}
             {article.category ? (
-              <span className="rounded-full bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300">
-                {article.category.name}
+              <span className="rounded-full bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-700 dark:text-orange-300">
+                {getCategoryDisplayName(article.category, safeLocale)}
               </span>
             ) : null}
             {article.status === "draft" ? (
@@ -138,29 +154,41 @@ export default async function ArticleDetailPage({
           ) : null}
 
           <div className="mt-6 flex flex-wrap items-center gap-4 text-sm app-muted">
-            <span className="flex items-center gap-3">
-              <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border app-border bg-[color:var(--surface-muted)] text-sm font-semibold text-[color:var(--foreground)]">
-                {article.author?.avatarUrl ? (
-                  <Image
-                    src={article.author.avatarUrl}
-                    alt={authorLabel}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
+            {article.author?.username ? (
+              <Link
+                href={`/${safeLocale}/u/${article.author.username}`}
+                className="flex items-center gap-3 transition hover:opacity-80"
+              >
+                <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border app-border bg-[color:var(--surface-muted)] text-sm font-semibold text-[color:var(--foreground)]">
+                  {article.author.avatarUrl ? (
+                    <Image
+                      src={article.author.avatarUrl}
+                      alt={authorLabel}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <span>{authorInitial}</span>
+                  )}
+                </span>
+                <span className="underline underline-offset-4 decoration-[color:var(--border)]">
+                  {authorLabel}
+                </span>
+              </Link>
+            ) : (
+              <span className="flex items-center gap-3">
+                <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border app-border bg-[color:var(--surface-muted)] text-sm font-semibold text-[color:var(--foreground)]">
                   <span>{authorInitial}</span>
-                )}
+                </span>
+                <span>{authorLabel}</span>
               </span>
-              <span>
-                {ui.by}: {authorLabel}
-              </span>
-            </span>
+            )}
             <span>
               {ui.published}: {formatArticleDate(article.publishedAt || article.createdAt, safeLocale)}
             </span>
             <span>{getArticleReadingTime(article.content, safeLocale)}</span>
             <span>
-              {ui.category}: {article.category?.name || ui.noCategory}
+              {ui.category}: {getCategoryDisplayName(article.category, safeLocale)}
             </span>
           </div>
 

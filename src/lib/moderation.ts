@@ -5,7 +5,7 @@ export const moderationStatuses = [
   "removed",
 ] as const;
 
-export const reportTargetTypes = ["profile", "project"] as const;
+export const reportTargetTypes = ["profile", "project", "article"] as const;
 
 export const reportReasons = [
   "copyright_infringement",

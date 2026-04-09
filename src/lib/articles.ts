@@ -8,6 +8,7 @@ export type ArticleCategory = {
   id: number;
   slug: string;
   name: string;
+  nameUk: string | null;
   description: string | null;
   adminOnly: boolean;
 };
@@ -34,6 +35,7 @@ export type ArticleFeedItem = {
   commentsCount: number;
   category: ArticleCategory | null;
   author: ArticleAuthor | null;
+  pinnedUntil: string | null;
 };
 
 export type ArticleComment = {
@@ -66,7 +68,7 @@ export type ArticleDashboardItem = {
   viewsCount: number;
   likesCount: number;
   commentsCount: number;
-  categoryName: string | null;
+  category: ArticleCategory | null;
   moderationStatus: string | null;
   moderationNote: string | null;
 };
@@ -112,6 +114,28 @@ export function formatArticleDate(value: string | null, locale: string) {
     month: "long",
     year: "numeric",
   }).format(date);
+}
+
+export function getCategoryDisplayName(category: ArticleCategory | null, locale: string) {
+  if (!category) return locale === "uk" ? "Без категорії" : "No category";
+  if (locale === "uk" && category.nameUk?.trim()) return category.nameUk;
+  return category.name;
+}
+
+export function sortArticleCategories(
+  categories: ArticleCategory[],
+  locale: string,
+) {
+  const collator = new Intl.Collator(locale === "uk" ? "uk-UA" : "en-US", {
+    sensitivity: "base",
+  });
+
+  return [...categories].sort((left, right) =>
+    collator.compare(
+      getCategoryDisplayName(left, locale),
+      getCategoryDisplayName(right, locale),
+    ),
+  );
 }
 
 export function getArticleReadingTime(content: string, locale: string) {

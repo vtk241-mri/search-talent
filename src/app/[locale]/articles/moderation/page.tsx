@@ -1,7 +1,11 @@
 import { redirect } from "next/navigation";
 import ArticleModerationActions from "@/components/article-moderation-actions";
 import { ButtonLink } from "@/components/ui/Button";
-import { formatArticleDate, getArticleReadingTime } from "@/lib/articles";
+import {
+  formatArticleDate,
+  getArticleReadingTime,
+  getCategoryDisplayName,
+} from "@/lib/articles";
 import { getArticleModerationQueue } from "@/lib/db/articles";
 import { createLocalePath, isLocale } from "@/lib/i18n/config";
 import { requireAdmin } from "@/lib/moderation-server";
@@ -129,7 +133,7 @@ export default async function ArticlesModerationPage({
                         {ui.author}: {article.author?.name || article.author?.username || "SearchTalent"}
                       </span>
                       <span>
-                        {ui.category}: {article.category?.name || ui.noCategory}
+                        {ui.category}: {getCategoryDisplayName(article.category, safeLocale) || ui.noCategory}
                       </span>
                       <span>{getArticleReadingTime(article.content || "", safeLocale)}</span>
                     </div>

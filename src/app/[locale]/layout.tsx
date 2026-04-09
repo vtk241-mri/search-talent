@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import CookieConsentBanner from "@/components/cookie-consent-banner";
-import SiteFooter from "@/components/site-footer";
-import SiteHeader from "@/components/site-header";
-import { getAppShellData } from "@/lib/app-shell";
+import AppShell from "@/components/app-shell";
 import { isLocale } from "@/lib/i18n/config";
 
 export default async function LocaleLayout({
@@ -19,19 +16,5 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  const { dictionary, initialConsent, initialTheme, isSignedIn, viewer } =
-    await getAppShellData(locale);
-
-  return (
-    <>
-      <SiteHeader
-        dictionary={dictionary}
-        viewer={viewer}
-        initialTheme={initialTheme}
-      />
-      <div className="flex-1">{children}</div>
-      <SiteFooter dictionary={dictionary} isSignedIn={isSignedIn} />
-      <CookieConsentBanner initialConsent={initialConsent} />
-    </>
-  );
+  return <AppShell locale={locale}>{children}</AppShell>;
 }

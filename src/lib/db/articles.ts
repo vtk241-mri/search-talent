@@ -30,6 +30,7 @@ type ArticleRow = {
   moderation_status: string | null;
   moderation_note: string | null;
   views_count: number | null;
+  pinned_until: string | null;
   published_at: string | null;
   created_at: string | null;
 };
@@ -38,6 +39,7 @@ type ArticleCategoryRow = {
   id: number;
   slug: string;
   name: string;
+  name_uk: string | null;
   description: string | null;
   admin_only: boolean | null;
 };
@@ -72,6 +74,7 @@ function mapCategory(row: ArticleCategoryRow | null | undefined): ArticleCategor
     id: row.id,
     slug: row.slug,
     name: row.name,
+    nameUk: row.name_uk || null,
     description: row.description || null,
     adminOnly: Boolean(row.admin_only),
   };
@@ -145,7 +148,7 @@ async function getCategoriesMap(
 
   const { data } = await supabase
     .from("article_categories")
-    .select("id, slug, name, description, admin_only")
+    .select("id, slug, name, name_uk, description, admin_only")
     .in("id", categoryIds);
 
   return new Map(
@@ -193,6 +196,7 @@ function toFeedItem(
     commentsCount: commentsCountMap.get(row.id) || 0,
     category: row.category_id ? categoryMap.get(row.category_id) || null : null,
     author: authorMap.get(row.author_user_id) || null,
+    pinnedUntil: row.pinned_until,
   };
 }
 
@@ -201,7 +205,7 @@ export async function getArticleCategories() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("article_categories")
-    .select("id, slug, name, description, admin_only")
+    .select("id, slug, name, name_uk, description, admin_only")
     .order("name", { ascending: true });
 
   return ((data || []) as ArticleCategoryRow[]).map((item) => mapCategory(item)!);
@@ -220,7 +224,7 @@ export async function getArticleFeed(params?: {
   let query = supabase
     .from("articles")
     .select(
-      "id, author_user_id, category_id, title, slug, excerpt, content, cover_image_url, cover_image_storage_path, hero_video_url, hero_video_storage_path, status, moderation_status, moderation_note, views_count, published_at, created_at",
+      "id, author_user_id, category_id, title, slug, excerpt, content, cover_image_url, cover_image_storage_path, hero_video_url, hero_video_storage_path, status, moderation_status, moderation_note, views_count, pinned_until, published_at, created_at",
     )
     .eq("status", "published")
     .limit(60);
@@ -303,9 +307,15 @@ export async function getArticleFeed(params?: {
     })),
   );
 
+  const now = Date.now();
   const items = rows
     .map((item) => toFeedItem(item, categoryMap, authorMap, likesCountMap, commentsCountMap))
     .sort((left, right) => {
+      // Pinned articles always come first
+      const leftPinned = left.pinnedUntil && new Date(left.pinnedUntil).getTime() > now ? 1 : 0;
+      const rightPinned = right.pinnedUntil && new Date(right.pinnedUntil).getTime() > now ? 1 : 0;
+      if (leftPinned !== rightPinned) return rightPinned - leftPinned;
+
       if (sort === "popular") {
         return right.viewsCount - left.viewsCount || right.likesCount - left.likesCount;
       }
@@ -335,7 +345,7 @@ export async function getArticleDetail(slug: string) {
   const { data: row } = await supabase
     .from("articles")
     .select(
-      "id, author_user_id, category_id, title, slug, excerpt, content, cover_image_url, cover_image_storage_path, hero_video_url, hero_video_storage_path, status, moderation_status, moderation_note, views_count, published_at, created_at",
+      "id, author_user_id, category_id, title, slug, excerpt, content, cover_image_url, cover_image_storage_path, hero_video_url, hero_video_storage_path, status, moderation_status, moderation_note, views_count, pinned_until, published_at, created_at",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -498,7 +508,7 @@ export async function getDashboardArticles() {
         viewsCount: item.views_count ?? 0,
         likesCount: likesCountMap.get(item.id) || 0,
         commentsCount: commentsCountMap.get(item.id) || 0,
-        categoryName: item.category_id ? categoryMap.get(item.category_id)?.name || null : null,
+        category: item.category_id ? categoryMap.get(item.category_id) || null : null,
         moderationStatus: item.moderation_status,
         moderationNote: item.moderation_note,
       }),
@@ -519,7 +529,7 @@ export async function getArticleModerationQueue() {
   const { data } = await supabase
     .from("articles")
     .select(
-      "id, author_user_id, category_id, title, slug, excerpt, content, cover_image_url, cover_image_storage_path, hero_video_url, hero_video_storage_path, status, moderation_status, moderation_note, views_count, published_at, created_at",
+      "id, author_user_id, category_id, title, slug, excerpt, content, cover_image_url, cover_image_storage_path, hero_video_url, hero_video_storage_path, status, moderation_status, moderation_note, views_count, pinned_until, published_at, created_at",
     )
     .order("created_at", { ascending: false })
     .limit(60);

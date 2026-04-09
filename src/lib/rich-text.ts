@@ -10,12 +10,16 @@ const allowedTags = new Set([
   "iframe",
   "img",
   "li",
-  "mark",
   "ol",
   "p",
   "strong",
   "ul",
 ]);
+
+const tagAliases: Record<string, string> = {
+  b: "strong",
+  i: "em",
+};
 
 function escapeHtml(value: string) {
   return value
@@ -50,7 +54,34 @@ function sanitizeNode(node: Node): string {
   }
 
   const element = node as HTMLElement;
-  const tag = element.tagName.toLowerCase();
+  let tag = element.tagName.toLowerCase();
+
+  // Convert browser-generated aliases to semantic tags
+  if (tag in tagAliases) {
+    tag = tagAliases[tag];
+  }
+
+  // Convert styled <span> to semantic tags
+  if (tag === "span") {
+    const bg = element.style.backgroundColor;
+    if (bg) {
+      const content = Array.from(element.childNodes).map(sanitizeNode).join("");
+      return content ? `<mark>${content}</mark>` : "";
+    }
+    return Array.from(element.childNodes).map(sanitizeNode).join("");
+  }
+
+  // Convert <div> to <p> (browsers sometimes insert divs)
+  // Only wrap in <p> if the div contains only inline content
+  if (tag === "div") {
+    const content = Array.from(element.childNodes).map(sanitizeNode).join("");
+    if (!content) return "";
+    // If content already contains block-level tags, don't wrap in <p>
+    if (/<(?:p|h3|ul|ol|li|blockquote|figure|iframe)[\s>]/i.test(content)) {
+      return content;
+    }
+    return `<p>${content}</p>`;
+  }
 
   if (!allowedTags.has(tag)) {
     return Array.from(element.childNodes).map(sanitizeNode).join("");

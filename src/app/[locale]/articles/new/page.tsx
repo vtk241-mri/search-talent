@@ -2,6 +2,7 @@ import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import DeleteArticleButton from "@/components/delete-article-button";
 import { ButtonLink } from "@/components/ui/Button";
+import { getCategoryDisplayName } from "@/lib/articles";
 import { getDashboardArticles } from "@/lib/db/articles";
 import { createLocalePath, isLocale } from "@/lib/i18n/config";
 import { getCurrentViewerRole } from "@/lib/moderation-server";
@@ -67,6 +68,7 @@ export default async function NewArticlePage({
           draft: "Чернетка",
           published: "Опубліковано",
           openArticle: "Відкрити статтю",
+          editArticle: "Редагувати",
           views: "Перегляди",
           likes: "Лайки",
           comments: "Коментарі",
@@ -88,6 +90,7 @@ export default async function NewArticlePage({
           draft: "Draft",
           published: "Published",
           openArticle: "Open article",
+          editArticle: "Edit",
           views: "Views",
           likes: "Likes",
           comments: "Comments",
@@ -142,7 +145,7 @@ export default async function NewArticlePage({
                         {item.title}
                       </h3>
                       <p className="mt-2 text-sm app-muted">
-                        {item.categoryName || ui.noCategory}
+                        {getCategoryDisplayName(item.category, safeLocale)}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -180,6 +183,11 @@ export default async function NewArticlePage({
                     <ButtonLink href={`/articles/${item.slug}`} variant="ghost" size="sm">
                       {ui.openArticle}
                     </ButtonLink>
+                    {item.status === "draft" && (
+                      <ButtonLink href={`/articles/edit/${item.id}`} variant="ghost" size="sm">
+                        {ui.editArticle}
+                      </ButtonLink>
+                    )}
                     <DeleteArticleButton
                       articleId={item.id}
                       label={ui.delete}

@@ -51,6 +51,7 @@ export async function POST(request: Request) {
       hero_video_url: payload.hero_video_url,
       hero_video_storage_path: payload.hero_video_storage_path,
       status: payload.status,
+      moderation_status: "approved",
       published_at: payload.status === "published" ? now : null,
     })
     .select("id, slug")
