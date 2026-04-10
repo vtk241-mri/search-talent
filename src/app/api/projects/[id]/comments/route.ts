@@ -1,0 +1,140 @@
+import { NextResponse } from "next/server";
+import { isPublicModerationStatus } from "@/lib/moderation";
+import { createClient } from "@/lib/supabase/server";
+import {
+  projectCommentPayloadSchema,
+  routeProjectIdSchema,
+} from "@/lib/validation/project";
+import { parseJsonRequest } from "@/lib/validation/request";
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const routeParams = routeProjectIdSchema.safeParse(await params);
+
+  if (!routeParams.success) {
+    return NextResponse.json(
+      { error: routeParams.error.issues[0]?.message || "Invalid project id" },
+      { status: 400 },
+    );
+  }
+
+  const { id } = routeParams.data;
+  const supabase = await createClient();
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, moderation_status")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!project || !isPublicModerationStatus(project.moderation_status)) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
+
+  const { data: comments, error } = await supabase
+    .from("project_comments")
+    .select(
+      "id, project_id, author_user_id, parent_id, body, created_at, updated_at",
+    )
+    .eq("project_id", id)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  const authorIds = [
+    ...new Set((comments || []).map((c) => c.author_user_id)),
+  ];
+
+  let authors: Record<
+    string,
+    { username: string | null; name: string | null; avatar_url: string | null }
+  > = {};
+
+  if (authorIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, username, name, avatar_url")
+      .in("user_id", authorIds);
+
+    if (profiles) {
+      authors = Object.fromEntries(
+        profiles.map((p) => [
+          p.user_id,
+          {
+            username: p.username,
+            name: p.name,
+            avatar_url: p.avatar_url,
+          },
+        ]),
+      );
+    }
+  }
+
+  const enriched = (comments || []).map((c) => ({
+    ...c,
+    author: authors[c.author_user_id] || {
+      username: null,
+      name: null,
+      avatar_url: null,
+    },
+  }));
+
+  return NextResponse.json({ comments: enriched });
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const routeParams = routeProjectIdSchema.safeParse(await params);
+
+  if (!routeParams.success) {
+    return NextResponse.json(
+      { error: routeParams.error.issues[0]?.message || "Invalid project id" },
+      { status: 400 },
+    );
+  }
+
+  const { id } = routeParams.data;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const parsed = await parseJsonRequest(request, projectCommentPayloadSchema);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, moderation_status")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!project || !isPublicModerationStatus(project.moderation_status)) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
+
+  const { error } = await supabase.from("project_comments").insert({
+    project_id: id,
+    author_user_id: user.id,
+    parent_id: parsed.data.parent_id,
+    body: parsed.data.body,
+  });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ success: true });
+}

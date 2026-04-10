@@ -3,6 +3,7 @@ import Image from "next/image";
 import ExpandableProfileBio from "@/components/expandable-profile-bio";
 import ProfileVoteButtons from "@/components/profile-vote-buttons";
 import ProjectCard from "@/components/project-card";
+import VerifiedBadge from "@/components/verified-badge";
 import { ButtonLink } from "@/components/ui/Button";
 import type { PublicProfilePageData } from "@/lib/db/public";
 import {
@@ -271,7 +272,10 @@ export default function PublicProfileShowcase({
                   <div className="min-w-0">
                     <p className="text-sm font-semibold uppercase tracking-[0.24em]" style={{ color: presentation.mutedColor }}>{profile.categoryName || dictionary.common.creator}</p>
                     <h1 className="mt-3 font-semibold tracking-tight" style={{ fontSize: `${3.2 * typeScale.heading}rem`, lineHeight: 0.98 }}>{displayName}</h1>
-                    <p className="mt-3 text-base app-muted">@{profile.username}</p>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <p className="text-base app-muted">@{profile.username}</p>
+                      <VerifiedBadge verified={profile.email_verified} />
+                    </div>
                     {profile.headline && <p className="mt-5 max-w-3xl leading-8 app-muted" style={{ fontSize: `${1.05 * typeScale.body}rem` }}>{profile.headline}</p>}
                     <div className={`mt-6 flex flex-wrap gap-2 ${presentation.heroAlignment === "center" ? "justify-center" : ""}`}>
                       {(profile.city || profile.countryName) && <span className="rounded-full app-panel px-3 py-1 text-sm app-muted">{[profile.city, profile.countryName].filter(Boolean).join(", ")}</span>}

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getReportPriority, normalizeModerationStatus } from "@/lib/moderation";
+import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { reportPayloadSchema } from "@/lib/validation/report";
 import { parseJsonRequest } from "@/lib/validation/request";
@@ -12,6 +13,12 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const limited = rateLimit(`report:${user.id}`, 5, 60_000);
+
+  if (limited) {
+    return limited;
   }
 
   const parsed = await parseJsonRequest(request, reportPayloadSchema);

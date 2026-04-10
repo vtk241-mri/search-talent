@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
+import OptimizedImage from "@/components/ui/optimized-image";
+import ProjectComments from "@/components/project-comments";
 import ProjectGallery from "@/components/project-gallery";
 import VoteButtons from "@/components/vote-buttons";
 import { ButtonLink } from "@/components/ui/Button";
@@ -161,11 +162,13 @@ export default async function PublicProjectPage({
 
           <div className="relative min-h-[18rem] bg-[color:var(--surface-muted)]">
             {project.cover_url ? (
-              <Image
+              <OptimizedImage
                 src={project.cover_url}
                 alt={project.title}
                 fill
+                sizePreset="cover"
                 className="object-cover"
+                priority
               />
             ) : (
               <div className="flex h-full items-end bg-[radial-gradient(circle_at_top_left,_rgba(15,23,42,0.14),_transparent_45%),linear-gradient(135deg,_rgba(148,163,184,0.28),_rgba(255,255,255,0.8))] p-6">
@@ -296,6 +299,11 @@ export default async function PublicProjectPage({
               <ProjectGallery media={media} />
             </div>
           </section>
+
+          <ProjectComments
+            projectId={project.id}
+            isAuthenticated={isAuthenticated}
+          />
         </div>
 
         <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start">
@@ -315,10 +323,11 @@ export default async function PublicProjectPage({
               <div className="mt-4 flex items-center gap-3">
                 <div className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full app-panel text-lg font-semibold text-[color:var(--foreground)]">
                   {owner.avatarUrl ? (
-                    <Image
+                    <OptimizedImage
                       src={owner.avatarUrl}
                       alt={owner.name || owner.username || dictionary.projectPage.creatorFallback}
                       fill
+                      sizePreset="avatar"
                       className="object-cover"
                     />
                   ) : (

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isPublicModerationStatus } from "@/lib/moderation";
+import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { routeArticleIdSchema } from "@/lib/validation/articles";
 
@@ -21,6 +22,12 @@ export async function POST(
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const limited = rateLimit(`article-like:${user.id}`, 30, 60_000);
+
+  if (limited) {
+    return limited;
   }
 
   const { data: article } = await supabase

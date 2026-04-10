@@ -111,4 +111,9 @@ export const routeProjectIdSchema = z.object({
   id: z.string().uuid("Invalid project id"),
 });
 
+export const projectCommentPayloadSchema = z.object({
+  body: z.string().trim().min(1, "Comment is required").max(4000, "Comment is too long"),
+  parent_id: z.string().uuid().nullable().default(null),
+});
+
 export type ProjectPayload = z.infer<typeof projectPayloadSchema>;

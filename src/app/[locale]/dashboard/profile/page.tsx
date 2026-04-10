@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { notFound, redirect } from "next/navigation";
 import AvatarUpload from "@/components/avatar-upload";
+import EmailVerificationButton from "@/components/email-verification-button";
 import { ButtonLink } from "@/components/ui/Button";
 
 const ProfileForm = dynamic(() => import("@/components/profile-form"), {
@@ -117,6 +118,15 @@ export default async function DashboardProfilePage({
           currentAvatarUrl={profile.avatar_url || null}
           fallbackText={fallbackText}
         />
+
+        <div className="mt-6 flex items-center gap-4">
+          <p className="text-sm font-medium text-[color:var(--foreground)]">
+            {dictionary.emailVerification.sectionTitle}
+          </p>
+          <EmailVerificationButton
+            initialVerified={profile.email_verified ?? false}
+          />
+        </div>
       </section>
 
       <section className="mt-8 rounded-[2rem] app-card p-6 sm:p-8">

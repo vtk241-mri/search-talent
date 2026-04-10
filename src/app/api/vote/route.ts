@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProjectVoteSummary } from "@/lib/db/project-votes";
+import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { parseJsonRequest } from "@/lib/validation/request";
 import { projectVoteSchema } from "@/lib/validation/vote";
@@ -14,6 +15,12 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const limited = rateLimit(`vote:${user.id}`, 20, 60_000);
+
+  if (limited) {
+    return limited;
   }
 
   const parsed = await parseJsonRequest(request, projectVoteSchema);

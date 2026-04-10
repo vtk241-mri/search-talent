@@ -81,6 +81,7 @@ type PublicProfileRow = {
   additional_info: string | null;
   profile_visibility: unknown;
   moderation_status: string | null;
+  email_verified: boolean;
 };
 
 export type PublicProjectPageData = {
@@ -288,7 +289,7 @@ export async function getPublicProfilePageData(
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, user_id, username, name, headline, bio, avatar_url, country_id, city, category_id, website, github, twitter, linkedin, contact_email, telegram_username, phone, preferred_contact_method, experience_level, experience_years, employment_types, work_formats, salary_expectations, salary_currency, additional_info, profile_visibility, moderation_status",
+      "id, user_id, username, name, headline, bio, avatar_url, country_id, city, category_id, website, github, twitter, linkedin, contact_email, telegram_username, phone, preferred_contact_method, experience_level, experience_years, employment_types, work_formats, salary_expectations, salary_currency, additional_info, profile_visibility, moderation_status, email_verified",
     )
     .eq("username", username)
     .maybeSingle();
