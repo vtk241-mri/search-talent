@@ -1,4 +1,4 @@
-﻿import {
+import {
   calculateProjectRating,
   calculateUserRating,
   getProfileCompletenessScore,
@@ -7,6 +7,8 @@
   type LeaderboardTimeframe,
 } from "@/lib/leaderboards";
 import { createClient } from "@/lib/supabase/server";
+
+// ---- row types ------------------------------------------------------------
 
 type PublicProfileRow = {
   id: string;
@@ -55,12 +57,14 @@ type PublicProjectRow = {
   created_at: string | null;
 };
 
-type VoteRow = { project_id: string; user_id: string; value: number; created_at: string | null };
-type ProfileVoteRow = { profile_id: string; user_id: string; value: number; created_at: string | null };
-type MediaRow = { project_id: string; media_kind: string | null; created_at: string | null };
+type VoteRow = { project_id: string; value: number; created_at: string | null };
+type ProfileVoteRow = { profile_id: string; value: number; created_at: string | null };
+type MediaRow = { project_id: string; created_at: string | null };
 type ProjectSkillRow = { project_id: string; skill_id: number };
 type ProfileRelationRow = { profile_id: string; skill_id?: number; language_id?: number };
 type ProfileSectionRow = { profile_id: string };
+
+// ---- public types ---------------------------------------------------------
 
 export type RankedProject = {
   id: string;
@@ -99,170 +103,388 @@ export type LeaderboardsResult = {
   projects: Record<LeaderboardTimeframe, RankedProject[]>;
 };
 
-function countVotes(rows: VoteRow[] | ProfileVoteRow[], timeframe: LeaderboardTimeframe) {
-  return rows.reduce((result, row) => {
-    if (timeframe === "month" && !isWithinTimeframe(row.created_at, "month")) return result;
-    if (row.value === 1) result.likes += 1;
-    if (row.value === -1) result.dislikes += 1;
-    return result;
-  }, { likes: 0, dislikes: 0 });
+// ---- helpers --------------------------------------------------------------
+
+function countVotes(
+  rows: VoteRow[] | ProfileVoteRow[],
+  timeframe: LeaderboardTimeframe,
+) {
+  return rows.reduce(
+    (r, row) => {
+      if (timeframe === "month" && !isWithinTimeframe(row.created_at, "month"))
+        return r;
+      if (row.value === 1) r.likes += 1;
+      if (row.value === -1) r.dislikes += 1;
+      return r;
+    },
+    { likes: 0, dislikes: 0 },
+  );
 }
 
-async function getOptionalProfileVotes() {
-  const supabase = await createClient();
-  const response = await supabase.from("profile_votes").select("profile_id, user_id, value, created_at");
-  if (response.error) return [] as ProfileVoteRow[];
-  return (response.data || []) as ProfileVoteRow[];
+function countByKey<T extends Record<string, unknown>>(
+  rows: T[],
+  key: keyof T & string,
+) {
+  const map = new Map<string, number>();
+  for (const row of rows) {
+    const k = String(row[key]);
+    map.set(k, (map.get(k) || 0) + 1);
+  }
+  return map;
 }
 
-async function getOptionalProfileSectionRows(table: string) {
+async function trySelect(table: string) {
   const supabase = await createClient();
-  const response = await supabase.from(table).select("profile_id");
-  if (response.error) return [] as ProfileSectionRow[];
-  return (response.data || []) as ProfileSectionRow[];
+  const r = await supabase.from(table).select("profile_id");
+  return (r.error ? [] : r.data || []) as ProfileSectionRow[];
 }
+
+// ---- main loader ----------------------------------------------------------
 
 export async function getLeaderboards(): Promise<LeaderboardsResult> {
   const supabase = await createClient();
-  const [profilesResponse, projectsResponse, votesResponse, mediaResponse, projectSkillsResponse, profileSkillsResponse, profileLanguagesResponse, profileEducationRows, profileCertificateRows, profileQaRows, profileWorkExperienceRows, profileVotes] = await Promise.all([
-    supabase.from("profiles").select("id, user_id, username, name, avatar_url, headline, bio, country_id, city, website, github, twitter, linkedin, contact_email, telegram_username, phone, preferred_contact_method, experience_level, experience_years, employment_types, work_formats, salary_expectations, salary_currency, additional_info").not("username", "is", null),
-    supabase.from("projects").select("id, owner_id, title, slug, description, role, project_status, team_size, project_url, repository_url, started_on, completed_on, problem, solution, results, cover_url, created_at"),
-    supabase.from("votes").select("project_id, user_id, value, created_at"),
-    supabase.from("project_media").select("project_id, media_kind, created_at"),
+
+  const [
+    profilesRes,
+    projectsRes,
+    votesRes,
+    mediaRes,
+    projectSkillsRes,
+    profileSkillsRes,
+    profileLanguagesRes,
+    educationRows,
+    certificateRows,
+    qaRows,
+    workExpRows,
+    profileVotesRes,
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select(
+        "id, user_id, username, name, avatar_url, headline, bio, country_id, city, website, github, twitter, linkedin, contact_email, telegram_username, phone, preferred_contact_method, experience_level, experience_years, employment_types, work_formats, salary_expectations, salary_currency, additional_info",
+      )
+      .not("username", "is", null),
+    supabase
+      .from("projects")
+      .select(
+        "id, owner_id, title, slug, description, role, project_status, team_size, project_url, repository_url, started_on, completed_on, problem, solution, results, cover_url, created_at",
+      ),
+    supabase.from("votes").select("project_id, value, created_at"),
+    supabase.from("project_media").select("project_id, created_at"),
     supabase.from("project_skills").select("project_id, skill_id"),
     supabase.from("profile_skills").select("profile_id, skill_id"),
     supabase.from("profile_languages").select("profile_id, language_id"),
-    getOptionalProfileSectionRows("profile_education"),
-    getOptionalProfileSectionRows("profile_certificates"),
-    getOptionalProfileSectionRows("profile_qas"),
-    getOptionalProfileSectionRows("profile_work_experience"),
-    getOptionalProfileVotes(),
+    trySelect("profile_education"),
+    trySelect("profile_certificates"),
+    trySelect("profile_qas"),
+    trySelect("profile_work_experience"),
+    supabase
+      .from("profile_votes")
+      .select("profile_id, value, created_at")
+      .then((r) => (r.error ? { data: [] } : r)),
   ]);
 
-  const profiles = (profilesResponse.data || []) as PublicProfileRow[];
-  const projects = (projectsResponse.data || []) as PublicProjectRow[];
-  const votes = (votesResponse.data || []) as VoteRow[];
-  const media = (mediaResponse.data || []) as MediaRow[];
-  const projectSkills = (projectSkillsResponse.data || []) as ProjectSkillRow[];
-  const profileSkills = (profileSkillsResponse.data || []) as ProfileRelationRow[];
-  const profileLanguages = (profileLanguagesResponse.data || []) as ProfileRelationRow[];
+  const profiles = (profilesRes.data || []) as PublicProfileRow[];
+  const projects = (projectsRes.data || []) as PublicProjectRow[];
+  const votes = (votesRes.data || []) as VoteRow[];
+  const media = (mediaRes.data || []) as MediaRow[];
+  const projectSkills = (projectSkillsRes.data || []) as ProjectSkillRow[];
+  const profileSkills = (profileSkillsRes.data || []) as ProfileRelationRow[];
+  const profileLanguages = (profileLanguagesRes.data || []) as ProfileRelationRow[];
+  const profileVotes = (profileVotesRes.data || []) as ProfileVoteRow[];
 
-  const profileByUserId = new Map<string, PublicProfileRow>();
-  for (const profile of profiles) profileByUserId.set(profile.user_id, profile);
+  // index: profile by user_id
+  const profileByUserId = new Map(profiles.map((p) => [p.user_id, p]));
 
+  // index: votes grouped by project
   const votesByProject = new Map<string, VoteRow[]>();
-  for (const vote of votes) {
-    const existing = votesByProject.get(vote.project_id) || [];
-    existing.push(vote);
-    votesByProject.set(vote.project_id, existing);
+  for (const v of votes) {
+    const arr = votesByProject.get(v.project_id) || [];
+    arr.push(v);
+    votesByProject.set(v.project_id, arr);
   }
 
+  // index: media grouped by project
   const mediaByProject = new Map<string, MediaRow[]>();
-  for (const item of media) {
-    const existing = mediaByProject.get(item.project_id) || [];
-    existing.push(item);
-    mediaByProject.set(item.project_id, existing);
+  for (const m of media) {
+    const arr = mediaByProject.get(m.project_id) || [];
+    arr.push(m);
+    mediaByProject.set(m.project_id, arr);
   }
 
-  const projectSkillIds = new Map<string, Set<number>>();
-  for (const relation of projectSkills) {
-    const existing = projectSkillIds.get(relation.project_id) || new Set<number>();
-    existing.add(relation.skill_id);
-    projectSkillIds.set(relation.project_id, existing);
+  // index: skill sets
+  const projectSkillSet = new Map<string, Set<number>>();
+  for (const r of projectSkills) {
+    const s = projectSkillSet.get(r.project_id) || new Set();
+    s.add(r.skill_id);
+    projectSkillSet.set(r.project_id, s);
   }
 
-  const profileSkillIds = new Map<string, Set<number>>();
-  for (const relation of profileSkills) {
-    if (typeof relation.skill_id !== "number") continue;
-    const existing = profileSkillIds.get(relation.profile_id) || new Set<number>();
-    existing.add(relation.skill_id);
-    profileSkillIds.set(relation.profile_id, existing);
+  const profileSkillSet = new Map<string, Set<number>>();
+  for (const r of profileSkills) {
+    if (typeof r.skill_id !== "number") continue;
+    const s = profileSkillSet.get(r.profile_id) || new Set();
+    s.add(r.skill_id);
+    profileSkillSet.set(r.profile_id, s);
   }
 
-  const profileLanguageIds = new Map<string, Set<number>>();
-  for (const relation of profileLanguages) {
-    if (typeof relation.language_id !== "number") continue;
-    const existing = profileLanguageIds.get(relation.profile_id) || new Set<number>();
-    existing.add(relation.language_id);
-    profileLanguageIds.set(relation.profile_id, existing);
+  const profileLangSet = new Map<string, Set<number>>();
+  for (const r of profileLanguages) {
+    if (typeof r.language_id !== "number") continue;
+    const s = profileLangSet.get(r.profile_id) || new Set();
+    s.add(r.language_id);
+    profileLangSet.set(r.profile_id, s);
   }
 
-  const profileVotesByProfile = new Map<string, ProfileVoteRow[]>();
-  for (const vote of profileVotes) {
-    const existing = profileVotesByProfile.get(vote.profile_id) || [];
-    existing.push(vote);
-    profileVotesByProfile.set(vote.profile_id, existing);
+  // index: profile votes by profile
+  const pvByProfile = new Map<string, ProfileVoteRow[]>();
+  for (const v of profileVotes) {
+    const arr = pvByProfile.get(v.profile_id) || [];
+    arr.push(v);
+    pvByProfile.set(v.profile_id, arr);
   }
 
-  const countSectionRows = (rows: ProfileSectionRow[]) => {
-    const map = new Map<string, number>();
-    for (const row of rows) map.set(row.profile_id, (map.get(row.profile_id) || 0) + 1);
-    return map;
+  // index: profile section counts
+  const eduCount = countByKey(educationRows, "profile_id");
+  const certCount = countByKey(certificateRows, "profile_id");
+  const qaCount = countByKey(qaRows, "profile_id");
+  const weCount = countByKey(workExpRows, "profile_id");
+
+  // index: projects by owner
+  const projectsByOwner = new Map<string, PublicProjectRow[]>();
+  for (const p of projects) {
+    const arr = projectsByOwner.get(p.owner_id) || [];
+    arr.push(p);
+    projectsByOwner.set(p.owner_id, arr);
+  }
+
+  // ---- score all projects per timeframe -----------------------------------
+
+  const projectRatingsMap = {
+    all: new Map<string, number>(),
+    month: new Map<string, number>(),
+  };
+  const rankedProjects: Record<LeaderboardTimeframe, RankedProject[]> = {
+    all: [],
+    month: [],
   };
 
-  const educationCountByProfile = countSectionRows(profileEducationRows);
-  const certificateCountByProfile = countSectionRows(profileCertificateRows);
-  const qaCountByProfile = countSectionRows(profileQaRows);
-  const workExperienceCountByProfile = countSectionRows(profileWorkExperienceRows);
-
-  const projectsByOwner = new Map<string, PublicProjectRow[]>();
-  for (const project of projects) {
-    const existing = projectsByOwner.get(project.owner_id) || [];
-    existing.push(project);
-    projectsByOwner.set(project.owner_id, existing);
-  }
-
-  const ratedProjectsByTimeframe: Record<LeaderboardTimeframe, RankedProject[]> = { all: [], month: [] };
-  const projectRatingsByTimeframe = { all: new Map<string, number>(), month: new Map<string, number>() };
-
-  for (const timeframe of ["all", "month"] as const) {
+  for (const tf of ["all", "month"] as const) {
     for (const project of projects) {
-      const projectVotes = votesByProject.get(project.id) || [];
-      const overallVoteSummary = countVotes(projectVotes, "all");
-      const recentVoteSummary = countVotes(projectVotes, "month");
-      const mediaItems = mediaByProject.get(project.id) || [];
-      const mediaCount = mediaItems.length;
-      const recentMediaCount = mediaItems.filter((item) => isWithinTimeframe(item.created_at, "month")).length;
-      const technologyCount = (projectSkillIds.get(project.id) || new Set<number>()).size;
-      const completenessScore = getProjectCompletenessScore({ description: project.description, role: project.role, status: project.project_status, teamSize: project.team_size, projectUrl: project.project_url, repositoryUrl: project.repository_url, startedOn: project.started_on, completedOn: project.completed_on, problem: project.problem, solution: project.solution, results: project.results, coverUrl: project.cover_url, mediaCount, technologyCount });
-      const rating = calculateProjectRating({ timeframe, likes: overallVoteSummary.likes, dislikes: overallVoteSummary.dislikes, recentLikes: recentVoteSummary.likes, recentDislikes: recentVoteSummary.dislikes, totalVotes: overallVoteSummary.likes + overallVoteSummary.dislikes, recentVotes: recentVoteSummary.likes + recentVoteSummary.dislikes, mediaCount, recentMediaCount, technologyCount, completenessScore, createdAt: project.created_at });
-      const ownerProfile = profileByUserId.get(project.owner_id);
       if (!project.slug) continue;
-      projectRatingsByTimeframe[timeframe].set(project.id, rating);
-      ratedProjectsByTimeframe[timeframe].push({ id: project.id, title: project.title, slug: project.slug, description: project.description, cover_url: project.cover_url, ownerName: ownerProfile?.name ?? null, ownerUsername: ownerProfile?.username ?? null, rating, likes: overallVoteSummary.likes, dislikes: overallVoteSummary.dislikes, monthlyLikes: recentVoteSummary.likes, monthlyDislikes: recentVoteSummary.dislikes, mediaCount, technologyCount });
+
+      const pv = votesByProject.get(project.id) || [];
+      const allVotes = countVotes(pv, "all");
+      const recentVotes = countVotes(pv, "month");
+      const mi = mediaByProject.get(project.id) || [];
+      const mediaCount = mi.length;
+      const recentMediaCount = mi.filter((m) =>
+        isWithinTimeframe(m.created_at, "month"),
+      ).length;
+      const techCount = (projectSkillSet.get(project.id) || new Set()).size;
+
+      const completeness = getProjectCompletenessScore({
+        description: project.description,
+        role: project.role,
+        status: project.project_status,
+        teamSize: project.team_size,
+        projectUrl: project.project_url,
+        repositoryUrl: project.repository_url,
+        startedOn: project.started_on,
+        completedOn: project.completed_on,
+        problem: project.problem,
+        solution: project.solution,
+        results: project.results,
+        coverUrl: project.cover_url,
+        mediaCount,
+        technologyCount: techCount,
+      });
+
+      const rating = calculateProjectRating({
+        timeframe: tf,
+        likes: allVotes.likes,
+        dislikes: allVotes.dislikes,
+        recentLikes: recentVotes.likes,
+        recentDislikes: recentVotes.dislikes,
+        mediaCount,
+        recentMediaCount,
+        technologyCount: techCount,
+        completenessScore: completeness,
+        createdAt: project.created_at,
+      });
+
+      projectRatingsMap[tf].set(project.id, rating);
+      const owner = profileByUserId.get(project.owner_id);
+
+      rankedProjects[tf].push({
+        id: project.id,
+        title: project.title,
+        slug: project.slug,
+        description: project.description,
+        cover_url: project.cover_url,
+        ownerName: owner?.name ?? null,
+        ownerUsername: owner?.username ?? null,
+        rating,
+        likes: allVotes.likes,
+        dislikes: allVotes.dislikes,
+        monthlyLikes: recentVotes.likes,
+        monthlyDislikes: recentVotes.dislikes,
+        mediaCount,
+        technologyCount: techCount,
+      });
     }
-    ratedProjectsByTimeframe[timeframe].sort((left, right) => right.rating - left.rating || (timeframe === "month" ? right.monthlyLikes - left.monthlyLikes : right.likes - left.likes));
+
+    rankedProjects[tf].sort(
+      (a, b) =>
+        b.rating - a.rating ||
+        (tf === "month"
+          ? b.monthlyLikes - a.monthlyLikes
+          : b.likes - a.likes),
+    );
   }
 
-  const ratedCreatorsByTimeframe: Record<LeaderboardTimeframe, RankedCreator[]> = { all: [], month: [] };
+  // ---- score all creators per timeframe -----------------------------------
 
-  for (const timeframe of ["all", "month"] as const) {
+  const rankedCreators: Record<LeaderboardTimeframe, RankedCreator[]> = {
+    all: [],
+    month: [],
+  };
+
+  for (const tf of ["all", "month"] as const) {
     for (const profile of profiles) {
       if (!profile.username) continue;
-      const ownedProjects = projectsByOwner.get(profile.user_id) || [];
-      const ownedProjectIds = ownedProjects.map((project) => project.id);
-      const ownedProjectRatings = ownedProjectIds.map((projectId) => projectRatingsByTimeframe[timeframe].get(projectId) || 0).filter((value) => value > 0);
-      const bestProjectScore = Math.max(...ownedProjectRatings, 0);
-      const averageProjectScore = ownedProjectRatings.length > 0 ? ownedProjectRatings.reduce((sum, item) => sum + item, 0) / ownedProjectRatings.length : 0;
-      const profileVoteRows = profileVotesByProfile.get(profile.id) || [];
-      const overallProfileVoteSummary = countVotes(profileVoteRows, "all");
-      const recentProfileVoteSummary = countVotes(profileVoteRows, "month");
-      const projectVoteRows = ownedProjectIds.flatMap((projectId) => votesByProject.get(projectId) || []);
-      const mediaRows = ownedProjectIds.flatMap((projectId) => mediaByProject.get(projectId) || []);
-      const recentProjectCount = ownedProjects.filter((project) => isWithinTimeframe(project.created_at, "month")).length;
-      const uniqueTechnologyIds = new Set<number>([...(profileSkillIds.get(profile.id) || new Set<number>()), ...ownedProjectIds.flatMap((projectId) => Array.from(projectSkillIds.get(projectId) || new Set<number>()))]);
-      const profileCompleteness = getProfileCompletenessScore({ username: profile.username, name: profile.name, avatarUrl: profile.avatar_url, headline: profile.headline, bio: profile.bio, countryId: profile.country_id, city: profile.city, website: profile.website, github: profile.github, twitter: profile.twitter, linkedin: profile.linkedin, contactEmail: profile.contact_email, telegramUsername: profile.telegram_username, phone: profile.phone, preferredContactMethod: profile.preferred_contact_method, experienceLevel: profile.experience_level, experienceYears: profile.experience_years, employmentTypesCount: profile.employment_types?.length || 0, workFormatsCount: profile.work_formats?.length || 0, salaryExpectations: profile.salary_expectations, salaryCurrency: profile.salary_currency, additionalInfo: profile.additional_info, skillsCount: (profileSkillIds.get(profile.id) || new Set<number>()).size, languagesCount: (profileLanguageIds.get(profile.id) || new Set<number>()).size, educationCount: educationCountByProfile.get(profile.id) || 0, certificateCount: certificateCountByProfile.get(profile.id) || 0, qaCount: qaCountByProfile.get(profile.id) || 0, workExperienceCount: workExperienceCountByProfile.get(profile.id) || 0 });
-      const recentProjectVoteRows = projectVoteRows.filter((vote) => isWithinTimeframe(vote.created_at, "month"));
-      const recentMediaCount = mediaRows.filter((item) => isWithinTimeframe(item.created_at, "month")).length;
-      const rating = calculateUserRating({ timeframe, profileLikes: overallProfileVoteSummary.likes, profileDislikes: overallProfileVoteSummary.dislikes, recentProfileLikes: recentProfileVoteSummary.likes, recentProfileDislikes: recentProfileVoteSummary.dislikes, profileVotes: overallProfileVoteSummary.likes + overallProfileVoteSummary.dislikes, recentProfileVotes: recentProfileVoteSummary.likes + recentProfileVoteSummary.dislikes, profileCompleteness, projectCount: ownedProjects.length, recentProjectCount, mediaCount: mediaRows.length, recentMediaCount, technologyCount: uniqueTechnologyIds.size, bestProjectRating: bestProjectScore, averageProjectRating: averageProjectScore, totalProjectVotes: projectVoteRows.length, recentProjectVotes: recentProjectVoteRows.length });
-      const topProject = ownedProjects.map((project) => ({ title: project.title, score: projectRatingsByTimeframe[timeframe].get(project.id) || 0 })).sort((left, right) => right.score - left.score)[0];
-      ratedCreatorsByTimeframe[timeframe].push({ id: profile.id, username: profile.username, name: profile.name, avatar_url: profile.avatar_url, headline: profile.headline, rating, profileCompleteness: Math.round(profileCompleteness * 100), profileLikes: overallProfileVoteSummary.likes, profileDislikes: overallProfileVoteSummary.dislikes, projectCount: ownedProjects.length, topProjectTitle: topProject?.title || null, topProjectScore: topProject?.score || 0 });
+
+      const owned = projectsByOwner.get(profile.user_id) || [];
+      const ownedIds = owned.map((p) => p.id);
+
+      // project ratings for this owner
+      const ratings = ownedIds
+        .map((id) => projectRatingsMap[tf].get(id) || 0)
+        .filter((v) => v > 0);
+      const bestRating = Math.max(...ratings, 0);
+      const avgRating =
+        ratings.length > 0
+          ? ratings.reduce((s, v) => s + v, 0) / ratings.length
+          : 0;
+
+      // profile votes
+      const pv = pvByProfile.get(profile.id) || [];
+      const allPv = countVotes(pv, "all");
+      const recentPv = countVotes(pv, "month");
+
+      // media across owned projects
+      const allMedia = ownedIds.flatMap(
+        (id) => mediaByProject.get(id) || [],
+      );
+      const recentMediaCount = allMedia.filter((m) =>
+        isWithinTimeframe(m.created_at, "month"),
+      ).length;
+      const recentProjectCount = owned.filter((p) =>
+        isWithinTimeframe(p.created_at, "month"),
+      ).length;
+
+      // unified tech set (profile skills + project skills)
+      const techIds = new Set<number>([
+        ...Array.from(profileSkillSet.get(profile.id) || new Set<number>()),
+        ...ownedIds.flatMap((id) =>
+          Array.from(projectSkillSet.get(id) || new Set<number>()),
+        ),
+      ]);
+
+      // newest project date
+      const newestProject = owned.reduce<string | null>((best, p) => {
+        if (!p.created_at) return best;
+        if (!best) return p.created_at;
+        return p.created_at > best ? p.created_at : best;
+      }, null);
+
+      const completeness = getProfileCompletenessScore({
+        username: profile.username,
+        name: profile.name,
+        avatarUrl: profile.avatar_url,
+        headline: profile.headline,
+        bio: profile.bio,
+        countryId: profile.country_id,
+        city: profile.city,
+        website: profile.website,
+        github: profile.github,
+        twitter: profile.twitter,
+        linkedin: profile.linkedin,
+        contactEmail: profile.contact_email,
+        telegramUsername: profile.telegram_username,
+        phone: profile.phone,
+        preferredContactMethod: profile.preferred_contact_method,
+        experienceLevel: profile.experience_level,
+        experienceYears: profile.experience_years,
+        employmentTypesCount: profile.employment_types?.length || 0,
+        workFormatsCount: profile.work_formats?.length || 0,
+        salaryExpectations: profile.salary_expectations,
+        salaryCurrency: profile.salary_currency,
+        additionalInfo: profile.additional_info,
+        skillsCount: (profileSkillSet.get(profile.id) || new Set()).size,
+        languagesCount: (profileLangSet.get(profile.id) || new Set()).size,
+        educationCount: eduCount.get(profile.id) || 0,
+        certificateCount: certCount.get(profile.id) || 0,
+        qaCount: qaCount.get(profile.id) || 0,
+        workExperienceCount: weCount.get(profile.id) || 0,
+      });
+
+      const rating = calculateUserRating({
+        timeframe: tf,
+        profileLikes: allPv.likes,
+        profileDislikes: allPv.dislikes,
+        recentProfileLikes: recentPv.likes,
+        recentProfileDislikes: recentPv.dislikes,
+        profileCompleteness: completeness,
+        projectCount: owned.length,
+        recentProjectCount,
+        mediaCount: allMedia.length,
+        recentMediaCount,
+        technologyCount: techIds.size,
+        bestProjectRating: bestRating,
+        averageProjectRating: avgRating,
+        newestProjectCreatedAt: newestProject,
+      });
+
+      const topProject = owned
+        .map((p) => ({
+          title: p.title,
+          score: projectRatingsMap[tf].get(p.id) || 0,
+        }))
+        .sort((a, b) => b.score - a.score)[0];
+
+      rankedCreators[tf].push({
+        id: profile.id,
+        username: profile.username,
+        name: profile.name,
+        avatar_url: profile.avatar_url,
+        headline: profile.headline,
+        rating,
+        profileCompleteness: Math.round(completeness * 100),
+        profileLikes: allPv.likes,
+        profileDislikes: allPv.dislikes,
+        projectCount: owned.length,
+        topProjectTitle: topProject?.title || null,
+        topProjectScore: topProject?.score || 0,
+      });
     }
-    ratedCreatorsByTimeframe[timeframe].sort((left, right) => right.rating - left.rating || right.topProjectScore - left.topProjectScore || right.projectCount - left.projectCount);
+
+    rankedCreators[tf].sort(
+      (a, b) =>
+        b.rating - a.rating ||
+        b.topProjectScore - a.topProjectScore ||
+        b.projectCount - a.projectCount,
+    );
   }
 
   return {
-    creators: { all: ratedCreatorsByTimeframe.all.slice(0, 10), month: ratedCreatorsByTimeframe.month.slice(0, 10) },
-    projects: { all: ratedProjectsByTimeframe.all.slice(0, 10), month: ratedProjectsByTimeframe.month.slice(0, 10) },
+    creators: {
+      all: rankedCreators.all.slice(0, 10),
+      month: rankedCreators.month.slice(0, 10),
+    },
+    projects: {
+      all: rankedProjects.all.slice(0, 10),
+      month: rankedProjects.month.slice(0, 10),
+    },
   };
 }

@@ -35,8 +35,8 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     pathname: "/talents",
-    title: dictionary.metadata.search.title,
-    description: dictionary.metadata.search.description,
+    title: dictionary.metadata.talents.title,
+    description: dictionary.metadata.talents.description,
   });
 }
 

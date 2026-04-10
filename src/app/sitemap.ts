@@ -16,6 +16,7 @@ const staticRoutes = [
   "/dashboard",
   "/dashboard/projects",
   "/dashboard/profile",
+  "/articles",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

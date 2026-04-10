@@ -15,6 +15,7 @@ type QueueReportRow = {
   target_type: ReportTargetType;
   target_profile_id: string | null;
   target_project_id: string | null;
+  target_article_id: string | null;
   target_owner_user_id: string | null;
   reporter_user_id: string;
   reason: ReportReason;
@@ -38,6 +39,14 @@ type ProjectTargetRow = {
   owner_id: string;
   title: string;
   slug: string | null;
+  moderation_status: string | null;
+};
+
+type ArticleTargetRow = {
+  id: string;
+  author_user_id: string;
+  title: string;
+  slug: string;
   moderation_status: string | null;
 };
 
@@ -75,7 +84,7 @@ export async function getModerationQueue() {
   const { data: reports } = await supabase
     .from("content_reports")
     .select(
-      "id, target_type, target_profile_id, target_project_id, target_owner_user_id, reporter_user_id, reason, details, priority, status, created_at, resolution_note",
+      "id, target_type, target_profile_id, target_project_id, target_article_id, target_owner_user_id, reporter_user_id, reason, details, priority, status, created_at, resolution_note",
     )
     .in("status", ["open", "triaged"])
     .order("status", { ascending: true })
@@ -90,13 +99,16 @@ export async function getModerationQueue() {
   const projectIds = queueRows
     .map((item) => item.target_project_id)
     .filter((item): item is string => Boolean(item));
+  const articleIds = queueRows
+    .map((item) => item.target_article_id)
+    .filter((item): item is string => Boolean(item));
   const identityIds = [...new Set(
     queueRows
       .flatMap((item) => [item.reporter_user_id, item.target_owner_user_id])
       .filter(Boolean),
   )] as string[];
 
-  const [profileTargetsResponse, projectTargetsResponse, identityProfilesResponse] =
+  const [profileTargetsResponse, projectTargetsResponse, articleTargetsResponse, identityProfilesResponse] =
     await Promise.all([
       profileIds.length > 0
         ? supabase
@@ -109,6 +121,12 @@ export async function getModerationQueue() {
             .from("projects")
             .select("id, owner_id, title, slug, moderation_status")
             .in("id", projectIds)
+        : Promise.resolve({ data: [] }),
+      articleIds.length > 0
+        ? supabase
+            .from("articles")
+            .select("id, author_user_id, title, slug, moderation_status")
+            .in("id", articleIds)
         : Promise.resolve({ data: [] }),
       identityIds.length > 0
         ? supabase
@@ -123,6 +141,9 @@ export async function getModerationQueue() {
   );
   const projectTargets = new Map(
     ((projectTargetsResponse.data || []) as ProjectTargetRow[]).map((item) => [item.id, item]),
+  );
+  const articleTargets = new Map(
+    ((articleTargetsResponse.data || []) as ArticleTargetRow[]).map((item) => [item.id, item]),
   );
   const identityProfiles = new Map(
     ((identityProfilesResponse.data || []) as IdentityProfileRow[]).map((item) => [
@@ -144,13 +165,22 @@ export async function getModerationQueue() {
   };
 
   const queue = queueRows.map<ModerationQueueItem>((report) => {
+    const reporterIdentity = identityProfiles.get(report.reporter_user_id);
+    const ownerIdentity = report.target_owner_user_id
+      ? identityProfiles.get(report.target_owner_user_id)
+      : null;
+    const reporterLabel =
+      reporterIdentity?.name ||
+      (reporterIdentity?.username ? `@${reporterIdentity.username}` : report.reporter_user_id);
+    const ownerLabel =
+      ownerIdentity?.name ||
+      (ownerIdentity?.username
+        ? `@${ownerIdentity.username}`
+        : report.target_owner_user_id || "Unknown");
+
     if (report.target_type === "profile") {
       const target = report.target_profile_id
         ? profileTargets.get(report.target_profile_id)
-        : null;
-      const reporterIdentity = identityProfiles.get(report.reporter_user_id);
-      const ownerIdentity = report.target_owner_user_id
-        ? identityProfiles.get(report.target_owner_user_id)
         : null;
 
       return {
@@ -167,24 +197,37 @@ export async function getModerationQueue() {
         priority: report.priority,
         details: report.details,
         createdAt: report.created_at,
-        reporterLabel:
-          reporterIdentity?.name ||
-          (reporterIdentity?.username ? `@${reporterIdentity.username}` : report.reporter_user_id),
-        ownerLabel:
-          ownerIdentity?.name ||
-          (ownerIdentity?.username
-            ? `@${ownerIdentity.username}`
-            : report.target_owner_user_id || "Unknown"),
+        reporterLabel,
+        ownerLabel,
+        resolutionNote: report.resolution_note,
+      };
+    }
+
+    if (report.target_type === "article") {
+      const target = report.target_article_id
+        ? articleTargets.get(report.target_article_id)
+        : null;
+
+      return {
+        id: report.id,
+        targetType: report.target_type,
+        targetId: target?.id || report.target_article_id || "",
+        targetLabel: target?.title || report.target_article_id || "Article",
+        targetHref: target?.slug ? `/articles/${target.slug}` : null,
+        targetStatus: normalizeModerationStatus(target?.moderation_status),
+        reportReason: report.reason,
+        reportStatus: report.status,
+        priority: report.priority,
+        details: report.details,
+        createdAt: report.created_at,
+        reporterLabel,
+        ownerLabel,
         resolutionNote: report.resolution_note,
       };
     }
 
     const target = report.target_project_id
       ? projectTargets.get(report.target_project_id)
-      : null;
-    const reporterIdentity = identityProfiles.get(report.reporter_user_id);
-    const ownerIdentity = report.target_owner_user_id
-      ? identityProfiles.get(report.target_owner_user_id)
       : null;
 
     return {
@@ -199,14 +242,8 @@ export async function getModerationQueue() {
       priority: report.priority,
       details: report.details,
       createdAt: report.created_at,
-      reporterLabel:
-        reporterIdentity?.name ||
-        (reporterIdentity?.username ? `@${reporterIdentity.username}` : report.reporter_user_id),
-      ownerLabel:
-        ownerIdentity?.name ||
-        (ownerIdentity?.username
-          ? `@${ownerIdentity.username}`
-          : report.target_owner_user_id || "Unknown"),
+      reporterLabel,
+      ownerLabel,
       resolutionNote: report.resolution_note,
     };
   });
@@ -225,6 +262,7 @@ export async function getModerationQueue() {
       urgent: orderedQueue.filter((item) => item.priority === "urgent").length,
       profiles: orderedQueue.filter((item) => item.targetType === "profile").length,
       projects: orderedQueue.filter((item) => item.targetType === "project").length,
+      articles: orderedQueue.filter((item) => item.targetType === "article").length,
     },
   };
 }

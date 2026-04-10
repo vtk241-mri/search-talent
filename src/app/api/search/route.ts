@@ -29,6 +29,8 @@ type ProfileRow = {
   employment_types: string[] | null;
   work_formats: string[] | null;
   moderation_status: string | null;
+  score: number | null;
+  created_at: string | null;
 };
 
 type ProjectSkillRow = {
@@ -215,7 +217,7 @@ export async function GET(request: Request) {
       .limit(60),
     supabase
       .from("profiles")
-      .select("id, user_id, username, name, headline, avatar_url, country_id, city, category_id, experience_level, employment_types, work_formats, moderation_status")
+      .select("id, user_id, username, name, headline, avatar_url, country_id, city, category_id, experience_level, employment_types, work_formats, moderation_status, score, created_at")
       .not("username", "is", null)
       .limit(60),
   ]);
@@ -519,14 +521,13 @@ export async function GET(request: Request) {
   const profileSorters = {
     relevance: (left: (typeof users)[number], right: (typeof users)[number]) =>
       right.relevance - left.relevance ||
-      right.technologies.length - left.technologies.length ||
+      (right.score ?? 0) - (left.score ?? 0) ||
       (left.name || left.username).localeCompare(right.name || right.username),
     rating: (left: (typeof users)[number], right: (typeof users)[number]) =>
-      right.technologies.length - left.technologies.length ||
+      (right.score ?? 0) - (left.score ?? 0) ||
       right.relevance - left.relevance,
     newest: (left: (typeof users)[number], right: (typeof users)[number]) =>
-      right.relevance - left.relevance ||
-      (left.name || left.username).localeCompare(right.name || right.username),
+      new Date(right.created_at || 0).getTime() - new Date(left.created_at || 0).getTime(),
   } as const;
 
   const activeSort = sort === "rating" || sort === "newest" ? sort : "relevance";

@@ -18,14 +18,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
 
+  const safeLocale = isLocale(locale) ? locale : "en";
+  const dict = getDictionary(safeLocale);
+
   return buildMetadata({
-    locale: isLocale(locale) ? locale : "en",
+    locale: safeLocale,
     pathname: "/articles",
-    title: locale === "uk" ? "Статті та публікації" : "Articles and updates",
-    description:
-      locale === "uk"
-        ? "Публікації команди й авторів SearchTalent: новини платформи, авторські матеріали, кейси й гайди."
-        : "SearchTalent writing hub with platform updates, authored posts, case studies, and guides.",
+    title: dict.metadata.articles.title,
+    description: dict.metadata.articles.description,
   });
 }
 
@@ -50,44 +50,7 @@ export default async function ArticlesPage({
     sort: sort || null,
   });
   const sortedCategories = sortArticleCategories(feed.categories, safeLocale);
-  const ui =
-    safeLocale === "uk"
-      ? {
-          eyebrow: "Редакційний простір",
-          title: "Статті, новини та авторські тексти",
-          description:
-            "Окремий простір для новин платформи, авторських матеріалів, гайдів і кейсів. Тут можна читати оновлення, відстежувати активних авторів і переходити в глибші обговорення.",
-          filterCategory: "Категорія",
-          filterAuthor: "Автор",
-          filterSort: "Сортування",
-          authorPlaceholder: "Пошук за автором",
-          allCategories: "Усі категорії",
-          recent: "Найновіші",
-          popular: "Популярні",
-          discussed: "Обговорювані",
-          apply: "Застосувати",
-          reset: "Скинути фільтри",
-          createArticle: "Створити статтю",
-          empty: "Поки що немає статей під ці фільтри.",
-        }
-      : {
-          eyebrow: "Editorial space",
-          title: "Articles, platform updates, and authored posts",
-          description:
-            "A dedicated space for platform news, authored essays, guides, and case studies. Read what is new, discover active writers, and jump into deeper discussions.",
-          filterCategory: "Category",
-          filterAuthor: "Author",
-          filterSort: "Sort",
-          authorPlaceholder: "Search by author",
-          allCategories: "All categories",
-          recent: "Recent",
-          popular: "Popular",
-          discussed: "Discussed",
-          apply: "Apply filters",
-          reset: "Reset filters",
-          createArticle: "Write an article",
-          empty: "No articles match these filters yet.",
-        };
+  const ui = dictionary.articlesPage;
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">

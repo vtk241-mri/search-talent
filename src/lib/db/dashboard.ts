@@ -1,4 +1,5 @@
-﻿import { createClient } from "@/lib/supabase/server";
+﻿import { getProfileCompletenessScore } from "@/lib/leaderboards";
+import { createClient } from "@/lib/supabase/server";
 
 type CreatedAtRow = {
   created_at: string | null;
@@ -183,47 +184,38 @@ function getProfileCompletionScore(
   profileQas: Map<string, number>,
   profileWorkExperience: Map<string, number>,
 ) {
-  let filled = 0;
-  const total = 15;
-
-  if (profile.username) filled += 1;
-  if (profile.avatar_url) filled += 1;
-  if (profile.name) filled += 1;
-  if (profile.headline) filled += 1;
-  if (profile.bio) filled += 1;
-  if (profile.country_id) filled += 1;
-  if (profile.city) filled += 1;
-  if (profile.category_id) filled += 1;
-  if (profile.website || profile.github || profile.twitter || profile.linkedin) filled += 1;
-  if (
-    profile.contact_email ||
-    profile.telegram_username ||
-    profile.phone ||
-    profile.preferred_contact_method
-  ) {
-    filled += 1;
-  }
-  if (profile.experience_level || profile.experience_years !== null) filled += 1;
-  if (
-    (profile.employment_types?.length || 0) > 0 ||
-    (profile.work_formats?.length || 0) > 0 ||
-    (profile.salary_expectations && profile.salary_currency) ||
-    profile.additional_info
-  ) {
-    filled += 1;
-  }
-  if ((profileSkills.get(profile.id) || 0) > 0) filled += 1;
-  if ((profileLanguages.get(profile.id) || 0) > 0) filled += 1;
-  if (
-    (profileEducation.get(profile.id) || 0) > 0 ||
-    (profileCertificates.get(profile.id) || 0) > 0 ||
-    (profileQas.get(profile.id) || 0) > 0
-  ) {
-    filled += 1;
-  }
-  if ((profileWorkExperience.get(profile.id) || 0) > 0) filled += 1;
-
-  return Math.round((filled / total) * 100);
+  return Math.round(
+    getProfileCompletenessScore({
+      username: profile.username,
+      name: profile.name,
+      avatarUrl: profile.avatar_url,
+      headline: profile.headline,
+      bio: profile.bio,
+      countryId: profile.country_id,
+      city: profile.city,
+      website: profile.website,
+      github: profile.github,
+      twitter: profile.twitter,
+      linkedin: profile.linkedin,
+      contactEmail: profile.contact_email,
+      telegramUsername: profile.telegram_username,
+      phone: profile.phone,
+      preferredContactMethod: profile.preferred_contact_method,
+      experienceLevel: profile.experience_level,
+      experienceYears: profile.experience_years,
+      employmentTypesCount: profile.employment_types?.length || 0,
+      workFormatsCount: profile.work_formats?.length || 0,
+      salaryExpectations: profile.salary_expectations,
+      salaryCurrency: profile.salary_currency,
+      additionalInfo: profile.additional_info,
+      skillsCount: profileSkills.get(profile.id) || 0,
+      languagesCount: profileLanguages.get(profile.id) || 0,
+      educationCount: profileEducation.get(profile.id) || 0,
+      certificateCount: profileCertificates.get(profile.id) || 0,
+      qaCount: profileQas.get(profile.id) || 0,
+      workExperienceCount: profileWorkExperience.get(profile.id) || 0,
+    }) * 100,
+  );
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {

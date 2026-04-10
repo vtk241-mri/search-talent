@@ -3,6 +3,7 @@ import { getProjectVoteSummary } from "@/lib/db/project-votes";
 import { createClient } from "@/lib/supabase/server";
 import { parseJsonRequest } from "@/lib/validation/request";
 import { projectVoteSchema } from "@/lib/validation/vote";
+import { getWilsonScore } from "@/lib/leaderboards";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -87,9 +88,14 @@ export async function POST(request: Request) {
 
   const summary = await getProjectVoteSummary(supabase, projectId, user.id);
 
+  // Persist a Wilson-based score (0-100 scale) so search sorting reflects
+  // vote confidence, not just raw likes minus dislikes.
+  const wilsonScore = Math.round(
+    getWilsonScore(summary.likes, summary.dislikes) * 100,
+  );
   const { error: scoreError } = await supabase
     .from("projects")
-    .update({ score: summary.score })
+    .update({ score: wilsonScore })
     .eq("id", projectId);
 
   if (scoreError) {

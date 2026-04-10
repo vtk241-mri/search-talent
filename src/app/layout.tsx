@@ -17,7 +17,8 @@ export const metadata: Metadata = {
     default: "SearchTalent",
     template: "%s | SearchTalent",
   },
-  description: "SearchTalent",
+  description:
+    "SearchTalent — find specialists, explore projects, and showcase your work in a bilingual talent platform.",
   icons: {
     icon: [{ url: "/favicon.webp", type: "image/webp" }],
     shortcut: "/favicon.webp",

@@ -34,11 +34,17 @@ export async function POST(request: Request) {
           .select("id, moderation_status")
           .eq("id", payload.targetId)
           .maybeSingle()
-      : await supabase
-          .from("projects")
-          .select("id, moderation_status")
-          .eq("id", payload.targetId)
-          .maybeSingle();
+      : payload.targetType === "article"
+        ? await supabase
+            .from("articles")
+            .select("id, moderation_status")
+            .eq("id", payload.targetId)
+            .maybeSingle()
+        : await supabase
+            .from("projects")
+            .select("id, moderation_status")
+            .eq("id", payload.targetId)
+            .maybeSingle();
 
   const target = targetResponse.data as
     | { id: string; moderation_status: string | null }
@@ -59,7 +65,9 @@ export async function POST(request: Request) {
   const targetUpdateResponse =
     payload.targetType === "profile"
       ? await supabase.from("profiles").update(targetUpdate).eq("id", payload.targetId)
-      : await supabase.from("projects").update(targetUpdate).eq("id", payload.targetId);
+      : payload.targetType === "article"
+        ? await supabase.from("articles").update(targetUpdate).eq("id", payload.targetId)
+        : await supabase.from("projects").update(targetUpdate).eq("id", payload.targetId);
 
   if (targetUpdateResponse.error) {
     return NextResponse.json(
@@ -93,6 +101,7 @@ export async function POST(request: Request) {
     target_type: payload.targetType,
     target_profile_id: payload.targetType === "profile" ? payload.targetId : null,
     target_project_id: payload.targetType === "project" ? payload.targetId : null,
+    target_article_id: payload.targetType === "article" ? payload.targetId : null,
     previous_status: previousStatus,
     next_status: payload.moderationStatus,
     report_status: payload.reportStatus || null,

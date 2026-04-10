@@ -3,6 +3,7 @@ import { getProfileVoteSummary } from "@/lib/db/profile-votes";
 import { createClient } from "@/lib/supabase/server";
 import { parseJsonRequest } from "@/lib/validation/request";
 import { profileVoteSchema } from "@/lib/validation/vote";
+import { getWilsonScore } from "@/lib/leaderboards";
 
 function getProfileVoteErrorMessage(message: string) {
   if (message.includes("Could not find the table 'public.profile_votes'")) {
@@ -110,6 +111,16 @@ export async function POST(request: Request) {
   }
 
   const summary = await getProfileVoteSummary(supabase, profileId, user.id);
+
+  // Persist a lightweight score (Wilson-based, 0-100 scale) so search can
+  // sort profiles by rating without recomputing the full leaderboard score.
+  const wilsonScore = Math.round(
+    getWilsonScore(summary.likes, summary.dislikes) * 100,
+  );
+  await supabase
+    .from("profiles")
+    .update({ score: wilsonScore })
+    .eq("id", profileId);
 
   return NextResponse.json({ success: true, ...summary });
 }

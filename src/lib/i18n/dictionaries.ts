@@ -7,7 +7,7 @@ export const dictionaries = {
       name: "SearchTalent",
       tagline: "Discover talent faster",
       description:
-        "SearchTalent helps teams find specialists, explore projects, and present their work in a clear bilingual product.",
+        "SearchTalent helps you find specialists, explore projects, and showcase your portfolio — available in English and Ukrainian.",
     },
     theme: {
       light: "Light",
@@ -35,7 +35,7 @@ export const dictionaries = {
     },
     footer: {
       description:
-        "A clearer way to move between discovery, profile building, and project publishing.",
+        "Find specialists, explore real projects, and publish your own work — all in one place.",
       legal: "Legal",
       terms: "Terms of Service",
       privacy: "Privacy Policy",
@@ -92,27 +92,37 @@ export const dictionaries = {
       home: {
         title: "Discover talent and projects",
         description:
-          "Browse strong projects, open public profiles, and move into your own workspace on SearchTalent.",
+          "Find skilled professionals, explore real-world projects with media and details, and build your own portfolio on SearchTalent.",
       },
       search: {
         title: "Search talents and projects",
         description:
-          "Search across public profiles and projects to find relevant skills, experience, and work faster.",
+          "Search across public profiles and projects by skills, technologies, and keywords to find the right match.",
+      },
+      talents: {
+        title: "Browse talent profiles",
+        description:
+          "Explore public profiles of developers, designers, and other specialists — filter by skills, location, and experience.",
       },
       projects: {
         title: "Public project catalog",
         description:
-          "Explore the public project catalog on SearchTalent and open the profiles behind each project.",
+          "Browse published projects with screenshots, tech stacks, and community ratings. Find inspiring work and open the author profiles.",
+      },
+      articles: {
+        title: "Articles and updates",
+        description:
+          "Platform news, authored essays, case studies, and guides from the SearchTalent community.",
       },
       dashboard: {
-        title: "Talent dashboard",
+        title: "Dashboard",
         description:
-          "Manage your public profile, project workspace, and presence on the platform from one dashboard.",
+          "Your control panel — manage your profile, published projects, and view platform analytics.",
       },
       dashboardProjects: {
         title: "Manage projects",
         description:
-          "Create projects, upload media, and review public project pages from your workspace.",
+          "Create and edit projects, upload screenshots and videos, and preview how they appear to visitors.",
       },
       dashboardProjectEdit: {
         title: "Edit project",
@@ -122,40 +132,40 @@ export const dictionaries = {
       dashboardProfile: {
         title: "Edit profile",
         description:
-          "Update your public profile, contact details, and discovery fields on SearchTalent.",
+          "Update your public profile — name, bio, skills, contacts, work experience, and portfolio links.",
       },
       login: {
         title: "Log in",
         description:
-          "Log in to SearchTalent to manage your profile, publish projects, and access your dashboard.",
+          "Sign in to SearchTalent to manage your profile, publish projects, and access your dashboard.",
       },
       signup: {
         title: "Create account",
         description:
-          "Create a SearchTalent account and set up your public profile and project workspace.",
+          "Join SearchTalent — create your public profile and start publishing projects in minutes.",
       },
       verify: {
         title: "Verify your email",
         description:
-          "Confirm your email address to activate your SearchTalent account and continue to the dashboard.",
+          "Confirm your email address to activate your SearchTalent account and start using the dashboard.",
       },
       creatorProfile: {
         title: "Public profile",
         description:
-          "View profile details, skills, contacts, and published projects on SearchTalent.",
+          "View this specialist's skills, experience, contacts, and published projects on SearchTalent.",
       },
       projectDetail: {
         title: "Project page",
         description:
-          "Open project details, review media, and see who built the work on SearchTalent.",
+          "Project details — screenshots, technologies, team info, and community feedback on SearchTalent.",
       },
     },
     home: {
       eyebrow: "Discover, connect, publish",
       title:
-        "A clearer path from finding the right specialist to starting a project together.",
+        "Find the right specialist and start a project together.",
       description:
-        "Browse strong work, open public profiles, and move into your dashboard when you are ready to publish.",
+        "Browse real work, explore public profiles, and publish your own projects when you are ready.",
       browseProjects: "Browse projects",
       searchCreators: "Search talents",
       topProjectsCta: "Open top projects",
@@ -166,17 +176,17 @@ export const dictionaries = {
         discovery: {
           title: "For discovery",
           description:
-            "Move between trending projects, public profiles, and search without dead ends.",
+            "Browse trending projects, open public profiles, and search by skills or technologies.",
         },
         creators: {
           title: "For talent",
           description:
-            "Keep your profile, public page, and project workspace connected through clear actions.",
+            "Build your profile, publish projects, and manage everything from a personal dashboard.",
         },
         teams: {
           title: "For teams",
           description:
-            "Move from inspiration to outreach faster with one shared navigation model across the app.",
+            "Find the right people faster — filter by skills, experience, and project history.",
         },
       },
       trendingTitle: "Trending projects",
@@ -189,15 +199,15 @@ export const dictionaries = {
       searchTalent: "Search talents",
       topRatedEyebrow: "Top rated",
       topRatedTitle:
-        "Top talent and projects, ranked by more than raw likes.",
+        "Top talent and projects based on quality, not just likes.",
       topRatedDescription:
-        "The leaderboard blends project quality, community response, profile depth, portfolio richness, and recent momentum so the top 10 feels earned.",
+        "Rankings factor in project depth, community votes, profile completeness, and recent activity — so the top 10 reflects genuine quality.",
       topCreatorsTitle: "Top 10 talents",
       topCreatorsDescription:
-        "Talent ranking combines profile completeness, profile feedback, project quality, portfolio depth, and recent activity.",
+        "Ranked by profile completeness, project quality, community feedback, and recent activity.",
       topProjectsTitle: "Top 10 projects",
       topProjectsDescription:
-        "Project ranking weighs community response, delivery depth, completeness, media richness, and recent activity instead of using a flat like counter.",
+        "Ranked by community votes, completeness, media quality, and recent activity — not just a like counter.",
       allTime: "All time",
       thisMonth: "This month",
       leaderboardScore: "rating",
@@ -235,7 +245,7 @@ export const dictionaries = {
       eyebrow: "Global search",
       title: "Search projects and public profiles",
       description:
-        "Use one search to jump into public projects and profiles, then continue to the full page or dashboard.",
+        "Find public projects and profiles by keywords, skills, or technologies — then open the full page or go to your dashboard.",
       browseProjects: "Browse projects",
       dashboard: "Dashboard",
       placeholder: "Search projects or users...",
@@ -291,6 +301,24 @@ export const dictionaries = {
         "No matching projects yet. Try another keyword or browse the full catalog.",
       noCreators:
         "No matching profiles yet. Try another keyword and check again.",
+    },
+    articlesPage: {
+      eyebrow: "Editorial space",
+      title: "Articles, platform updates, and authored posts",
+      description:
+        "A dedicated space for platform news, authored essays, guides, and case studies. Read what is new, discover active writers, and jump into deeper discussions.",
+      filterCategory: "Category",
+      filterAuthor: "Author",
+      filterSort: "Sort",
+      authorPlaceholder: "Search by author",
+      allCategories: "All categories",
+      recent: "Recent",
+      popular: "Popular",
+      discussed: "Discussed",
+      apply: "Apply filters",
+      reset: "Reset filters",
+      createArticle: "Write an article",
+      empty: "No articles match these filters yet.",
     },
     projectsPage: {
       eyebrow: "Public catalog",
@@ -349,10 +377,10 @@ export const dictionaries = {
       voteStateIdle: "Choose whether this project helped or impressed you.",
     },
     dashboard: {
-      eyebrow: "Analytics workspace",
-      title: "Platform dashboard",
+      eyebrow: "Your workspace",
+      title: "Dashboard",
       description:
-        "A single control room for site growth, audience response, and the performance of your own profile and projects.",
+        "Manage your profile, track project performance, and view platform-wide analytics in one place.",
       signedInAs: "Signed in as",
       editProfile: "Edit profile",
       manageProjects: "Manage projects",
@@ -750,7 +778,7 @@ export const dictionaries = {
     },
     footer: {
       description:
-        "Зручний спосіб перемикатися між пошуком, заповненням профілю та публікацією проєктів.",
+        "Знаходьте фахівців, переглядайте реальні проєкти та публікуйте власні роботи — все в одному місці.",
       legal: "Правова інформація",
       terms: "Умови користування",
       privacy: "Політика конфіденційності",
@@ -807,27 +835,37 @@ export const dictionaries = {
       home: {
         title: "Таланти та проєкти",
         description:
-          "Переглядайте сильні проєкти, відкривайте публічні профілі та переходьте до власного робочого простору на SearchTalent.",
+          "Знаходьте фахівців, переглядайте реальні проєкти з медіа й деталями та створюйте власне портфоліо на SearchTalent.",
       },
       search: {
         title: "Пошук талантів і проєктів",
         description:
-          "Шукайте серед публічних профілів і проєктів, щоб швидше знаходити потрібні навички, досвід і портфоліо.",
+          "Шукайте серед публічних профілів і проєктів за навичками, технологіями та ключовими словами.",
+      },
+      talents: {
+        title: "Профілі фахівців",
+        description:
+          "Переглядайте публічні профілі розробників, дизайнерів та інших спеціалістів — фільтруйте за навичками, локацією та досвідом.",
       },
       projects: {
-        title: "Каталог публічних проєктів",
+        title: "Каталог проєктів",
         description:
-          "Переглядайте публічний каталог проєктів на SearchTalent і відкривайте профілі авторів за кожним із них.",
+          "Опубліковані проєкти зі скріншотами, стеком технологій і оцінками спільноти. Знаходьте цікаві роботи та відкривайте профілі авторів.",
+      },
+      articles: {
+        title: "Статті та публікації",
+        description:
+          "Новини платформи, авторські матеріали, кейси й гайди від спільноти SearchTalent.",
       },
       dashboard: {
-        title: "Дашборд фахівця",
+        title: "Дашборд",
         description:
-          "Керуйте публічним профілем, проєктами та своєю присутністю на платформі з одного місця.",
+          "Ваша панель керування — профіль, опубліковані проєкти та аналітика платформи.",
       },
       dashboardProjects: {
         title: "Керування проєктами",
         description:
-          "Створюйте проєкти, завантажуйте медіа й переглядайте публічні сторінки проєктів зі своєї робочої зони.",
+          "Створюйте та редагуйте проєкти, завантажуйте скріншоти й відео та переглядайте, як вони виглядають для відвідувачів.",
       },
       dashboardProjectEdit: {
         title: "Редагування проєкту",
@@ -837,7 +875,7 @@ export const dictionaries = {
       dashboardProfile: {
         title: "Редагування профілю",
         description:
-          "Оновлюйте публічний профіль, контакти та дані для пошуку на SearchTalent.",
+          "Оновлюйте публічний профіль — ім'я, біо, навички, контакти, досвід роботи та посилання на портфоліо.",
       },
       login: {
         title: "Вхід",
@@ -847,22 +885,22 @@ export const dictionaries = {
       signup: {
         title: "Створення акаунта",
         description:
-          "Створіть акаунт SearchTalent і налаштуйте публічний профіль та робочу зону для проєктів.",
+          "Приєднуйтесь до SearchTalent — створіть профіль і почніть публікувати проєкти за кілька хвилин.",
       },
       verify: {
         title: "Підтвердження email",
         description:
-          "Підтвердьте email-адресу, щоб активувати акаунт SearchTalent і перейти до дашборду.",
+          "Підтвердьте email-адресу, щоб активувати акаунт SearchTalent і почати користуватися дашбордом.",
       },
       creatorProfile: {
         title: "Публічний профіль",
         description:
-          "Переглядайте досвід, навички, контакти та опубліковані проєкти на SearchTalent.",
+          "Навички, досвід, контакти та опубліковані проєкти цього фахівця на SearchTalent.",
       },
       projectDetail: {
         title: "Сторінка проєкту",
         description:
-          "Відкривайте деталі проєкту, переглядайте медіа й знайомтеся з автором роботи на SearchTalent.",
+          "Деталі проєкту — скріншоти, технології, команда та оцінки спільноти на SearchTalent.",
       },
     },
     home: {
@@ -880,17 +918,17 @@ export const dictionaries = {
         discovery: {
           title: "Для пошуку",
           description:
-            "Перемикайтеся між популярними проєктами, публічними профілями й пошуком без тупикових сторінок.",
+            "Переглядайте популярні проєкти, відкривайте профілі фахівців і шукайте за навичками чи технологіями.",
         },
         creators: {
           title: "Для фахівців",
           description:
-            "Тримайте профіль, публічну сторінку та робочий простір проєктів пов'язаними простими й зрозумілими діями.",
+            "Створюйте профіль, публікуйте проєкти та керуйте всім із персонального дашборду.",
         },
         teams: {
           title: "Для команд",
           description:
-            "Переходьте від натхнення до контакту швидше завдяки єдиній моделі навігації по всьому застосунку.",
+            "Знаходьте потрібних людей швидше — фільтруйте за навичками, досвідом і проєктами.",
         },
       },
       trendingTitle: "Популярні проєкти",
@@ -901,7 +939,7 @@ export const dictionaries = {
       creatorsDescription:
         "Відкрийте профіль, перегляньте навички та досвід і переходьте до пов'язаних проєктів.",
       searchTalent: "Шукати таланти",
-      topRatedEyebrow: "Top rated",
+      topRatedEyebrow: "Найкращі",
       topRatedTitle:
         "Сильні профілі та проєкти, які справді вирізняються.",
       topRatedDescription:
@@ -976,6 +1014,24 @@ export const dictionaries = {
       noCreators:
         "Поки що немає відповідних профілів. Спробуйте інший запит і перевірте ще раз.",
     },
+    articlesPage: {
+      eyebrow: "Редакційний простір",
+      title: "Статті, новини та авторські тексти",
+      description:
+        "Окремий простір для новин платформи, авторських матеріалів, гайдів і кейсів. Читайте оновлення, відстежуйте активних авторів і переходьте до обговорень.",
+      filterCategory: "Категорія",
+      filterAuthor: "Автор",
+      filterSort: "Сортування",
+      authorPlaceholder: "Пошук за автором",
+      allCategories: "Усі категорії",
+      recent: "Найновіші",
+      popular: "Популярні",
+      discussed: "Обговорювані",
+      apply: "Застосувати",
+      reset: "Скинути фільтри",
+      createArticle: "Створити статтю",
+      empty: "Поки що немає статей під ці фільтри.",
+    },
     projectsPage: {
       eyebrow: "Публічний каталог",
       title: "Переглядайте всі опубліковані проєкти",
@@ -1035,10 +1091,10 @@ export const dictionaries = {
         "Оцініть проєкт, якщо він був корисним або справив враження.",
     },
     dashboard: {
-      eyebrow: "Аналітичний простір",
-      title: "Аналітика платформи",
+      eyebrow: "Ваш простір",
+      title: "Дашборд",
       description:
-        "Єдина панель для росту сайту, реакції аудиторії та ефективності вашого профілю й проєктів.",
+        "Керуйте профілем, відстежуйте ефективність проєктів і переглядайте аналітику платформи з одного місця.",
       signedInAs: "Увійшли як",
       editProfile: "Редагувати профіль",
       manageProjects: "Керувати проєктами",
