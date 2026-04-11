@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import DashboardAnalytics from "@/components/dashboard-analytics";
-import { ButtonLink } from "@/components/ui/Button";
-import { getDashboardStats } from "@/lib/db/dashboard";
+import { getDashboardStats, getUserDashboardStats } from "@/lib/db/dashboard";
 import { createLocalePath, isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { getCurrentViewerRole } from "@/lib/moderation-server";
@@ -51,29 +50,32 @@ export default async function DashboardPage({
   }
 
   const dictionary = getDictionary(locale);
-  const viewer = await getCurrentViewerRole();
-  const stats = await getDashboardStats();
+  const [viewer, stats, userStats] = await Promise.all([
+    getCurrentViewerRole(),
+    getDashboardStats(),
+    getUserDashboardStats(user.id),
+  ]);
+
+  const greeting = userStats.name
+    ? `${dictionary.dashboard.welcomeBack}, ${userStats.name}`
+    : dictionary.dashboard.welcomeBack;
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] app-soft">
-            {dictionary.dashboard.analyticsEyebrow}
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--foreground)]">
-            {dictionary.metadata.dashboard.title}
-          </h1>
-        </div>
-        <ButtonLink href="/talents" variant="ghost" size="sm">
-          {dictionary.search.title}
-        </ButtonLink>
+      <div className="mb-8">
+        <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--foreground)]">
+          {greeting}
+        </h1>
+        <p className="mt-1 text-sm app-muted">
+          {dictionary.dashboard.updatedDaily}
+        </p>
       </div>
 
       <DashboardAnalytics
         dictionary={dictionary}
         locale={locale}
         stats={stats}
+        userStats={userStats}
         isAdmin={viewer.isAdmin}
       />
     </main>

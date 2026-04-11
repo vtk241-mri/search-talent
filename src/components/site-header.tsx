@@ -226,8 +226,8 @@ export default function SiteHeader({
             {dictionary.nav.menu}
           </summary>
 
-          <div className="absolute right-0 mt-3 w-[min(22rem,calc(100vw-2rem))] rounded-[1.75rem] border border-[color:var(--border)] bg-[color:var(--surface)] p-3 shadow-2xl">
-            <div className="space-y-2">
+          <div className="absolute right-0 mt-3 w-[min(22rem,calc(100vw-2rem))] max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain rounded-[1.75rem] border border-[color:var(--border)] bg-[color:var(--surface)] p-3 shadow-2xl">
+            <div className="space-y-1">
               {primaryLinks.map((link) => (
                 <NavLink
                   key={link.href}
@@ -240,9 +240,9 @@ export default function SiteHeader({
 
             {viewer ? (
               <>
-                <div className="mt-4 rounded-2xl bg-[color:var(--surface-muted)] px-4 py-3">
+                <div className="mt-3 rounded-2xl bg-[color:var(--surface-muted)] px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] text-sm font-semibold text-[color:var(--foreground)]">
+                    <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] text-sm font-semibold text-[color:var(--foreground)]">
                       {viewer.avatarUrl ? (
                         <Image
                           src={viewer.avatarUrl}
@@ -267,11 +267,11 @@ export default function SiteHeader({
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
+                <div className="mt-3">
+                  <p className="mb-1.5 px-2 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
                     {dictionary.nav.profile}
                   </p>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {dashboardLinks.map((link) => (
                       <LocalizedLink
                         key={link.href}
@@ -299,45 +299,45 @@ export default function SiteHeader({
                   </div>
                 </div>
 
-                <div className="mt-4 space-y-3 rounded-2xl border border-[color:var(--border)] p-4">
+                <div className="mt-3 space-y-2.5 rounded-2xl border border-[color:var(--border)] p-3">
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
                       {dictionary.language.switchLabel}
                     </p>
                     <LanguageSwitcher />
                   </div>
 
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
                       {dictionary.theme.toggleLabel}
                     </p>
                     <ThemeToggle initialTheme={initialTheme} />
                   </div>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-3">
                   <LogoutButton className="w-full justify-center" />
                 </div>
               </>
             ) : (
               <>
-                <div className="mt-4 space-y-3 rounded-2xl border border-[color:var(--border)] p-4">
+                <div className="mt-3 space-y-2.5 rounded-2xl border border-[color:var(--border)] p-3">
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
                       {dictionary.language.switchLabel}
                     </p>
                     <LanguageSwitcher />
                   </div>
 
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
                       {dictionary.theme.toggleLabel}
                     </p>
                     <ThemeToggle initialTheme={initialTheme} />
                   </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   <LocalizedLink
                     href="/login"
                     className={buttonStyles({

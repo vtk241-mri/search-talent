@@ -115,12 +115,13 @@ export default async function PublicProjectPage({
   const statusLabel = getStatusLabel(project.project_status, dictionary);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <section className="overflow-hidden rounded-[2.25rem] app-card">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
-          <div className="p-8 sm:p-10">
-            <div className="flex flex-wrap gap-3">
+    <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <section className="overflow-hidden rounded-2xl app-card sm:rounded-[2.25rem]">
+        <div className="grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
+          <div className="p-5 sm:p-8 md:p-10">
+            <div className="flex flex-wrap items-center gap-3">
               <ButtonLink href="/projects" variant="ghost" size="sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="mr-1 h-3.5 w-3.5" aria-hidden="true"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" /></svg>
                 {dictionary.projectPage.backToProjects}
               </ButtonLink>
               {owner?.username && (
@@ -135,15 +136,15 @@ export default async function PublicProjectPage({
               )}
             </div>
 
-            <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[color:var(--foreground)] sm:text-4xl">
+            <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--foreground)] sm:mt-6 sm:text-3xl md:text-4xl">
               {project.title}
             </h1>
 
-            <p className="mt-4 max-w-3xl text-base leading-8 app-muted">
+            <p className="mt-3 max-w-3xl text-sm leading-7 app-muted sm:mt-4 sm:text-base sm:leading-8">
               {project.description || dictionary.projectPage.noDescription}
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2 sm:mt-6">
               <span className="rounded-full app-panel px-3 py-1 text-sm app-muted">
                 {voteSummary.score} {dictionary.common.scoreSuffix}
               </span>
@@ -161,7 +162,7 @@ export default async function PublicProjectPage({
             </div>
           </div>
 
-          <div className="relative min-h-[18rem] bg-[color:var(--surface-muted)]">
+          <div className="relative min-h-[12rem] bg-[color:var(--surface-muted)] sm:min-h-[18rem]">
             {project.cover_url ? (
               <OptimizedImage
                 src={project.cover_url}
@@ -182,9 +183,9 @@ export default async function PublicProjectPage({
         </div>
       </section>
 
-      <section className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="space-y-8">
-          <section className="rounded-[2rem] app-card p-6">
+      <section className="mt-5 grid gap-5 sm:mt-8 sm:gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="space-y-5 sm:space-y-8">
+          <section className="rounded-2xl app-card p-4 sm:rounded-[2rem] sm:p-6">
             <h2 className="text-2xl font-semibold text-[color:var(--foreground)]">
               {dictionary.projectPage.details}
             </h2>
@@ -266,37 +267,37 @@ export default async function PublicProjectPage({
           {(project.problem || project.solution || project.results) && (
             <section className="grid gap-4 lg:grid-cols-3">
               {project.problem && (
-                <article className="rounded-[2rem] app-card p-6">
-                  <h2 className="text-xl font-semibold text-[color:var(--foreground)]">
+                <article className="rounded-2xl app-card p-4 sm:rounded-[2rem] sm:p-6">
+                  <h2 className="text-lg font-semibold text-[color:var(--foreground)] sm:text-xl">
                     {dictionary.projectPage.problem}
                   </h2>
-                  <p className="mt-4 text-sm leading-7 app-muted">{project.problem}</p>
+                  <p className="mt-3 text-sm leading-7 app-muted sm:mt-4">{project.problem}</p>
                 </article>
               )}
               {project.solution && (
-                <article className="rounded-[2rem] app-card p-6">
-                  <h2 className="text-xl font-semibold text-[color:var(--foreground)]">
+                <article className="rounded-2xl app-card p-4 sm:rounded-[2rem] sm:p-6">
+                  <h2 className="text-lg font-semibold text-[color:var(--foreground)] sm:text-xl">
                     {dictionary.projectPage.solution}
                   </h2>
-                  <p className="mt-4 text-sm leading-7 app-muted">{project.solution}</p>
+                  <p className="mt-3 text-sm leading-7 app-muted sm:mt-4">{project.solution}</p>
                 </article>
               )}
               {project.results && (
-                <article className="rounded-[2rem] app-card p-6">
-                  <h2 className="text-xl font-semibold text-[color:var(--foreground)]">
+                <article className="rounded-2xl app-card p-4 sm:rounded-[2rem] sm:p-6">
+                  <h2 className="text-lg font-semibold text-[color:var(--foreground)] sm:text-xl">
                     {dictionary.projectPage.results}
                   </h2>
-                  <p className="mt-4 text-sm leading-7 app-muted">{project.results}</p>
+                  <p className="mt-3 text-sm leading-7 app-muted sm:mt-4">{project.results}</p>
                 </article>
               )}
             </section>
           )}
 
-          <section className="rounded-[2rem] app-card p-6">
-            <h2 className="text-2xl font-semibold text-[color:var(--foreground)]">
+          <section className="rounded-2xl app-card p-4 sm:rounded-[2rem] sm:p-6">
+            <h2 className="text-xl font-semibold text-[color:var(--foreground)] sm:text-2xl">
               {dictionary.projectPage.gallery}
             </h2>
-            <div className="mt-6">
+            <div className="mt-4 sm:mt-6">
               <ProjectGallery media={media} />
             </div>
           </section>
@@ -307,7 +308,7 @@ export default async function PublicProjectPage({
           />
         </div>
 
-        <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+        <aside className="space-y-4 sm:space-y-6 xl:sticky xl:top-24 xl:self-start">
           <VoteButtons
             projectId={project.id}
             initialVote={voteSummary.currentVote}
@@ -324,7 +325,7 @@ export default async function PublicProjectPage({
           />
 
           {owner && (
-            <section className="rounded-[2rem] app-card p-5">
+            <section className="rounded-2xl app-card p-4 sm:rounded-[2rem] sm:p-5">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] app-soft">
                 {dictionary.projectPage.createdBy}
               </p>

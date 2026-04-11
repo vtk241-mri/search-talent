@@ -41,9 +41,9 @@ function HomeCard({
   description: string;
 }) {
   return (
-    <article className="rounded-[1.75rem] border border-white/12 bg-white/10 p-5 backdrop-blur">
-      <h2 className="text-lg font-semibold text-white">{title}</h2>
-      <p className="mt-3 text-sm leading-7 text-white/75">{description}</p>
+    <article className="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur sm:p-5">
+      <h2 className="text-base font-semibold text-white sm:text-lg">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-white/75 sm:mt-3 sm:leading-7">{description}</p>
     </article>
   );
 }
@@ -58,21 +58,21 @@ export default async function LocalizedHomePage({
   const leaderboards = await getLeaderboards();
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <section className="overflow-hidden rounded-[2.25rem] border app-border bg-[linear-gradient(145deg,_rgba(15,23,42,0.98),_rgba(3,105,161,0.92)_50%,_rgba(245,158,11,0.84))] p-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] sm:p-10">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+    <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <section className="overflow-hidden rounded-2xl border app-border bg-[linear-gradient(145deg,_rgba(15,23,42,0.98),_rgba(3,105,161,0.92)_50%,_rgba(245,158,11,0.84))] p-5 text-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] sm:rounded-[2.25rem] sm:p-8 md:p-10">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)] lg:gap-8">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/70">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/70 sm:text-sm">
               {dictionary.home.eyebrow}
             </p>
-            <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
+            <h1 className="mt-3 max-w-3xl text-2xl font-semibold tracking-tight sm:mt-4 sm:text-4xl md:text-5xl">
               {dictionary.home.title}
             </h1>
-            <p className="mt-4 max-w-3xl text-base leading-8 text-white/80">
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-white/80 sm:mt-4 sm:text-base sm:leading-8">
               {dictionary.home.description}
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-2 sm:mt-8 sm:gap-3">
               <ButtonLink href="/projects" size="lg">
                 {dictionary.home.browseProjects}
               </ButtonLink>
@@ -85,7 +85,7 @@ export default async function LocalizedHomePage({
             </div>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             <HomeCard
               title={dictionary.home.cards.discovery.title}
               description={dictionary.home.cards.discovery.description}
@@ -102,7 +102,7 @@ export default async function LocalizedHomePage({
         </div>
       </section>
 
-      <div className="mt-10">
+      <div className="mt-6 sm:mt-10">
         <HomeTopRated
           dictionary={dictionary}
           creators={leaderboards.creators}

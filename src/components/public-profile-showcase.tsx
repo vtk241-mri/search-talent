@@ -169,7 +169,7 @@ function SectionCard({
 }) {
   return (
     <section
-      className="relative overflow-hidden rounded-[1.9rem] app-card p-6"
+      className="relative overflow-hidden rounded-2xl app-card p-4 sm:rounded-[1.9rem] sm:p-6"
       style={{
         backgroundImage: `radial-gradient(circle at top right, ${withAlpha(
           accentColor,
@@ -253,37 +253,39 @@ export default function PublicProfileShowcase({
     .filter(Boolean) as Array<{ id: ProfileSectionId; title: string; content: ReactNode }>;
 
   return (
-    <main className="mx-auto max-w-[88rem] px-3 py-8 sm:px-6">
+    <main className="mx-auto max-w-[88rem] px-3 py-4 sm:px-6 sm:py-8">
       <div className="relative overflow-hidden rounded-[2.5rem] border" style={{ ...getThemeStyle(presentation), background: !presentation.backgroundUrl || presentation.backgroundMode === "gradient" ? `linear-gradient(135deg, ${presentation.surfaceColor} 0%, ${presentation.panelColor} 58%, ${presentation.accentColor} 100%)` : presentation.surfaceColor, color: presentation.textColor, fontFamily: getProfileFontStack(presentation.fontPreset) }}>
         {presentation.backgroundUrl && presentation.backgroundMode === "image" && <div className="absolute inset-0"><Image src={presentation.backgroundUrl} alt={displayName} fill className="object-cover" /></div>}
         {presentation.backgroundUrl && presentation.backgroundMode === "video" && <div className="absolute inset-0"><video autoPlay muted loop playsInline preload="metadata" className="h-full w-full object-cover"><source src={presentation.backgroundUrl} /></video></div>}
         <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${withAlpha(presentation.surfaceColor, Math.min(0.95, 0.45 + presentation.overlayStrength / 100))} 0%, ${withAlpha(presentation.panelColor, Math.min(0.92, 0.34 + presentation.overlayStrength / 120))} 55%, ${withAlpha(presentation.accentColor, 0.42)} 100%)` }} />
 
         <div className="relative p-4 sm:p-6 lg:p-8">
-          <section className="overflow-hidden rounded-[2rem] app-card p-6 sm:p-8 lg:p-10">
-            <div className="grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
+          <section className="overflow-hidden rounded-2xl app-card p-4 sm:rounded-[2rem] sm:p-6 lg:p-10">
+            <div className="grid gap-6 sm:gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
               <div className={presentation.heroAlignment === "center" ? "text-center" : "text-left"}>
-                <div className={`flex flex-wrap gap-3 ${presentation.heroAlignment === "center" ? "justify-center" : ""}`}>
-                  <ButtonLink href="/talents" variant="ghost" size="sm">{dictionary.creatorProfile.backToSearch}</ButtonLink>
-                  <ButtonLink href="/projects" variant="secondary" size="sm">{dictionary.creatorProfile.browseProjects}</ButtonLink>
-                  {isOwner && <><ButtonLink href="/profile/edit" size="sm">{dictionary.creatorProfile.editProfile}</ButtonLink><ButtonLink href="/projects/new" variant="ghost" size="sm">{dictionary.creatorProfile.manageProjects}</ButtonLink></>}
+                <div className={`flex flex-wrap items-center gap-3 ${presentation.heroAlignment === "center" ? "justify-center" : ""}`}>
+                  <ButtonLink href="/talents" variant="ghost" size="sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="mr-1 h-3.5 w-3.5" aria-hidden="true"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" /></svg>
+                    {dictionary.creatorProfile.backToSearch}
+                  </ButtonLink>
+                  {isOwner && <ButtonLink href="/profile/edit" size="sm">{dictionary.creatorProfile.editProfile}</ButtonLink>}
                   <ProfilePdfExport data={data} />
                 </div>
 
-                <div className={`mt-8 flex gap-5 ${presentation.heroAlignment === "center" ? "flex-col items-center" : "flex-col items-start sm:flex-row"}`}>
-                  <div className="relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-[2rem] app-panel text-4xl font-semibold text-[color:var(--foreground)]">
+                <div className={`mt-5 flex gap-4 sm:mt-8 sm:gap-5 ${presentation.heroAlignment === "center" ? "flex-col items-center" : "flex-col items-start sm:flex-row"}`}>
+                  <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl app-panel text-3xl font-semibold text-[color:var(--foreground)] sm:h-28 sm:w-28 sm:rounded-[2rem] sm:text-4xl">
                     {profile.avatar_url ? <Image src={profile.avatar_url} alt={displayName} fill className="object-cover" /> : <span>{displayName.slice(0, 1).toUpperCase()}</span>}
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em]" style={{ color: presentation.mutedColor }}>{profile.categoryName || dictionary.common.creator}</p>
-                    <h1 className="mt-3 font-semibold tracking-tight" style={{ fontSize: `${3.2 * typeScale.heading}rem`, lineHeight: 0.98 }}>{displayName}</h1>
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <p className="text-base app-muted">@{profile.username}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm" style={{ color: presentation.mutedColor }}>{profile.categoryName || dictionary.common.creator}</p>
+                    <h1 className="mt-2 font-semibold tracking-tight sm:mt-3" style={{ fontSize: `clamp(1.5rem, 5vw, ${3.2 * typeScale.heading}rem)`, lineHeight: 1.05 }}>{displayName}</h1>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-3">
+                      <p className="text-sm app-muted sm:text-base">@{profile.username}</p>
                       <VerifiedBadge verified={profile.email_verified} />
                     </div>
-                    {profile.headline && <p className="mt-5 max-w-3xl leading-8 app-muted" style={{ fontSize: `${1.05 * typeScale.body}rem` }}>{profile.headline}</p>}
-                    <div className={`mt-6 flex flex-wrap gap-2 ${presentation.heroAlignment === "center" ? "justify-center" : ""}`}>
+                    {profile.headline && <p className="mt-3 max-w-3xl text-sm leading-7 app-muted sm:mt-5 sm:text-base sm:leading-8" style={{ fontSize: undefined }}>{profile.headline}</p>}
+                    <div className={`mt-4 flex flex-wrap gap-2 sm:mt-6 ${presentation.heroAlignment === "center" ? "justify-center" : ""}`}>
                       {(profile.city || profile.countryName) && <span className="rounded-full app-panel px-3 py-1 text-sm app-muted">{[profile.city, profile.countryName].filter(Boolean).join(", ")}</span>}
                       {profile.experience_level && <span className="rounded-full app-panel px-3 py-1 text-sm app-muted">{getExperienceLabel(profile.experience_level, locale)}</span>}
                       {isOwner && <span className="rounded-full app-panel px-3 py-1 text-sm app-muted">{dictionary.creatorProfile.ownerView}</span>}
@@ -304,7 +306,7 @@ export default function PublicProfileShowcase({
             </div>
           </section>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-12">
+          <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-12">
             {visibleSections.map((section) => (
               <div
                 key={section.id}

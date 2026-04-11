@@ -163,9 +163,9 @@ export const dictionaries = {
     home: {
       eyebrow: "Discover, connect, publish",
       title:
-        "Find the right specialist and start a project together.",
+        "Find Talented Developers, Designers & IT Specialists for Your Projects",
       description:
-        "Browse real work, explore public profiles, and publish your own projects when you are ready.",
+        "Connect with verified IT professionals, review their portfolios with real projects, tech stacks, and code samples. Hire talent or showcase your own work to potential clients and employers.",
       browseProjects: "Browse projects",
       searchCreators: "Search talents",
       topProjectsCta: "Open top projects",
@@ -243,7 +243,7 @@ export const dictionaries = {
     },
     search: {
       eyebrow: "Global search",
-      title: "Search projects and public profiles",
+      title: "Search IT Professionals & Projects by Skills and Technologies",
       description:
         "Find public projects and profiles by keywords, skills, or technologies — then open the full page or go to your dashboard.",
       browseProjects: "Browse projects",
@@ -304,7 +304,7 @@ export const dictionaries = {
     },
     articlesPage: {
       eyebrow: "Editorial space",
-      title: "Articles, platform updates, and authored posts",
+      title: "Tech Articles, Case Studies & Industry Insights",
       description:
         "A dedicated space for platform news, authored essays, guides, and case studies. Read what is new, discover active writers, and jump into deeper discussions.",
       filterCategory: "Category",
@@ -322,7 +322,7 @@ export const dictionaries = {
     },
     projectsPage: {
       eyebrow: "Public catalog",
-      title: "Explore all published projects",
+      title: "Browse Real IT Projects with Code, Design & Tech Stacks",
       description:
         "Browse the full list, open individual project pages, and jump into your own workspace when you want to publish something new.",
       manageProjects: "Manage my projects",
@@ -439,7 +439,7 @@ export const dictionaries = {
     },
     dashboard: {
       eyebrow: "Your workspace",
-      title: "Dashboard",
+      title: "Manage Your IT Portfolio & Track Project Performance",
       description:
         "Manage your profile, track project performance, and view platform-wide analytics in one place.",
       signedInAs: "Signed in as",
@@ -493,10 +493,27 @@ export const dictionaries = {
       updatedDaily: "Live from current site data",
       noProjectsYet:
         "There is not enough project data yet to build this chart.",
+      welcomeBack: "Welcome back",
+      myStats: "Your activity",
+      myProjects: "My projects",
+      myArticles: "My articles",
+      followers: "Followers",
+      following: "Following",
+      bookmarks: "Saved",
+      receivedLikes: "Likes received",
+      receivedDislikes: "Dislikes received",
+      articleViews: "Article views",
+      platformOverview: "Platform overview",
+      totalCreators: "Total creators",
+      totalProjects: "Total projects",
+      totalVotes: "Total votes",
+      profileCompletion: "Profile completion",
+      quickActions: "Quick actions",
+      noData: "No data yet",
     },
     dashboardProjects: {
       eyebrow: "Project workspace",
-      title: "Manage my projects",
+      title: "Create & Manage Your IT Project Portfolio",
       description:
         "Create a new project, upload media, and open the public page to see how visitors experience it.",
       backToDashboard: "Back to dashboard",
@@ -544,7 +561,7 @@ export const dictionaries = {
     },
     dashboardProfile: {
       eyebrow: "Profile settings",
-      title: "Edit profile",
+      title: "Edit Your Professional IT Profile & Skills",
       description:
         "Update the public information that shapes your profile and helps people find you in search.",
       backToDashboard: "Back to dashboard",
@@ -966,9 +983,9 @@ export const dictionaries = {
     },
     home: {
       eyebrow: "Знайти, зв'язатися, опублікувати",
-      title: "Від пошуку фахівця до спільного запуску проєкту без зайвих кроків.",
+      title: "Знайдіть Талановитих Розробників, Дизайнерів та IT-Фахівців для Ваших Проєктів",
       description:
-        "Переглядайте сильні роботи, відкривайте публічні профілі й переходьте у свій дашборд, коли будете готові публікувати власні проєкти.",
+        "Зв'яжіться з перевіреними IT-фахівцями, перегляньте їхні портфоліо з реальними проєктами, технологічними стеками та зразками коду. Наймайте таланти або демонструйте власні роботи потенційним клієнтам та роботодавцям.",
       browseProjects: "Переглянути проєкти",
       searchCreators: "Шукати таланти",
       topProjectsCta: "Відкрити топ проєктів",
@@ -1046,7 +1063,7 @@ export const dictionaries = {
     },
     search: {
       eyebrow: "Глобальний пошук",
-      title: "Пошук проєктів і публічних профілів",
+      title: "Пошук IT-Фахівців та Проєктів за Навичками й Технологіями",
       description:
         "Скористайтеся одним пошуком, щоб швидко переходити до публічних проєктів, профілів і потрібних сторінок.",
       browseProjects: "Переглянути проєкти",
@@ -1077,7 +1094,7 @@ export const dictionaries = {
     },
     articlesPage: {
       eyebrow: "Редакційний простір",
-      title: "Статті, новини та авторські тексти",
+      title: "Технічні Статті, Кейси та Інсайти IT-Індустрії",
       description:
         "Окремий простір для новин платформи, авторських матеріалів, гайдів і кейсів. Читайте оновлення, відстежуйте активних авторів і переходьте до обговорень.",
       filterCategory: "Категорія",
@@ -1095,7 +1112,7 @@ export const dictionaries = {
     },
     projectsPage: {
       eyebrow: "Публічний каталог",
-      title: "Переглядайте всі опубліковані проєкти",
+      title: "Реальні IT-Проєкти з Кодом, Дизайном та Технологічними Стеками",
       description:
         "Переглядайте весь список, відкривайте окремі сторінки проєктів і переходьте у свою робочу зону, коли будете готові публікувати.",
       manageProjects: "Керувати моїми проєктами",
@@ -1214,7 +1231,7 @@ export const dictionaries = {
     },
     dashboard: {
       eyebrow: "Ваш простір",
-      title: "Дашборд",
+      title: "Керуйте Вашим IT-Портфоліо та Відстежуйте Ефективність Проєктів",
       description:
         "Керуйте профілем, відстежуйте ефективність проєктів і переглядайте аналітику платформи з одного місця.",
       signedInAs: "Увійшли як",
@@ -1269,10 +1286,27 @@ export const dictionaries = {
       updatedDaily: "Актуально за поточними даними сайту",
       noProjectsYet:
         "Поки недостатньо даних по проєктах, щоб побудувати цей блок.",
+      welcomeBack: "З поверненням",
+      myStats: "Ваша активність",
+      myProjects: "Мої проєкти",
+      myArticles: "Мої статті",
+      followers: "Підписники",
+      following: "Підписки",
+      bookmarks: "Збережене",
+      receivedLikes: "Отримані лайки",
+      receivedDislikes: "Отримані дизлайки",
+      articleViews: "Перегляди статей",
+      platformOverview: "Огляд платформи",
+      totalCreators: "Всього фахівців",
+      totalProjects: "Всього проєктів",
+      totalVotes: "Всього голосів",
+      profileCompletion: "Заповненість профілів",
+      quickActions: "Швидкі дії",
+      noData: "Ще немає даних",
     },
     dashboardProjects: {
       eyebrow: "Робоча зона проєктів",
-      title: "Керування моїми проєктами",
+      title: "Створюйте та Керуйте Вашим IT-Портфоліо Проєктів",
       description:
         "Створюйте нові проєкти, завантажуйте медіа та відкривайте публічну сторінку, щоб побачити її очима відвідувачів.",
       backToDashboard: "Назад у дашборд",
@@ -1320,7 +1354,7 @@ export const dictionaries = {
     },
     dashboardProfile: {
       eyebrow: "Налаштування профілю",
-      title: "Редагування профілю",
+      title: "Редагуйте Ваш Професійний IT-Профіль та Навички",
       description:
         "Оновлюйте публічну інформацію, яка формує ваш профіль і допомагає знаходити вас у пошуку.",
       backToDashboard: "Назад у дашборд",

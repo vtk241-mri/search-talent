@@ -1,5 +1,5 @@
 import { ButtonLink } from "@/components/ui/Button";
-import type { DashboardStats } from "@/lib/db/dashboard";
+import type { DashboardStats, UserDashboardStats } from "@/lib/db/dashboard";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { getModerationCopy } from "@/lib/moderation-copy";
@@ -21,72 +21,6 @@ function formatMonthLabel(value: string, locale: Locale) {
   }).format(date);
 }
 
-function getDashboardUi(locale: Locale) {
-  if (locale === "uk") {
-    return {
-      heroEyebrow: "Аналітика платформи",
-      heroTitle: "Загальна картина платформи",
-      heroDescription:
-        "Тут видно, як росте платформа: скільки з'являється нових профілів і проєктів, які напрямки та країни активніші за інші, і наскільки добре заповнені профілі.",
-      openProfile: "Редагувати профіль",
-      manageProjects: "Керувати проєктами",
-      openSearch: "Відкрити пошук",
-      savedItems: "Збережене",
-      followingAuthors: "Підписки",
-      publicProfiles: "Публічні профілі",
-      creatorDirections: "Напрямки",
-      creatorCountries: "Країни",
-      avgProfileCompletion: "Середня повнота профілю",
-      avgProjectScore: "Середній score проєкту",
-      creatorOrigins: "Географія фахівців",
-      creatorDirectionsMix: "Розподіл за напрямками",
-      profileReadiness: "Якість профілів",
-      skillsUniverse: "Карта скілів платформи",
-      skillsDescription:
-        "Мапа поєднує навички з профілів і технології з проєктів, тому тут видно реальний стек платформи.",
-      starter: "Стартовий рівень",
-      growing: "Ростуть",
-      complete: "Сильні профілі",
-      topProjectsTitle: "Найсильніші проєкти платформи",
-      topProjectsDescription:
-        "Тут лише те, що справді цікаво: реакція аудиторії, автор і напрямок, без шуму про файли.",
-      directionLabel: "Напрямок",
-      ownerLabel: "Автор",
-    };
-  }
-
-  return {
-    heroEyebrow: "Platform intelligence",
-    heroTitle: "Site-wide platform analytics",
-    heroDescription:
-      "One screen with the key platform signals: profile growth, active countries and directions, profile quality, and the skills that appear most often.",
-    openProfile: "Edit profile",
-    manageProjects: "Manage projects",
-    openSearch: "Open search",
-    savedItems: "Saved",
-    followingAuthors: "Following",
-    publicProfiles: "Public profiles",
-    creatorDirections: "Directions",
-    creatorCountries: "Countries",
-    avgProfileCompletion: "Average profile completion",
-    avgProjectScore: "Average project score",
-    creatorOrigins: "Talent geography",
-    creatorDirectionsMix: "Direction distribution",
-    profileReadiness: "Profile readiness",
-    skillsUniverse: "Platform skill map",
-    skillsDescription:
-      "This combines profile skills with project technologies so the map reflects the actual platform stack.",
-    starter: "Starter",
-    growing: "Growing",
-    complete: "Strong profiles",
-    topProjectsTitle: "Strongest projects across the platform",
-    topProjectsDescription:
-      "Only the useful signals stay here: audience response, owner, and direction without noisy file stats.",
-    directionLabel: "Direction",
-    ownerLabel: "Owner",
-  };
-}
-
 function getStatusLabel(status: string, dictionary: Dictionary) {
   switch (status as ProjectStatus | "unknown") {
     case "planning":
@@ -102,129 +36,130 @@ function getStatusLabel(status: string, dictionary: Dictionary) {
   }
 }
 
-function MetricCard({
-  label,
+function getDashboardUi(locale: Locale) {
+  if (locale === "uk") {
+    return {
+      publicProfiles: "Публічні профілі",
+      creatorDirections: "Напрямки",
+      creatorCountries: "Країни",
+      creatorOrigins: "Географія фахівців",
+      creatorDirectionsMix: "Розподіл за напрямками",
+      profileReadiness: "Якість профілів",
+      skillsUniverse: "Карта скілів платформи",
+      skillsDescription:
+        "Навички з профілів і технології з проєктів разом — реальний стек платформи.",
+      starter: "Початковий",
+      growing: "Розвивається",
+      complete: "Сильний",
+      topProjectsTitle: "Найсильніші проєкти",
+      directionLabel: "Напрямок",
+      ownerLabel: "Автор",
+      likesLabel: "Лайки",
+      dislikesLabel: "Дизлайки",
+      editProfile: "Редагувати профіль",
+      manageProjects: "Керувати проєктами",
+      openSearch: "Пошук",
+      savedItems: "Збережене",
+      followingAuthors: "Підписки",
+      writeArticle: "Написати статтю",
+    };
+  }
+
+  return {
+    publicProfiles: "Public profiles",
+    creatorDirections: "Directions",
+    creatorCountries: "Countries",
+    creatorOrigins: "Talent geography",
+    creatorDirectionsMix: "Direction distribution",
+    profileReadiness: "Profile readiness",
+    skillsUniverse: "Platform skill map",
+    skillsDescription:
+      "Profile skills and project technologies combined — the actual platform stack.",
+    starter: "Starter",
+    growing: "Growing",
+    complete: "Strong",
+    topProjectsTitle: "Top projects",
+    directionLabel: "Direction",
+    ownerLabel: "Owner",
+    likesLabel: "Likes",
+    dislikesLabel: "Dislikes",
+    editProfile: "Edit profile",
+    manageProjects: "Manage projects",
+    openSearch: "Search",
+    savedItems: "Saved",
+    followingAuthors: "Following",
+    writeArticle: "Write article",
+  };
+}
+
+/* ─── Small reusable pieces ─── */
+
+function StatNumber({
   value,
-  hint,
+  label,
   accent,
 }: {
-  label: string;
   value: string;
-  hint: string;
+  label: string;
   accent: string;
 }) {
   return (
-    <article className="rounded-[1.75rem] border app-border bg-[color:var(--surface)] p-5">
-      <div className={`h-1.5 w-16 rounded-full ${accent}`} />
-      <p className="mt-4 text-sm font-medium app-soft">{label}</p>
-      <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--foreground)]">
+    <div className="flex flex-col gap-1">
+      <span className={`text-2xl font-bold tracking-tight ${accent}`}>{value}</span>
+      <span className="text-xs font-medium uppercase tracking-wider app-soft">{label}</span>
+    </div>
+  );
+}
+
+function PersonalStatCard({
+  value,
+  label,
+  href,
+  accent,
+}: {
+  value: string;
+  label: string;
+  href: string;
+  accent: string;
+}) {
+  return (
+    <a
+      href={href}
+      className="group rounded-2xl border app-border bg-[color:var(--surface)] p-5 transition-shadow hover:shadow-md"
+    >
+      <div className={`mb-3 h-1 w-10 rounded-full ${accent}`} />
+      <p className="text-2xl font-bold tracking-tight text-[color:var(--foreground)]">{value}</p>
+      <p className="mt-1 text-sm font-medium app-soft group-hover:text-[color:var(--foreground)] transition-colors">
+        {label}
+      </p>
+    </a>
+  );
+}
+
+function PlatformMetricCard({
+  value,
+  label,
+  hint,
+  accent,
+}: {
+  value: string;
+  label: string;
+  hint?: string;
+  accent: string;
+}) {
+  return (
+    <article className="rounded-2xl border app-border bg-[color:var(--surface)] p-5">
+      <div className={`mb-3 h-1 w-10 rounded-full ${accent}`} />
+      <p className="text-sm font-medium app-soft">{label}</p>
+      <p className="mt-2 text-3xl font-bold tracking-tight text-[color:var(--foreground)]">
         {value}
       </p>
-      <p className="mt-2 text-sm leading-6 app-muted">{hint}</p>
+      {hint && <p className="mt-1.5 text-xs app-muted">{hint}</p>}
     </article>
   );
 }
 
-function GaugeCard({
-  label,
-  value,
-  suffix,
-  color,
-  hint,
-}: {
-  label: string;
-  value: number;
-  suffix: string;
-  color: string;
-  hint: string;
-}) {
-  const progress = Math.max(0, Math.min(value, 100));
-  const circumference = 2 * Math.PI * 44;
-  const dashOffset = circumference - (progress / 100) * circumference;
-
-  return (
-    <section className="rounded-[2rem] app-card p-6">
-      <div className="flex items-center gap-6">
-        <div className="relative h-28 w-28 shrink-0">
-          <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-            <circle
-              cx="60"
-              cy="60"
-              r="44"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="10"
-              className="text-[color:var(--surface-muted)]"
-            />
-            <circle
-              cx="60"
-              cy="60"
-              r="44"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="10"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={dashOffset}
-              className={color}
-            />
-          </svg>
-
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-2xl font-semibold text-[color:var(--foreground)]">
-              {value}
-            </span>
-            <span className="text-xs uppercase tracking-[0.18em] app-soft">{suffix}</span>
-          </div>
-        </div>
-
-        <div>
-          <p className="text-base font-semibold text-[color:var(--foreground)]">{label}</p>
-          <p className="mt-2 text-sm leading-6 app-muted">{hint}</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function DistributionChart({
-  title,
-  items,
-  locale,
-}: {
-  title: string;
-  items: Array<{ label: string; value: number }>;
-  locale: Locale;
-}) {
-  const maxValue = Math.max(...items.map((item) => item.value), 1);
-
-  return (
-    <section className="rounded-[2rem] app-card p-6">
-      <h2 className="text-xl font-semibold text-[color:var(--foreground)]">{title}</h2>
-
-      <div className="mt-6 space-y-4">
-        {items.length > 0 ? (
-          items.map((item) => (
-            <div key={item.label}>
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-[color:var(--foreground)]">{item.label}</p>
-                <p className="text-sm app-soft">{formatCompactNumber(item.value, locale)}</p>
-              </div>
-              <div className="h-3 rounded-full bg-[color:var(--surface-muted)]">
-                <div
-                  className="h-3 rounded-full bg-[linear-gradient(90deg,_#0f172a,_#f59e0b)]"
-                  style={{ width: `${(item.value / maxValue) * 100}%` }}
-                />
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-sm app-muted">0</p>
-        )}
-      </div>
-    </section>
-  );
-}
+/* ─── Activity chart ─── */
 
 function ActivityChart({
   items,
@@ -245,111 +180,125 @@ function ActivityChart({
       key: "profiles",
       label: dictionary.dashboard.creatorsJoined,
       color: "bg-sky-500",
+      dot: "bg-sky-500",
       value: (item: DashboardStats["monthlyActivity"][number]) => item.profiles,
     },
     {
       key: "projects",
       label: dictionary.dashboard.projectsPublished,
       color: "bg-emerald-500",
+      dot: "bg-emerald-500",
       value: (item: DashboardStats["monthlyActivity"][number]) => item.projects,
     },
     {
       key: "votes",
       label: dictionary.dashboard.votesCast,
-      color: "bg-rose-500",
+      color: "bg-amber-500",
+      dot: "bg-amber-500",
       value: (item: DashboardStats["monthlyActivity"][number]) => item.votes,
     },
   ];
 
   return (
-    <section className="rounded-[2rem] app-card p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] app-soft">
-            {dictionary.dashboard.analyticsEyebrow}
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-[color:var(--foreground)]">
-            {dictionary.dashboard.growthLastMonths}
-          </h2>
+    <section className="rounded-2xl app-card p-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
+          {dictionary.dashboard.growthLastMonths}
+        </h2>
+        <div className="flex flex-wrap gap-4">
+          {series.map((entry) => (
+            <div key={entry.key} className="flex items-center gap-1.5">
+              <span className={`h-2.5 w-2.5 rounded-full ${entry.dot}`} />
+              <span className="text-xs font-medium app-soft">{entry.label}</span>
+            </div>
+          ))}
         </div>
-        <p className="text-sm app-muted">{dictionary.dashboard.updatedDaily}</p>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(16rem,0.9fr)]">
-        <div className="rounded-[1.75rem] bg-[color:var(--surface)] p-4">
-          <div className="flex h-72 items-end gap-3">
-            {items.map((item) => (
-              <div key={item.key} className="flex min-w-0 flex-1 items-end gap-1">
-                {series.map((entry) => {
-                  const value = entry.value(item);
-                  const height = `${Math.max((value / maxValue) * 100, value > 0 ? 10 : 0)}%`;
-
-                  return (
-                    <div key={`${item.key}-${entry.key}`} className="flex-1">
-                      <div
-                        className={`w-full rounded-t-2xl ${entry.color}`}
-                        style={{ height }}
-                        title={`${entry.label}: ${value}`}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+      <div className="flex h-56 items-end gap-2 sm:gap-3">
+        {items.map((item) => (
+          <div key={item.key} className="flex min-w-0 flex-1 flex-col items-stretch gap-1">
+            <div className="flex flex-1 items-end gap-0.5 sm:gap-1">
+              {series.map((entry) => {
+                const v = entry.value(item);
+                const height = `${Math.max((v / maxValue) * 100, v > 0 ? 8 : 0)}%`;
+                return (
+                  <div key={`${item.key}-${entry.key}`} className="flex-1">
+                    <div
+                      className={`w-full rounded-t-lg ${entry.color} transition-all`}
+                      style={{ height }}
+                      title={`${entry.label}: ${v}`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <span className="mt-2 text-center text-xs app-soft">
+              {formatMonthLabel(item.key, locale)}
+            </span>
           </div>
-
-          <div className="mt-4 grid grid-cols-6 gap-3">
-            {items.map((item) => (
-              <div key={item.key} className="text-center text-xs app-soft">
-                {formatMonthLabel(item.key, locale)}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-[1.75rem] border app-border bg-[color:var(--surface)] p-4">
-          <div className="space-y-3">
-            {series.map((entry) => (
-              <div key={entry.key} className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className={`h-3 w-3 rounded-full ${entry.color}`} />
-                  <span className="text-sm text-[color:var(--foreground)]">{entry.label}</span>
-                </div>
-                <span className="text-sm app-soft">
-                  {formatCompactNumber(
-                    items.reduce((sum, item) => sum + entry.value(item), 0),
-                    locale,
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 rounded-[1.5rem] app-panel p-4">
-            <p className="text-sm font-medium text-[color:var(--foreground)]">
-              {dictionary.dashboard.totalTrafficPulse}
-            </p>
-            <p className="mt-2 text-sm leading-6 app-muted">
-              {dictionary.dashboard.totalTrafficDescription}
-            </p>
-          </div>
-        </div>
+        ))}
       </div>
     </section>
   );
 }
 
+/* ─── Horizontal bar distribution ─── */
+
+function DistributionChart({
+  title,
+  items,
+  locale,
+}: {
+  title: string;
+  items: Array<{ label: string; value: number }>;
+  locale: Locale;
+}) {
+  const maxValue = Math.max(...items.map((item) => item.value), 1);
+
+  return (
+    <section className="rounded-2xl app-card p-6">
+      <h2 className="mb-5 text-lg font-semibold text-[color:var(--foreground)]">{title}</h2>
+
+      <div className="space-y-3">
+        {items.length > 0 ? (
+          items.map((item) => (
+            <div key={item.label}>
+              <div className="mb-1.5 flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-[color:var(--foreground)]">{item.label}</p>
+                <p className="text-sm tabular-nums app-soft">
+                  {formatCompactNumber(item.value, locale)}
+                </p>
+              </div>
+              <div className="h-2 rounded-full bg-[color:var(--surface-muted)]">
+                <div
+                  className="h-2 rounded-full bg-[color:var(--foreground)] opacity-70"
+                  style={{ width: `${(item.value / maxValue) * 100}%` }}
+                />
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-sm app-muted">0</p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Completion bands ─── */
+
 function CompletionBands({
   items,
+  total,
   locale,
   ui,
 }: {
   items: DashboardStats["completionBreakdown"];
+  total: number;
   locale: Locale;
   ui: ReturnType<typeof getDashboardUi>;
 }) {
-  const total = items.reduce((sum, item) => sum + item.value, 0) || 1;
-
   const labels = {
     starter: ui.starter,
     growing: ui.growing,
@@ -362,49 +311,302 @@ function CompletionBands({
     complete: "bg-emerald-500",
   } as const;
 
+  const dots = {
+    starter: "bg-slate-400",
+    growing: "bg-amber-500",
+    complete: "bg-emerald-500",
+  } as const;
+
   return (
-    <section className="rounded-[2rem] app-card p-6">
-      <h2 className="text-xl font-semibold text-[color:var(--foreground)]">
+    <section className="rounded-2xl app-card p-6">
+      <h2 className="mb-5 text-lg font-semibold text-[color:var(--foreground)]">
         {ui.profileReadiness}
       </h2>
 
-      <div className="mt-6 space-y-4">
-        {items.map((item) => (
-          <div key={item.key}>
-            <div className="mb-2 flex items-center justify-between gap-3">
+      {/* stacked bar */}
+      <div className="mb-5 flex h-4 overflow-hidden rounded-full bg-[color:var(--surface-muted)]">
+        {items.map((item) => {
+          const pct = total > 0 ? (item.value / total) * 100 : 0;
+          if (pct === 0) return null;
+          return (
+            <div
+              key={item.key}
+              className={`${colors[item.key]}`}
+              style={{ width: `${pct}%` }}
+              title={`${labels[item.key]}: ${item.value}`}
+            />
+          );
+        })}
+      </div>
+
+      <div className="space-y-3">
+        {items.map((item) => {
+          const pct = total > 0 ? Math.round((item.value / total) * 100) : 0;
+          return (
+            <div key={item.key} className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className={`h-3 w-3 rounded-full ${colors[item.key]}`} />
+                <span className={`h-2.5 w-2.5 rounded-full ${dots[item.key]}`} />
                 <span className="text-sm font-medium text-[color:var(--foreground)]">
                   {labels[item.key]}
                 </span>
               </div>
-              <span className="text-sm app-soft">
-                {formatCompactNumber(item.value, locale)}
+              <span className="text-sm tabular-nums app-soft">
+                {formatCompactNumber(item.value, locale)} ({pct}%)
               </span>
             </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
-            <div className="h-3 rounded-full bg-[color:var(--surface-muted)]">
+/* ─── Skills cloud ─── */
+
+function SkillCloud({
+  skills,
+  ui,
+  dictionary,
+}: {
+  skills: DashboardStats["topSkills"];
+  ui: ReturnType<typeof getDashboardUi>;
+  dictionary: Dictionary;
+}) {
+  if (skills.length === 0) {
+    return (
+      <section className="rounded-2xl app-card p-6">
+        <h2 className="mb-2 text-lg font-semibold text-[color:var(--foreground)]">
+          {ui.skillsUniverse}
+        </h2>
+        <p className="text-sm app-muted">{dictionary.dashboard.noProjectsYet}</p>
+      </section>
+    );
+  }
+
+  const maxCount = Math.max(...skills.map((s) => s.value), 1);
+
+  return (
+    <section className="rounded-2xl app-card p-6">
+      <h2 className="mb-2 text-lg font-semibold text-[color:var(--foreground)]">
+        {ui.skillsUniverse}
+      </h2>
+      <p className="mb-5 text-xs app-muted">{ui.skillsDescription}</p>
+
+      <div className="flex flex-wrap gap-2">
+        {skills.map((skill) => {
+          const intensity = Math.max(0.35, skill.value / maxCount);
+          return (
+            <span
+              key={skill.name}
+              className="inline-flex items-center gap-1.5 rounded-full border app-border bg-[color:var(--surface)] px-3 py-1.5 text-sm"
+              style={{ opacity: 0.5 + intensity * 0.5 }}
+            >
+              <span className="font-medium text-[color:var(--foreground)]">{skill.name}</span>
+              <span className="text-xs tabular-nums app-soft">{skill.value}</span>
+            </span>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Top projects ─── */
+
+function TopProjects({
+  projects,
+  dictionary,
+  locale,
+  ui,
+}: {
+  projects: DashboardStats["topProjects"];
+  dictionary: Dictionary;
+  locale: Locale;
+  ui: ReturnType<typeof getDashboardUi>;
+}) {
+  if (projects.length === 0) {
+    return (
+      <section className="rounded-2xl app-card p-6">
+        <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
+          {ui.topProjectsTitle}
+        </h2>
+        <p className="mt-3 text-sm app-muted">{dictionary.dashboard.noProjectsYet}</p>
+      </section>
+    );
+  }
+
+  const strongestScore = Math.max(...projects.map((p) => p.score), 1);
+
+  return (
+    <section className="rounded-2xl app-card p-6">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
+          {ui.topProjectsTitle}
+        </h2>
+        <ButtonLink href="/projects" variant="ghost" size="sm">
+          {dictionary.home.viewAllProjects}
+        </ButtonLink>
+      </div>
+
+      <div className="space-y-3">
+        {projects.map((project) => (
+          <a
+            key={project.id}
+            href={buildProjectPath(project.id, project.slug)}
+            className="group block rounded-xl border app-border bg-[color:var(--surface)] p-4 transition-shadow hover:shadow-sm"
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <h3 className="truncate text-sm font-semibold text-[color:var(--foreground)] group-hover:underline">
+                  {project.title}
+                </h3>
+                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs app-muted">
+                  {project.ownerName && (
+                    <span>{ui.ownerLabel}: {project.ownerName}</span>
+                  )}
+                  {project.categoryName && (
+                    <span>{ui.directionLabel}: {project.categoryName}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-3 text-xs tabular-nums app-soft">
+                <span>{project.likes} {ui.likesLabel}</span>
+                <span>{project.dislikes} {ui.dislikesLabel}</span>
+                <span className="font-semibold text-[color:var(--foreground)]">
+                  {dictionary.dashboard.totalScore}: {project.score}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-3 h-1.5 rounded-full bg-[color:var(--surface-muted)]">
               <div
-                className={`h-3 rounded-full ${colors[item.key]}`}
-                style={{ width: `${(item.value / total) * 100}%` }}
+                className="h-1.5 rounded-full bg-emerald-500"
+                style={{
+                  width: `${Math.max((project.score / strongestScore) * 100, project.score > 0 ? 6 : 0)}%`,
+                }}
               />
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </section>
   );
 }
 
+/* ─── Donut / ring chart ─── */
+
+function DonutChart({
+  title,
+  items,
+  dictionary,
+}: {
+  title: string;
+  items: Array<{ label: string; value: number }>;
+  dictionary: Dictionary;
+}) {
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  if (total === 0) {
+    return (
+      <section className="rounded-2xl app-card p-6">
+        <h2 className="text-lg font-semibold text-[color:var(--foreground)]">{title}</h2>
+        <p className="mt-3 text-sm app-muted">{dictionary.dashboard.noData}</p>
+      </section>
+    );
+  }
+
+  const colors = [
+    "text-sky-500",
+    "text-emerald-500",
+    "text-amber-500",
+    "text-rose-500",
+    "text-violet-500",
+    "text-cyan-500",
+    "text-orange-500",
+    "text-teal-500",
+  ];
+
+  const dotColors = [
+    "bg-sky-500",
+    "bg-emerald-500",
+    "bg-amber-500",
+    "bg-rose-500",
+    "bg-violet-500",
+    "bg-cyan-500",
+    "bg-orange-500",
+    "bg-teal-500",
+  ];
+
+  const radius = 40;
+  const circumference = 2 * Math.PI * radius;
+  let cumulativeOffset = 0;
+
+  return (
+    <section className="rounded-2xl app-card p-6">
+      <h2 className="mb-5 text-lg font-semibold text-[color:var(--foreground)]">{title}</h2>
+
+      <div className="flex flex-col items-center gap-6 sm:flex-row">
+        <div className="relative h-36 w-36 shrink-0">
+          <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+            {items.map((item, index) => {
+              const pct = item.value / total;
+              const dash = pct * circumference;
+              const offset = cumulativeOffset;
+              cumulativeOffset += dash;
+
+              return (
+                <circle
+                  key={item.label}
+                  cx="50"
+                  cy="50"
+                  r={radius}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="12"
+                  strokeDasharray={`${dash} ${circumference - dash}`}
+                  strokeDashoffset={-offset}
+                  className={colors[index % colors.length]}
+                />
+              );
+            })}
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-xl font-bold text-[color:var(--foreground)]">{total}</span>
+          </div>
+        </div>
+
+        <div className="flex-1 space-y-2">
+          {items.map((item, index) => {
+            const pct = Math.round((item.value / total) * 100);
+            return (
+              <div key={item.label} className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className={`h-2.5 w-2.5 rounded-full ${dotColors[index % dotColors.length]}`} />
+                  <span className="text-sm text-[color:var(--foreground)]">{item.label}</span>
+                </div>
+                <span className="text-sm tabular-nums app-soft">{pct}%</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Main component ─── */
+
 export default function DashboardAnalytics({
   dictionary,
   locale,
   stats,
+  userStats,
   isAdmin,
 }: {
   dictionary: Dictionary;
   locale: Locale;
   stats: DashboardStats;
+  userStats: UserDashboardStats;
   isAdmin: boolean;
 }) {
   const ui = getDashboardUi(locale);
@@ -413,254 +615,155 @@ export default function DashboardAnalytics({
     stats.siteTotals.profiles > 0
       ? Math.round((stats.siteTotals.publicProfiles / stats.siteTotals.profiles) * 100)
       : 0;
-  const strongestScore = Math.max(...stats.topProjects.map((project) => project.score), 1);
+  const completionTotal = stats.completionBreakdown.reduce((s, i) => s + i.value, 0);
 
   return (
-    <div className="space-y-8">
-      <section className="overflow-hidden rounded-[2.25rem] border app-border bg-[linear-gradient(145deg,_rgba(15,23,42,0.98),_rgba(3,105,161,0.94)_48%,_rgba(245,158,11,0.86))] p-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.22)]">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/70">
-              {ui.heroEyebrow}
-            </p>
-            <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight">
-              {ui.heroTitle}
-            </h1>
-            <p className="mt-4 max-w-3xl text-base leading-8 text-white/80">
-              {ui.heroDescription}
-            </p>
+    <div className="space-y-6">
+      {/* ─── Quick actions ─── */}
+      <nav className="flex flex-wrap gap-2">
+        <ButtonLink href="/profile/edit" size="sm">
+          {ui.editProfile}
+        </ButtonLink>
+        <ButtonLink href="/dashboard/projects" variant="secondary" size="sm">
+          {ui.manageProjects}
+        </ButtonLink>
+        <ButtonLink href="/articles/new" variant="secondary" size="sm">
+          {ui.writeArticle}
+        </ButtonLink>
+        <ButtonLink href="/talents" variant="ghost" size="sm">
+          {ui.openSearch}
+        </ButtonLink>
+        <ButtonLink href="/dashboard/saved" variant="ghost" size="sm">
+          {ui.savedItems}
+        </ButtonLink>
+        <ButtonLink href="/dashboard/following" variant="ghost" size="sm">
+          {ui.followingAuthors}
+        </ButtonLink>
+        {isAdmin && (
+          <ButtonLink href="/dashboard/moderation" variant="ghost" size="sm">
+            {moderationCopy.dashboard.openQueue}
+          </ButtonLink>
+        )}
+      </nav>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink href="/profile/edit" size="lg">
-                {ui.openProfile}
-              </ButtonLink>
-              <ButtonLink href="/projects/new" variant="secondary" size="lg">
-                {ui.manageProjects}
-              </ButtonLink>
-              <ButtonLink href="/talents" variant="ghost" size="lg">
-                {ui.openSearch}
-              </ButtonLink>
-              <ButtonLink href="/dashboard/saved" variant="ghost" size="lg">
-                {ui.savedItems}
-              </ButtonLink>
-              <ButtonLink href="/dashboard/following" variant="ghost" size="lg">
-                {ui.followingAuthors}
-              </ButtonLink>
-              {isAdmin && (
-                <ButtonLink href="/dashboard/moderation" variant="ghost" size="lg">
-                  {moderationCopy.dashboard.openQueue}
-                </ButtonLink>
-              )}
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <MetricCard
-              label={dictionary.dashboard.creators}
-              value={formatCompactNumber(stats.siteTotals.profiles, locale)}
-              accent="bg-sky-400"
-              hint={`${formatCompactNumber(stats.siteTotals.publicProfiles, locale)} ${ui.publicProfiles.toLowerCase()}`}
-            />
-            <MetricCard
-              label={dictionary.dashboard.projects}
-              value={formatCompactNumber(stats.siteTotals.projects, locale)}
-              accent="bg-emerald-400"
-              hint={dictionary.dashboard.siteProjectsHint}
-            />
-            <MetricCard
-              label={ui.creatorCountries}
-              value={formatCompactNumber(stats.siteTotals.countries, locale)}
-              accent="bg-amber-400"
-              hint={ui.creatorOrigins}
-            />
-            <MetricCard
-              label={ui.creatorDirections}
-              value={formatCompactNumber(stats.siteTotals.categories, locale)}
-              accent="bg-rose-400"
-              hint={ui.creatorDirectionsMix}
-            />
-          </div>
+      {/* ─── Personal stats ─── */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest app-soft">
+          {dictionary.dashboard.myStats}
+        </h2>
+        <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <PersonalStatCard
+            value={String(userStats.projectsCount)}
+            label={dictionary.dashboard.myProjects}
+            href={`/${locale}/dashboard/projects`}
+            accent="bg-emerald-500"
+          />
+          <PersonalStatCard
+            value={String(userStats.articlesCount)}
+            label={dictionary.dashboard.myArticles}
+            href={`/${locale}/articles`}
+            accent="bg-violet-500"
+          />
+          <PersonalStatCard
+            value={String(userStats.followersCount)}
+            label={dictionary.dashboard.followers}
+            href={`/${locale}/dashboard/following`}
+            accent="bg-sky-500"
+          />
+          <PersonalStatCard
+            value={String(userStats.followingCount)}
+            label={dictionary.dashboard.following}
+            href={`/${locale}/dashboard/following`}
+            accent="bg-cyan-500"
+          />
+          <PersonalStatCard
+            value={String(userStats.bookmarksCount)}
+            label={dictionary.dashboard.bookmarks}
+            href={`/${locale}/dashboard/saved`}
+            accent="bg-amber-500"
+          />
+          <PersonalStatCard
+            value={String(userStats.receivedLikes)}
+            label={dictionary.dashboard.receivedLikes}
+            href={`/${locale}/dashboard/projects`}
+            accent="bg-rose-500"
+          />
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          label={ui.publicProfiles}
-          value={formatCompactNumber(stats.siteTotals.publicProfiles, locale)}
-          accent="bg-cyan-500"
-          hint={`${publicProfilesRate}%`}
-        />
-        <MetricCard
-          label={dictionary.dashboard.communityVotes}
-          value={formatCompactNumber(stats.siteTotals.votes, locale)}
-          accent="bg-rose-500"
-          hint={`${formatCompactNumber(stats.siteTotals.likes, locale)} ${dictionary.projectPage.likes} / ${formatCompactNumber(stats.siteTotals.dislikes, locale)} ${dictionary.projectPage.dislikes}`}
-        />
-        <MetricCard
-          label={ui.avgProjectScore}
-          value={formatCompactNumber(stats.siteTotals.avgProjectScore, locale)}
-          accent="bg-emerald-500"
-          hint={dictionary.dashboard.audienceResponse}
-        />
-        <MetricCard
-          label={ui.avgProfileCompletion}
-          value={`${stats.siteTotals.avgProfileCompletion}%`}
-          accent="bg-slate-500"
-          hint={ui.profileReadiness}
-        />
+      {/* ─── Platform overview ─── */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest app-soft">
+          {dictionary.dashboard.platformOverview}
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <PlatformMetricCard
+            label={dictionary.dashboard.totalCreators}
+            value={formatCompactNumber(stats.siteTotals.profiles, locale)}
+            accent="bg-sky-500"
+            hint={`${formatCompactNumber(stats.siteTotals.publicProfiles, locale)} ${ui.publicProfiles.toLowerCase()} (${publicProfilesRate}%)`}
+          />
+          <PlatformMetricCard
+            label={dictionary.dashboard.totalProjects}
+            value={formatCompactNumber(stats.siteTotals.projects, locale)}
+            accent="bg-emerald-500"
+            hint={dictionary.dashboard.siteProjectsHint}
+          />
+          <PlatformMetricCard
+            label={dictionary.dashboard.totalVotes}
+            value={formatCompactNumber(stats.siteTotals.votes, locale)}
+            accent="bg-amber-500"
+            hint={`${formatCompactNumber(stats.siteTotals.likes, locale)} ${ui.likesLabel.toLowerCase()} / ${formatCompactNumber(stats.siteTotals.dislikes, locale)} ${ui.dislikesLabel.toLowerCase()}`}
+          />
+          <PlatformMetricCard
+            label={dictionary.dashboard.profileCompletion}
+            value={`${stats.siteTotals.avgProfileCompletion}%`}
+            accent="bg-slate-500"
+            hint={ui.profileReadiness}
+          />
+        </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-2">
-        <GaugeCard
-          label={ui.avgProfileCompletion}
-          value={stats.siteTotals.avgProfileCompletion}
-          suffix="%"
-          color="text-emerald-500"
-          hint={ui.profileReadiness}
-        />
-
-        <GaugeCard
-          label={ui.publicProfiles}
-          value={publicProfilesRate}
-          suffix="%"
-          color="text-sky-500"
-          hint={dictionary.dashboard.publicProfilesHint.replace(
-            "{count}",
-            formatCompactNumber(stats.siteTotals.publicProfiles, locale),
-          )}
-        />
-      </section>
-
+      {/* ─── Activity chart ─── */}
       <ActivityChart items={stats.monthlyActivity} dictionary={dictionary} locale={locale} />
 
-      <section className="grid gap-6 xl:grid-cols-2">
+      {/* ─── Distributions: geography & directions ─── */}
+      <div className="grid gap-6 lg:grid-cols-2">
         <DistributionChart
           title={ui.creatorOrigins}
           locale={locale}
           items={stats.countryBreakdown}
         />
-
         <DistributionChart
           title={ui.creatorDirectionsMix}
           locale={locale}
           items={stats.categoryBreakdown}
         />
-      </section>
+      </div>
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <CompletionBands items={stats.completionBreakdown} locale={locale} ui={ui} />
+      {/* ─── Profile quality & skills ─── */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <CompletionBands
+          items={stats.completionBreakdown}
+          total={completionTotal}
+          locale={locale}
+          ui={ui}
+        />
+        <SkillCloud skills={stats.topSkills} ui={ui} dictionary={dictionary} />
+      </div>
 
-        <section className="rounded-[2rem] app-card p-6">
-          <h2 className="text-xl font-semibold text-[color:var(--foreground)]">
-            {ui.skillsUniverse}
-          </h2>
-          <p className="mt-2 text-sm leading-6 app-muted">{ui.skillsDescription}</p>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            {stats.topSkills.length > 0 ? (
-              stats.topSkills.map((skill) => (
-                <div
-                  key={skill.name}
-                  className="rounded-full border app-border bg-[color:var(--surface)] px-4 py-2"
-                >
-                  <span className="text-sm font-medium text-[color:var(--foreground)]">
-                    {skill.name}
-                  </span>
-                  <span className="ml-2 text-sm app-soft">{skill.value}</span>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm app-muted">{dictionary.dashboard.noProjectsYet}</p>
-            )}
-          </div>
-        </section>
-      </section>
-
-      <section className="rounded-[2rem] app-card p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] app-soft">
-              {dictionary.dashboard.audienceResponse}
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-[color:var(--foreground)]">
-              {ui.topProjectsTitle}
-            </h2>
-            <p className="mt-2 text-sm leading-6 app-muted">{ui.topProjectsDescription}</p>
-          </div>
-          <ButtonLink href="/projects" variant="secondary" size="sm">
-            {dictionary.home.viewAllProjects}
-          </ButtonLink>
-        </div>
-
-        <div className="mt-6 grid gap-4">
-          {stats.topProjects.length > 0 ? (
-            stats.topProjects.map((project) => (
-              <article
-                key={project.id}
-                className="rounded-[1.5rem] border app-border bg-[color:var(--surface)] p-5"
-              >
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0">
-                    <h3 className="truncate text-lg font-semibold text-[color:var(--foreground)]">
-                      {project.title}
-                    </h3>
-
-                    <div className="mt-2 flex flex-wrap gap-2 text-sm app-muted">
-                      {project.ownerName && (
-                        <span className="rounded-full app-panel px-3 py-1">
-                          {ui.ownerLabel}: {project.ownerName}
-                        </span>
-                      )}
-                      {project.categoryName && (
-                        <span className="rounded-full app-panel px-3 py-1">
-                          {ui.directionLabel}: {project.categoryName}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <ButtonLink
-                    href={buildProjectPath(project.id, project.slug)}
-                    variant="ghost"
-                    size="sm"
-                  >
-                    {dictionary.common.viewProject}
-                  </ButtonLink>
-                </div>
-
-                <div className="mt-5 h-3 rounded-full bg-[color:var(--surface-muted)]">
-                  <div
-                    className="h-3 rounded-full bg-[linear-gradient(90deg,_#0f172a,_#10b981)]"
-                    style={{
-                      width: `${Math.max((project.score / strongestScore) * 100, project.score > 0 ? 8 : 0)}%`,
-                    }}
-                  />
-                </div>
-
-                <div className="mt-4 flex flex-wrap items-center gap-4 text-sm app-soft">
-                  <span>
-                    {dictionary.dashboard.totalScore}: {project.score}
-                  </span>
-                  <span>
-                    {project.likes} {dictionary.projectPage.likes}
-                  </span>
-                  <span>
-                    {project.dislikes} {dictionary.projectPage.dislikes}
-                  </span>
-                </div>
-              </article>
-            ))
-          ) : (
-            <div className="rounded-[1.5rem] app-panel-dashed p-6 text-sm app-muted">
-              {dictionary.dashboard.noProjectsYet}
-            </div>
-          )}
-        </div>
-      </section>
-
-      <DistributionChart
-        title={dictionary.dashboard.projectStatusMix}
+      {/* ─── Top projects ─── */}
+      <TopProjects
+        projects={stats.topProjects}
+        dictionary={dictionary}
         locale={locale}
+        ui={ui}
+      />
+
+      {/* ─── Project status donut ─── */}
+      <DonutChart
+        title={dictionary.dashboard.projectStatusMix}
+        dictionary={dictionary}
         items={stats.statusBreakdown.map((item) => ({
           label: getStatusLabel(item.key, dictionary),
           value: item.value,

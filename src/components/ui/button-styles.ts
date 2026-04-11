@@ -28,7 +28,7 @@ export function buttonStyles({
   className = "",
 }: ButtonStylesOptions = {}) {
   return [
-    "inline-flex items-center justify-center rounded-full font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-60",
+    "inline-flex cursor-pointer items-center justify-center rounded-full font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-60",
     variantClasses[variant],
     sizeClasses[size],
     className,

@@ -69,19 +69,19 @@ export default function HomeTopRated({
   const projectItems = projects[projectTimeframe];
 
   return (
-    <div className="space-y-12">
-      <section className="rounded-[2.25rem] border app-border bg-[linear-gradient(145deg,_rgba(15,23,42,0.97),_rgba(29,78,216,0.92)_55%,_rgba(16,185,129,0.88))] p-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.24)] sm:p-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/70">
+    <div className="space-y-8 sm:space-y-12">
+      <section className="rounded-2xl border app-border bg-[linear-gradient(145deg,_rgba(15,23,42,0.97),_rgba(29,78,216,0.92)_55%,_rgba(16,185,129,0.88))] p-5 text-white shadow-[0_30px_80px_rgba(15,23,42,0.24)] sm:rounded-[2.25rem] sm:p-8 md:p-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/70 sm:text-sm">
           {dictionary.home.topRatedEyebrow}
         </p>
-        <h2 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h2 className="mt-3 max-w-3xl text-2xl font-semibold tracking-tight sm:mt-4 sm:text-4xl md:text-5xl">
           {dictionary.home.topRatedTitle}
         </h2>
-        <p className="mt-4 max-w-3xl text-lg leading-8 text-white/78">
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-white/78 sm:mt-4 sm:text-lg sm:leading-8">
           {dictionary.home.topRatedDescription}
         </p>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid gap-3 sm:mt-8 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Object.values(dictionary.home.ratingSignals).map((item) => (
             <div
               key={item.title}
@@ -94,13 +94,13 @@ export default function HomeTopRated({
         </div>
       </section>
 
-      <section className="rounded-[2rem] app-card p-6 sm:p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <section className="rounded-2xl app-card p-4 sm:rounded-[2rem] sm:p-6 md:p-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <div>
-            <h2 className="text-2xl font-semibold text-[color:var(--foreground)]">
+            <h2 className="text-xl font-semibold text-[color:var(--foreground)] sm:text-2xl">
               {dictionary.home.topCreatorsTitle}
             </h2>
-            <p className="mt-2 max-w-2xl app-muted">
+            <p className="mt-1.5 max-w-2xl text-sm app-muted sm:mt-2 sm:text-base">
               {dictionary.home.topCreatorsDescription}
             </p>
           </div>
@@ -122,19 +122,19 @@ export default function HomeTopRated({
         </div>
 
         {creatorItems.length > 0 ? (
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          <div className="mt-5 grid gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-2">
             {creatorItems.map((creator, index) => (
               <LocalizedLink
                 key={creator.id}
                 href={`/u/${creator.username}`}
-                className="group rounded-[1.75rem] border app-border bg-[color:var(--surface)] p-5 transition hover:-translate-y-0.5 hover:border-[color:var(--foreground)] hover:shadow-xl"
+                className="group rounded-2xl border app-border bg-[color:var(--surface)] p-4 transition hover:-translate-y-0.5 hover:border-[color:var(--foreground)] hover:shadow-xl sm:rounded-[1.75rem] sm:p-5"
               >
-                <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--foreground)] text-sm font-semibold text-[color:var(--background)]">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[color:var(--foreground)] text-xs font-semibold text-[color:var(--background)] sm:h-11 sm:w-11 sm:rounded-2xl sm:text-sm">
                     #{index + 1}
                   </div>
 
-                  <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border app-border bg-[color:var(--surface-muted)] text-base font-semibold text-[color:var(--foreground)]">
+                  <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border app-border bg-[color:var(--surface-muted)] text-sm font-semibold text-[color:var(--foreground)] sm:h-14 sm:w-14 sm:text-base">
                     {creator.avatar_url ? (
                       <Image
                         src={creator.avatar_url}
@@ -193,13 +193,13 @@ export default function HomeTopRated({
         )}
       </section>
 
-      <section className="rounded-[2rem] app-card p-6 sm:p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <section className="rounded-2xl app-card p-4 sm:rounded-[2rem] sm:p-6 md:p-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <div>
-            <h2 className="text-2xl font-semibold text-[color:var(--foreground)]">
+            <h2 className="text-xl font-semibold text-[color:var(--foreground)] sm:text-2xl">
               {dictionary.home.topProjectsTitle}
             </h2>
-            <p className="mt-2 max-w-2xl app-muted">
+            <p className="mt-1.5 max-w-2xl text-sm app-muted sm:mt-2 sm:text-base">
               {dictionary.home.topProjectsDescription}
             </p>
           </div>
@@ -221,20 +221,20 @@ export default function HomeTopRated({
         </div>
 
         {projectItems.length > 0 ? (
-          <div className="mt-8 grid gap-4">
+          <div className="mt-5 grid gap-3 sm:mt-8 sm:gap-4">
             {projectItems.map((project, index) => (
               <LocalizedLink
                 key={project.id}
                 href={buildProjectPath(project.id, project.slug)}
-                className="group rounded-[1.75rem] border app-border bg-[color:var(--surface)] p-5 transition hover:-translate-y-0.5 hover:border-[color:var(--foreground)] hover:shadow-xl"
+                className="group rounded-2xl border app-border bg-[color:var(--surface)] p-4 transition hover:-translate-y-0.5 hover:border-[color:var(--foreground)] hover:shadow-xl sm:rounded-[1.75rem] sm:p-5"
               >
-                <div className="grid gap-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--foreground)] text-sm font-semibold text-[color:var(--background)]">
+                <div className="grid gap-4 sm:gap-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[color:var(--foreground)] text-xs font-semibold text-[color:var(--background)] sm:h-11 sm:w-11 sm:rounded-2xl sm:text-sm">
                       #{index + 1}
                     </div>
 
-                    <div className="relative h-20 w-28 overflow-hidden rounded-[1.25rem] border app-border bg-[color:var(--surface-muted)]">
+                    <div className="relative h-16 w-24 overflow-hidden rounded-2xl border app-border bg-[color:var(--surface-muted)] sm:h-20 sm:w-28 sm:rounded-[1.25rem]">
                       {project.cover_url ? (
                         <Image
                           src={project.cover_url}

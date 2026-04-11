@@ -67,6 +67,18 @@ type ProfileRelationRow = {
   profile_id: string;
 };
 
+export type UserDashboardStats = {
+  name: string | null;
+  projectsCount: number;
+  articlesCount: number;
+  followersCount: number;
+  followingCount: number;
+  bookmarksCount: number;
+  receivedLikes: number;
+  receivedDislikes: number;
+  articleViews: number;
+};
+
 export type DashboardStats = {
   siteTotals: {
     profiles: number;
@@ -375,5 +387,57 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     completionBreakdown: [...completionCounts.entries()].map(([key, value]) => ({ key, value })),
     topProjects,
     topSkills: [...combinedSkillCounts.entries()].map(([name, value]) => ({ name, value })).sort((left, right) => right.value - left.value).slice(0, 14),
+  };
+}
+
+export async function getUserDashboardStats(userId: string): Promise<UserDashboardStats> {
+  const supabase = await createClient();
+
+  const [
+    profileResponse,
+    projectsResponse,
+    articlesResponse,
+    followersResponse,
+    followingResponse,
+    bookmarksResponse,
+  ] = await Promise.all([
+    supabase.from("profiles").select("id, name, username").eq("user_id", userId).maybeSingle(),
+    supabase.from("projects").select("id").eq("owner_id", userId),
+    supabase.from("articles").select("id, views_count").eq("author_id", userId),
+    supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_user_id", userId),
+    supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_user_id", userId),
+    supabase.from("bookmarks").select("id", { count: "exact", head: true }).eq("user_id", userId),
+  ]);
+
+  const profile = profileResponse.data;
+  const userProjects = projectsResponse.data || [];
+  const userArticles = (articlesResponse.data || []) as Array<{ id: string; views_count: number | null }>;
+
+  let receivedLikes = 0;
+  let receivedDislikes = 0;
+
+  if (userProjects.length > 0) {
+    const projectIds = userProjects.map((p) => p.id);
+    const { data: projectVotes } = await supabase
+      .from("votes")
+      .select("value")
+      .in("project_id", projectIds);
+
+    for (const vote of projectVotes || []) {
+      if (vote.value === 1) receivedLikes += 1;
+      if (vote.value === -1) receivedDislikes += 1;
+    }
+  }
+
+  return {
+    name: profile?.name || profile?.username || null,
+    projectsCount: userProjects.length,
+    articlesCount: userArticles.length,
+    followersCount: followersResponse.count || 0,
+    followingCount: followingResponse.count || 0,
+    bookmarksCount: bookmarksResponse.count || 0,
+    receivedLikes,
+    receivedDislikes,
+    articleViews: userArticles.reduce((sum, a) => sum + (a.views_count || 0), 0),
   };
 }

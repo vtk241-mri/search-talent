@@ -69,7 +69,7 @@ export default async function ArticlesPage({
             <div className="mt-6 flex flex-wrap gap-3">
               <ButtonLink href="/articles/new">{ui.createArticle}</ButtonLink>
               <ButtonLink href="/projects" variant="secondary">
-                {dictionary.projectsPage.title}
+                {dictionary.home.browseProjects}
               </ButtonLink>
             </div>
           </div>
