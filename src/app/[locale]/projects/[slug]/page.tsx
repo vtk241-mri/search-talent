@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import BookmarkButton from "@/components/bookmark-button";
 import OptimizedImage from "@/components/ui/optimized-image";
 import ProjectComments from "@/components/project-comments";
 import ProjectGallery from "@/components/project-gallery";
@@ -109,7 +110,7 @@ export default async function PublicProjectPage({
     notFound();
   }
 
-  const { owner, project, technologies, media, voteSummary, isAuthenticated, isOwner } =
+  const { owner, project, technologies, media, voteSummary, isAuthenticated, isOwner, isBookmarked } =
     data;
   const statusLabel = getStatusLabel(project.project_status, dictionary);
 
@@ -312,6 +313,13 @@ export default async function PublicProjectPage({
             initialVote={voteSummary.currentVote}
             initialLikes={voteSummary.likes}
             initialDislikes={voteSummary.dislikes}
+            isAuthenticated={isAuthenticated}
+          />
+
+          <BookmarkButton
+            targetType="project"
+            targetId={project.id}
+            initialBookmarked={isBookmarked}
             isAuthenticated={isAuthenticated}
           />
 

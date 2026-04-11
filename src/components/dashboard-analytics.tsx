@@ -31,6 +31,8 @@ function getDashboardUi(locale: Locale) {
       openProfile: "Редагувати профіль",
       manageProjects: "Керувати проєктами",
       openSearch: "Відкрити пошук",
+      savedItems: "Збережене",
+      followingAuthors: "Підписки",
       publicProfiles: "Публічні профілі",
       creatorDirections: "Напрямки",
       creatorCountries: "Країни",
@@ -61,6 +63,8 @@ function getDashboardUi(locale: Locale) {
     openProfile: "Edit profile",
     manageProjects: "Manage projects",
     openSearch: "Open search",
+    savedItems: "Saved",
+    followingAuthors: "Following",
     publicProfiles: "Public profiles",
     creatorDirections: "Directions",
     creatorCountries: "Countries",
@@ -435,6 +439,12 @@ export default function DashboardAnalytics({
               </ButtonLink>
               <ButtonLink href="/talents" variant="ghost" size="lg">
                 {ui.openSearch}
+              </ButtonLink>
+              <ButtonLink href="/dashboard/saved" variant="ghost" size="lg">
+                {ui.savedItems}
+              </ButtonLink>
+              <ButtonLink href="/dashboard/following" variant="ghost" size="lg">
+                {ui.followingAuthors}
               </ButtonLink>
               {isAdmin && (
                 <ButtonLink href="/dashboard/moderation" variant="ghost" size="lg">

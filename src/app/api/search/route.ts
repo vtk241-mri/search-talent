@@ -202,24 +202,38 @@ export async function GET(request: Request) {
   const projectStatus = (searchParams.get("projectStatus") || "").trim() || null;
   const hasMedia = searchParams.get("hasMedia") === "1";
   const hasAvatar = searchParams.get("hasAvatar") === "1";
+  const minScore = parseNumber(searchParams.get("minScore"));
+  const maxScore = parseNumber(searchParams.get("maxScore"));
 
   const supabase = await createClient();
+
+  let projectQuery = supabase
+    .from("projects")
+    .select(
+      "id, title, slug, description, score, cover_url, project_status, owner_id, created_at, moderation_status",
+    );
+
+  let profileQuery = supabase
+    .from("profiles")
+    .select("id, user_id, username, name, headline, avatar_url, country_id, city, category_id, experience_level, employment_types, work_formats, moderation_status, score, created_at")
+    .not("username", "is", null);
+
+  if (typeof minScore === "number") {
+    projectQuery = projectQuery.gte("score", minScore);
+    profileQuery = profileQuery.gte("score", minScore);
+  }
+
+  if (typeof maxScore === "number") {
+    projectQuery = projectQuery.lte("score", maxScore);
+    profileQuery = profileQuery.lte("score", maxScore);
+  }
 
   const [
     projectsResponse,
     profilesResponse,
   ] = await Promise.all([
-    supabase
-      .from("projects")
-      .select(
-        "id, title, slug, description, score, cover_url, project_status, owner_id, created_at, moderation_status",
-      )
-      .limit(60),
-    supabase
-      .from("profiles")
-      .select("id, user_id, username, name, headline, avatar_url, country_id, city, category_id, experience_level, employment_types, work_formats, moderation_status, score, created_at")
-      .not("username", "is", null)
-      .limit(60),
+    projectQuery.limit(200),
+    profileQuery.limit(200),
   ]);
 
   const rawProjects = (projectsResponse.data || []) as ProjectRow[];

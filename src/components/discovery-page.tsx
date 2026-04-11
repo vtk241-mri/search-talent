@@ -86,6 +86,13 @@ type DiscoveryCopy = {
     filterProjectStatus: string;
     anyStatus: string;
     onlyWithMedia: string;
+    filterRating: string;
+    ratingFrom: string;
+    ratingTo: string;
+    saveSearch: string;
+    saveSearchPlaceholder: string;
+    savedSearches: string;
+    noSavedSearches: string;
     resultsSummary: string;
     activeFilters: string;
     queryLabel: string;
@@ -255,6 +262,13 @@ function getDiscoveryCopy(locale: Locale): DiscoveryCopy {
         filterProjectStatus: "Статус проєкту",
         anyStatus: "Будь-який статус",
         onlyWithMedia: "Лише з медіа",
+        filterRating: "Рейтинг",
+        ratingFrom: "Від",
+        ratingTo: "До",
+        saveSearch: "Зберегти пошук",
+        saveSearchPlaceholder: "Назва пошуку…",
+        savedSearches: "Збережені пошуки",
+        noSavedSearches: "У вас ще немає збережених пошуків.",
         resultsSummary: "Зведення пошуку",
         activeFilters: "Активні фільтри",
         queryLabel: "Запит",
@@ -350,6 +364,13 @@ function getDiscoveryCopy(locale: Locale): DiscoveryCopy {
       filterProjectStatus: "Project status",
       anyStatus: "Any status",
       onlyWithMedia: "Only with media",
+      filterRating: "Rating",
+      ratingFrom: "From",
+      ratingTo: "To",
+      saveSearch: "Save search",
+      saveSearchPlaceholder: "Search name…",
+      savedSearches: "Saved searches",
+      noSavedSearches: "You have no saved searches yet.",
       resultsSummary: "Search summary",
       activeFilters: "Active filters",
       queryLabel: "Query",
@@ -462,8 +483,16 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
   const [projectStatus, setProjectStatus] = useState<ProjectStatus | "">("");
   const [hasMedia, setHasMedia] = useState(false);
   const [hasAvatar, setHasAvatar] = useState(false);
+  const [minScore, setMinScore] = useState<number | null>(null);
+  const [maxScore, setMaxScore] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [savedSearches, setSavedSearches] = useState<
+    Array<{ id: string; name: string; mode: string; params: Record<string, unknown>; created_at: string }>
+  >([]);
+  const [saveSearchName, setSaveSearchName] = useState("");
+  const [showSaveForm, setShowSaveForm] = useState(false);
+  const [savingSearch, setSavingSearch] = useState(false);
   const [projects, setProjects] = useState<SearchProject[]>([]);
   const [users, setUsers] = useState<SearchUser[]>([]);
   const [totals, setTotals] = useState({
@@ -491,6 +520,85 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
 
     loadMeta();
   }, []);
+
+  useEffect(() => {
+    async function loadSavedSearches() {
+      try {
+        const response = await fetch("/api/saved-searches");
+
+        if (response.ok) {
+          const payload = await response.json();
+          setSavedSearches(payload.searches || []);
+        }
+      } catch {
+        // ignore — user might not be authenticated
+      }
+    }
+
+    loadSavedSearches();
+  }, []);
+
+  const saveCurrentSearch = async () => {
+    if (!saveSearchName.trim()) return;
+    setSavingSearch(true);
+
+    try {
+      const params: Record<string, unknown> = {};
+      if (query.trim()) params.query = query.trim();
+      if (sort !== "relevance") params.sort = sort;
+      if (countryId) params.countryId = countryId;
+      if (categoryId) params.categoryId = categoryId;
+      if (skillIds.length > 0) params.skillIds = skillIds;
+      if (languageIds.length > 0) params.languageIds = languageIds;
+      if (experienceLevel) params.experienceLevel = experienceLevel;
+      if (employmentTypeFilters.length > 0) params.employmentTypes = employmentTypeFilters;
+      if (workFormatFilters.length > 0) params.workFormats = workFormatFilters;
+      if (projectStatus) params.projectStatus = projectStatus;
+      if (hasMedia) params.hasMedia = true;
+      if (hasAvatar) params.hasAvatar = true;
+      if (minScore !== null) params.minScore = minScore;
+      if (maxScore !== null) params.maxScore = maxScore;
+
+      const response = await fetch("/api/saved-searches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: saveSearchName.trim(), mode, params }),
+      });
+
+      if (response.ok) {
+        const payload = await response.json();
+        setSavedSearches((prev) => [payload.search, ...prev]);
+        setSaveSearchName("");
+        setShowSaveForm(false);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSavingSearch(false);
+    }
+  };
+
+  const deleteSavedSearch = async (id: string) => {
+    setSavedSearches((prev) => prev.filter((s) => s.id !== id));
+    await fetch(`/api/saved-searches?id=${id}`, { method: "DELETE" });
+  };
+
+  const applySavedSearch = (params: Record<string, unknown>) => {
+    setQuery((params.query as string) || "");
+    setSort((params.sort as Sort) || "relevance");
+    setCountryId((params.countryId as number) || null);
+    setCategoryId((params.categoryId as number) || null);
+    setSkillIds((params.skillIds as number[]) || []);
+    setLanguageIds((params.languageIds as number[]) || []);
+    setExperienceLevel((params.experienceLevel as ExperienceLevel | "") || "");
+    setEmploymentTypeFilters((params.employmentTypes as EmploymentType[]) || []);
+    setWorkFormatFilters((params.workFormats as WorkFormat[]) || []);
+    setProjectStatus((params.projectStatus as ProjectStatus | "") || "");
+    setHasMedia(Boolean(params.hasMedia));
+    setHasAvatar(Boolean(params.hasAvatar));
+    setMinScore((params.minScore as number) ?? null);
+    setMaxScore((params.maxScore as number) ?? null);
+  };
 
   useEffect(() => {
     const timeoutId = window.setTimeout(async () => {
@@ -547,6 +655,14 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
           params.set("hasAvatar", "1");
         }
 
+        if (minScore !== null) {
+          params.set("minScore", String(minScore));
+        }
+
+        if (maxScore !== null) {
+          params.set("maxScore", String(maxScore));
+        }
+
         const response = await fetch(`/api/search?${params.toString()}`);
         const payload = (await response.json()) as SearchResponse & {
           error?: string;
@@ -584,6 +700,8 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
     hasAvatar,
     hasMedia,
     languageIds,
+    maxScore,
+    minScore,
     mode,
     projectStatus,
     query,
@@ -605,54 +723,69 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
     employmentTypeFilters.length > 0 ||
     skillIds.length > 0 ||
     workFormatFilters.length > 0 ||
+    minScore !== null ||
+    maxScore !== null ||
     sort !== "relevance";
   const selectedCountryName =
     meta.countries.find((country) => country.id === countryId)?.name || null;
   const selectedCategoryLabel =
     meta.categories.find((option) => option.id === categoryId)?.name || null;
-  const selectedLanguageNames = meta.languages
-    .filter((language) => languageIds.includes(language.id))
-    .map((language) => language.name);
-  const selectedSkillNames = meta.skills
-    .filter((skill) => skillIds.includes(skill.id))
-    .map((skill) => skill.name);
   const avatarFilterLabel = locale === "uk" ? "Лише з фото" : "Only with photo";
   const anyExperienceLabel =
     locale === "uk" ? "Будь-який досвід" : "Any experience";
-  const activeFilterLabels = [
-    query.trim() ? `${commonUi.queryLabel}: ${query.trim()}` : null,
+  const activeFilterItems: Array<{ key: string; label: string; remove: () => void }> = [
+    query.trim()
+      ? { key: "query", label: `${commonUi.queryLabel}: ${query.trim()}`, remove: () => setQuery("") }
+      : null,
     sort !== "relevance"
-      ? sort === "rating"
-        ? commonUi.sortRating
-        : commonUi.sortNewest
+      ? { key: "sort", label: sort === "rating" ? commonUi.sortRating : commonUi.sortNewest, remove: () => setSort("relevance") }
       : null,
     mode === "creators" && selectedCountryName
-      ? `${commonUi.filterCountry}: ${selectedCountryName}`
+      ? { key: "country", label: `${commonUi.filterCountry}: ${selectedCountryName}`, remove: () => setCountryId(null) }
       : null,
     mode === "creators" && selectedCategoryLabel
-      ? `${commonUi.filterCategory}: ${selectedCategoryLabel}`
+      ? { key: "category", label: `${commonUi.filterCategory}: ${selectedCategoryLabel}`, remove: () => setCategoryId(null) }
       : null,
     mode === "creators" && experienceLevel
-      ? `${dictionary.forms.totalExperienceYears}: ${getExperienceLevelLabel(experienceLevel, locale)}`
+      ? { key: "experience", label: `${dictionary.forms.totalExperienceYears}: ${getExperienceLevelLabel(experienceLevel, locale)}`, remove: () => setExperienceLevel("") }
       : null,
     mode === "projects" && projectStatus
-      ? `${commonUi.filterProjectStatus}: ${getStatusLabel(projectStatus, dictionary, commonUi.anyStatus)}`
+      ? { key: "status", label: `${commonUi.filterProjectStatus}: ${getStatusLabel(projectStatus, dictionary, commonUi.anyStatus)}`, remove: () => setProjectStatus("") }
       : null,
-    mode === "creators" && hasAvatar ? avatarFilterLabel : null,
-    mode === "projects" && hasMedia ? commonUi.onlyWithMedia : null,
-    ...selectedLanguageNames.map(
-      (language) => `${dictionary.forms.languages}: ${language}`,
-    ),
-    ...selectedSkillNames.map((skill) => `${commonUi.filterSkills}: ${skill}`),
-    ...employmentTypeFilters.map(
-      (item) =>
-        `${dictionary.forms.employmentTypes}: ${getEmploymentTypeLabel(item, dictionary)}`,
-    ),
-    ...workFormatFilters.map(
-      (item) =>
-        `${dictionary.forms.workFormats}: ${getWorkFormatLabel(item, dictionary)}`,
-    ),
-  ].filter(Boolean) as string[];
+    mode === "creators" && hasAvatar
+      ? { key: "avatar", label: avatarFilterLabel, remove: () => setHasAvatar(false) }
+      : null,
+    mode === "projects" && hasMedia
+      ? { key: "media", label: commonUi.onlyWithMedia, remove: () => setHasMedia(false) }
+      : null,
+    minScore !== null || maxScore !== null
+      ? { key: "score", label: `${commonUi.filterRating}: ${minScore ?? 0}–${maxScore ?? 100}`, remove: () => { setMinScore(null); setMaxScore(null); } }
+      : null,
+    ...meta.languages
+      .filter((language) => languageIds.includes(language.id))
+      .map((language) => ({
+        key: `lang-${language.id}`,
+        label: `${dictionary.forms.languages}: ${language.name}`,
+        remove: () => setLanguageIds((prev) => prev.filter((id) => id !== language.id)),
+      })),
+    ...meta.skills
+      .filter((skill) => skillIds.includes(skill.id))
+      .map((skill) => ({
+        key: `skill-${skill.id}`,
+        label: `${commonUi.filterSkills}: ${skill.name}`,
+        remove: () => setSkillIds((prev) => prev.filter((id) => id !== skill.id)),
+      })),
+    ...employmentTypeFilters.map((item) => ({
+      key: `emp-${item}`,
+      label: `${dictionary.forms.employmentTypes}: ${getEmploymentTypeLabel(item, dictionary)}`,
+      remove: () => setEmploymentTypeFilters((prev) => prev.filter((et) => et !== item)),
+    })),
+    ...workFormatFilters.map((item) => ({
+      key: `wf-${item}`,
+      label: `${dictionary.forms.workFormats}: ${getWorkFormatLabel(item, dictionary)}`,
+      remove: () => setWorkFormatFilters((prev) => prev.filter((wf) => wf !== item)),
+    })),
+  ].filter(Boolean) as Array<{ key: string; label: string; remove: () => void }>;
   const talentsLabel = locale === "uk" ? "Таланти" : "Talents";
   const resultCount = mode === "projects" ? totals.projects : totals.users;
   const resultLabel =
@@ -671,6 +804,8 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
     setProjectStatus("");
     setHasAvatar(false);
     setHasMedia(false);
+    setMinScore(null);
+    setMaxScore(null);
   };
 
   return (
@@ -771,6 +906,41 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
                     { value: "newest", label: commonUi.sortNewest },
                   ]}
                 />
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm font-medium text-[color:var(--foreground)]">
+                  {commonUi.filterRating}
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    placeholder={commonUi.ratingFrom}
+                    value={minScore ?? ""}
+                    onChange={(event) =>
+                      setMinScore(
+                        event.target.value ? Number(event.target.value) : null,
+                      )
+                    }
+                    className="w-full rounded-xl border app-border bg-[color:var(--surface)] px-3 py-2 text-sm text-[color:var(--foreground)] placeholder:app-muted focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
+                  />
+                  <span className="text-sm app-muted">—</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    placeholder={commonUi.ratingTo}
+                    value={maxScore ?? ""}
+                    onChange={(event) =>
+                      setMaxScore(
+                        event.target.value ? Number(event.target.value) : null,
+                      )
+                    }
+                    className="w-full rounded-xl border app-border bg-[color:var(--surface)] px-3 py-2 text-sm text-[color:var(--foreground)] placeholder:app-muted focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
+                  />
+                </div>
               </div>
 
               {mode === "creators" && (
@@ -981,6 +1151,77 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
           </section>
 
           <section className="rounded-[2rem] app-card p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] app-soft">
+                {commonUi.savedSearches}
+              </h2>
+              {hasFilters && (
+                <button
+                  type="button"
+                  onClick={() => setShowSaveForm((v) => !v)}
+                  className="text-sm font-medium text-[color:var(--foreground)] transition hover:opacity-70"
+                >
+                  + {commonUi.saveSearch}
+                </button>
+              )}
+            </div>
+
+            {showSaveForm && (
+              <div className="mt-3 flex gap-2">
+                <input
+                  type="text"
+                  placeholder={commonUi.saveSearchPlaceholder}
+                  value={saveSearchName}
+                  onChange={(e) => setSaveSearchName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveCurrentSearch();
+                  }}
+                  className="w-full rounded-xl border app-border bg-[color:var(--surface)] px-3 py-2 text-sm text-[color:var(--foreground)] placeholder:app-muted focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
+                />
+                <button
+                  type="button"
+                  disabled={savingSearch || !saveSearchName.trim()}
+                  onClick={saveCurrentSearch}
+                  className="shrink-0 rounded-xl bg-[color:var(--foreground)] px-3 py-2 text-sm font-medium text-[color:var(--background)] transition hover:opacity-80 disabled:opacity-40"
+                >
+                  OK
+                </button>
+              </div>
+            )}
+
+            <div className="mt-3 space-y-1.5">
+              {savedSearches.filter((s) => s.mode === mode).length === 0 ? (
+                <p className="text-sm app-muted">{commonUi.noSavedSearches}</p>
+              ) : (
+                savedSearches
+                  .filter((s) => s.mode === mode)
+                  .map((search) => (
+                    <div
+                      key={search.id}
+                      className="group flex items-center justify-between gap-2 rounded-xl app-panel px-3 py-2 transition hover:bg-[color:var(--surface-muted)]"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => applySavedSearch(search.params)}
+                        className="min-w-0 truncate text-left text-sm font-medium text-[color:var(--foreground)]"
+                      >
+                        {search.name}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteSavedSearch(search.id)}
+                        className="shrink-0 text-sm app-muted opacity-0 transition hover:text-red-500 group-hover:opacity-100"
+                        aria-label="Delete"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))
+              )}
+            </div>
+          </section>
+
+          <section className="rounded-[2rem] app-card p-5">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] app-soft">
               {commonUi.resultsSummary}
             </p>
@@ -1003,7 +1244,7 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
         </aside>
 
         <div className="space-y-8">
-          {activeFilterLabels.length > 0 && (
+          {activeFilterItems.length > 0 && (
             <section className="rounded-[2rem] app-card p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -1025,13 +1266,16 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {activeFilterLabels.map((label) => (
-                  <span
-                    key={label}
-                    className="rounded-full app-panel px-3 py-1 text-sm app-muted"
+                {activeFilterItems.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={item.remove}
+                    className="group flex items-center gap-1.5 rounded-full app-panel px-3 py-1 text-sm app-muted transition hover:bg-[color:var(--surface-muted)]"
                   >
-                    {label}
-                  </span>
+                    {item.label}
+                    <span className="text-xs opacity-50 transition group-hover:opacity-100">&times;</span>
+                  </button>
                 ))}
               </div>
             </section>

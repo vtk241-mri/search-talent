@@ -101,6 +101,7 @@ export type PublicProjectPageData = {
   voteSummary: Awaited<ReturnType<typeof getProjectVoteSummary>>;
   isAuthenticated: boolean;
   isOwner: boolean;
+  isBookmarked: boolean;
 };
 
 export type PublicProfilePageData = {
@@ -155,6 +156,8 @@ export type PublicProfilePageData = {
   voteSummary: Awaited<ReturnType<typeof getProfileVoteSummary>>;
   isAuthenticated: boolean;
   isOwner: boolean;
+  isBookmarked: boolean;
+  isFollowing: boolean;
 };
 
 export async function getPublicProjectPageData(
@@ -195,7 +198,7 @@ export async function getPublicProjectPageData(
     return null;
   }
 
-  const [ownerResponse, skillsResponse, mediaResponse, voteSummary] =
+  const [ownerResponse, skillsResponse, mediaResponse, voteSummary, bookmarkResponse] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -221,6 +224,14 @@ export async function getPublicProjectPageData(
         .eq("project_id", typedProject.id)
         .order("created_at", { ascending: true }),
       getProjectVoteSummary(supabase, typedProject.id, user?.id),
+      user
+        ? supabase
+            .from("bookmarks")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("target_project_id", typedProject.id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
 
   const owner = ownerResponse.data;
@@ -273,6 +284,7 @@ export async function getPublicProjectPageData(
     voteSummary,
     isAuthenticated: Boolean(user),
     isOwner,
+    isBookmarked: Boolean(bookmarkResponse.data),
   };
 }
 
@@ -316,6 +328,8 @@ export async function getPublicProfilePageData(
     voteSummary,
     countryResponse,
     categoryResponse,
+    bookmarkResponse,
+    followResponse,
   ] = await Promise.all([
     dataClient
       .from("profile_skills")
@@ -381,6 +395,22 @@ export async function getPublicProfilePageData(
           .from("profile_categories")
           .select("name")
           .eq("id", typedProfile.category_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? supabase
+          .from("bookmarks")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("target_profile_id", typedProfile.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? supabase
+          .from("follows")
+          .select("id")
+          .eq("follower_user_id", user.id)
+          .eq("following_user_id", typedProfile.user_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
@@ -461,5 +491,7 @@ export async function getPublicProfilePageData(
     voteSummary,
     isAuthenticated: Boolean(user),
     isOwner,
+    isBookmarked: Boolean(bookmarkResponse.data),
+    isFollowing: Boolean(followResponse.data),
   };
 }

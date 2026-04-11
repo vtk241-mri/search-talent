@@ -1,6 +1,9 @@
 import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
+import BookmarkButton from "@/components/bookmark-button";
 import ExpandableProfileBio from "@/components/expandable-profile-bio";
+import FollowButton from "@/components/follow-button";
+import ProfilePdfExport from "@/components/profile-pdf-export";
 import ProfileVoteButtons from "@/components/profile-vote-buttons";
 import ProjectCard from "@/components/project-card";
 import VerifiedBadge from "@/components/verified-badge";
@@ -224,6 +227,8 @@ export default function PublicProfileShowcase({
     voteSummary,
     isAuthenticated,
     isOwner,
+    isBookmarked,
+    isFollowing,
   } = data;
   const presentation = profile.presentation;
   const typeScale = getProfileTextScale(presentation.textScale);
@@ -262,6 +267,7 @@ export default function PublicProfileShowcase({
                   <ButtonLink href="/talents" variant="ghost" size="sm">{dictionary.creatorProfile.backToSearch}</ButtonLink>
                   <ButtonLink href="/projects" variant="secondary" size="sm">{dictionary.creatorProfile.browseProjects}</ButtonLink>
                   {isOwner && <><ButtonLink href="/profile/edit" size="sm">{dictionary.creatorProfile.editProfile}</ButtonLink><ButtonLink href="/projects/new" variant="ghost" size="sm">{dictionary.creatorProfile.manageProjects}</ButtonLink></>}
+                  <ProfilePdfExport data={data} />
                 </div>
 
                 <div className={`mt-8 flex gap-5 ${presentation.heroAlignment === "center" ? "flex-col items-center" : "flex-col items-start sm:flex-row"}`}>
@@ -286,8 +292,14 @@ export default function PublicProfileShowcase({
                 </div>
               </div>
 
-              <div className="xl:self-end">
+              <div className="space-y-4 xl:self-end">
                 <ProfileVoteButtons profileId={profile.id} initialVote={voteSummary.currentVote} initialLikes={voteSummary.likes} initialDislikes={voteSummary.dislikes} isAuthenticated={isAuthenticated} isOwner={isOwner} />
+                {!isOwner && (
+                  <div className="flex flex-wrap gap-2">
+                    <FollowButton followingUserId={profile.user_id} initialFollowing={isFollowing} isAuthenticated={isAuthenticated} />
+                    <BookmarkButton targetType="profile" targetId={profile.id} initialBookmarked={isBookmarked} isAuthenticated={isAuthenticated} />
+                  </div>
+                )}
               </div>
             </div>
           </section>
