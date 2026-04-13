@@ -13,17 +13,19 @@ export default function SiteFooter({
   dictionary,
   isSignedIn,
 }: SiteFooterProps) {
-  const talentsLabel =
-    dictionary.nav.search === "Search" ? "Talents" : "Таланти";
+  const isEnglish = dictionary.nav.search === "Search";
 
-  const articlesLabel =
-    dictionary.nav.search === "Search" ? "Articles" : "Статті";
+  const talentsLabel = isEnglish ? "Browse Talent" : "Таланти";
 
-  const navLabel =
-    dictionary.nav.search === "Search" ? "Navigation" : "Навігація";
+  const articlesLabel = isEnglish ? "Tech Articles" : "Статті";
 
-  const accountLabel =
-    dictionary.nav.search === "Search" ? "Account" : "Акаунт";
+  const projectsLabel = isEnglish
+    ? "Freelance Portfolios"
+    : "Портфоліо проєктів";
+
+  const navLabel = isEnglish ? "Explore" : "Навігація";
+
+  const accountLabel = isEnglish ? "Account" : "Акаунт";
 
   return (
     <footer className="border-t border-[color:var(--border)] bg-[color:var(--surface)]">
@@ -62,7 +64,7 @@ export default function SiteFooter({
                 href="/projects"
                 className="hover:text-[color:var(--foreground)]"
               >
-                {dictionary.nav.projects}
+                {projectsLabel}
               </LocalizedLink>
               <LocalizedLink
                 href="/talents"

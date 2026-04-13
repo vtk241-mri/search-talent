@@ -14,11 +14,27 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
   title: {
-    default: "SearchTalent",
+    default: "SearchTalent — Best Freelancing Platform | Hire Talent & Portfolios",
     template: "%s | SearchTalent",
   },
   description:
-    "SearchTalent — find specialists, explore projects, and showcase your work in a bilingual talent platform.",
+    "SearchTalent — the best platform to hire freelancers, explore creative portfolios, and discover IT projects. Find developers, designers, and specialists online.",
+  keywords: [
+    "freelance platform",
+    "hire freelancer",
+    "creative portfolio",
+    "IT projects",
+    "find developers",
+    "best freelancing platform",
+    "talent search",
+    "portfolio online",
+    "пошук фрілансерів",
+    "платформа фріланс",
+    "портфоліо онлайн",
+    "пошук талантів",
+    "найняти фрілансера",
+    "IT проєкти",
+  ],
   icons: {
     icon: [{ url: "/favicon.webp", type: "image/webp" }],
     shortcut: "/favicon.webp",

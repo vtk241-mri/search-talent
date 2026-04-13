@@ -12,7 +12,12 @@ import { formatArticleDate, getArticleReadingTime, getCategoryDisplayName } from
 import { getArticleDetail } from "@/lib/db/articles";
 import { isLocale } from "@/lib/i18n/config";
 import { normalizeModerationStatus } from "@/lib/moderation";
-import { buildMetadata } from "@/lib/seo";
+import {
+  buildMetadata,
+  buildArticleSchema,
+  buildBreadcrumbSchema,
+  getMetadataBase,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -96,8 +101,41 @@ export default async function ArticleDetailPage({
         moderatorNote: "Moderator note",
       };
 
+  const siteUrl = getMetadataBase().toString().replace(/\/$/, "");
+  const articleUrl = `${siteUrl}/${safeLocale}/articles/${slug}`;
+
+  const articleSchema = buildArticleSchema({
+    title: article.title,
+    excerpt: article.excerpt || null,
+    url: articleUrl,
+    imageUrl: article.coverImageUrl || null,
+    authorName: article.author?.name || article.author?.username || null,
+    authorUrl: article.author?.username
+      ? `${siteUrl}/${safeLocale}/u/${article.author.username}`
+      : null,
+    datePublished: article.publishedAt || article.createdAt || null,
+    dateModified: null,
+  });
+
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: isUkrainian ? "Головна" : "Home", url: `${siteUrl}/${safeLocale}` },
+    {
+      name: isUkrainian ? "Статті" : "Articles",
+      url: `${siteUrl}/${safeLocale}/articles`,
+    },
+    { name: article.title, url: articleUrl },
+  ]);
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <div className="rounded-[2.25rem] app-card">
         <div className="border-b app-border p-6 sm:p-8">
           <div className="flex flex-wrap gap-3">

@@ -280,10 +280,10 @@ function getDiscoveryCopy(locale: Locale): DiscoveryCopy {
       },
       modes: {
         projects: {
-          eyebrow: "Пошук проєктів",
-          title: "Знайдіть потрібні проєкти в каталозі",
+          eyebrow: "Каталог портфоліо",
+          title: "Портфоліо та Реальні IT-Проєкти — Каталог для Натхнення",
           description:
-            "Тут зібрані лише проєкти, тож можна шукати за стеком, статусом, темою та матеріалами без зайвого шуму.",
+            "Досліджуйте каталог фріланс-портфоліо з реальними IT-проєктами: шукайте за стеком, статусом і темою, щоб знайти натхнення чи відкрити нових авторів.",
           placeholder: "Шукайте проєкти, технології або авторів...",
           secondaryHref: "/talents",
           secondaryLabel: "Шукати таланти",
@@ -312,10 +312,10 @@ function getDiscoveryCopy(locale: Locale): DiscoveryCopy {
           ],
         },
         creators: {
-          eyebrow: "Пошук талантів",
-          title: "Знайдіть потрібних фахівців без шуму від проєктів",
+          eyebrow: "Профілі талантів",
+          title: "Пошук Талантів — Профілі Розробників, Дизайнерів та IT-Фахівців",
           description:
-            "На цій сторінці лише профілі, тож можна спокійно відбирати людей за навичками, локацією, досвідом і форматом роботи.",
+            "Переглядайте публічні профілі та портфоліо IT-спеціалістів. Відбирайте авторів за навичками, локацією, досвідом і напрямком роботи — без зайвих проєктних результатів.",
           placeholder: "Шукайте таланти, ролі або навички...",
           secondaryHref: "/projects",
           secondaryLabel: "Шукати проєкти",
@@ -382,10 +382,10 @@ function getDiscoveryCopy(locale: Locale): DiscoveryCopy {
     },
     modes: {
       projects: {
-        eyebrow: "Project search",
-        title: "Find the right projects faster",
+        eyebrow: "Portfolio catalog",
+        title: "Creative Portfolios & Real IT Projects — Explore the Catalog",
         description:
-          "This page is focused on projects only, so you can search by stack, status, topic, and media without mixing results with profiles.",
+          "Browse a catalog of creative portfolios and real IT projects. Search by stack, status, or topic to find inspiring work and discover new creators — no profile noise in the results.",
         placeholder: "Search projects, technologies, or authors...",
         secondaryHref: "/talents",
         secondaryLabel: "Search talents",
@@ -414,10 +414,10 @@ function getDiscoveryCopy(locale: Locale): DiscoveryCopy {
         ],
       },
       creators: {
-        eyebrow: "Talent search",
-        title: "Find the right talent without project noise",
+        eyebrow: "Talent profiles",
+        title: "Discover IT Talent — Developer, Designer & Specialist Profiles",
         description:
-          "This page is focused on people only, so filtering by skills, location, experience, and work format is much easier.",
+          "Explore public profiles and portfolios of IT specialists. Filter by skills, location, experience, and work format to discover the right creators — no project noise in the results.",
         placeholder: "Search talents, roles, or skills...",
         secondaryHref: "/projects",
         secondaryLabel: "Search projects",

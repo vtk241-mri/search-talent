@@ -4,7 +4,11 @@ import HomeTopRated from "@/components/home-top-rated";
 import { getLeaderboards } from "@/lib/db/leaderboards";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
-import { buildMetadata } from "@/lib/seo";
+import {
+  buildMetadata,
+  buildOrganizationSchema,
+  buildWebSiteSchema,
+} from "@/lib/seo";
 import { notFound } from "next/navigation";
 
 async function getLocaleValue(params: Promise<{ locale: string }>) {
@@ -57,8 +61,19 @@ export default async function LocalizedHomePage({
   const dictionary = getDictionary(locale);
   const leaderboards = await getLeaderboards();
 
+  const organizationSchema = buildOrganizationSchema();
+  const webSiteSchema = buildWebSiteSchema();
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
+      />
       <section className="overflow-hidden rounded-2xl border app-border bg-[linear-gradient(145deg,_rgba(15,23,42,0.98),_rgba(3,105,161,0.92)_50%,_rgba(245,158,11,0.84))] p-5 text-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] sm:rounded-[2.25rem] sm:p-8 md:p-10">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)] lg:gap-8">
           <div>

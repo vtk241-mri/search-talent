@@ -9,7 +9,12 @@ import { ButtonLink } from "@/components/ui/Button";
 import { getPublicProjectPageData } from "@/lib/db/public";
 import { isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
-import { buildMetadata } from "@/lib/seo";
+import {
+  buildMetadata,
+  buildProjectSchema,
+  buildBreadcrumbSchema,
+  getMetadataBase,
+} from "@/lib/seo";
 
 async function getRouteParams(
   params: Promise<{ locale: string; slug: string }>,
@@ -88,12 +93,33 @@ export async function generateMetadata({
   const dictionary = getDictionary(locale);
   const data = await getPublicProjectPageData(slug);
 
+  const projectTitle = data?.project.title || null;
+  const ownerName =
+    data?.owner?.name || data?.owner?.username || null;
+
+  let title: string;
+  if (projectTitle && ownerName) {
+    title =
+      locale === "uk"
+        ? `${projectTitle} – Портфоліо ${ownerName}`
+        : `${projectTitle} – Portfolio of ${ownerName}`;
+  } else if (projectTitle) {
+    title = projectTitle;
+  } else {
+    title = dictionary.metadata.projectDetail.title;
+  }
+
+  const description = data?.project.description
+    ? locale === "uk"
+        ? `${data.project.description.slice(0, 130)}… Перегляньте деталі проєкту, технології та портфоліо автора на SearchTalent.`
+        : `${data.project.description.slice(0, 130)}… Explore project details, tech stack, and the author's portfolio on SearchTalent.`
+    : dictionary.metadata.projectDetail.description;
+
   return buildMetadata({
     locale,
     pathname: `/projects/${slug}`,
-    title: data?.project.title || dictionary.metadata.projectDetail.title,
-    description:
-      data?.project.description || dictionary.metadata.projectDetail.description,
+    title,
+    description,
   });
 }
 
@@ -114,8 +140,36 @@ export default async function PublicProjectPage({
     data;
   const statusLabel = getStatusLabel(project.project_status, dictionary);
 
+  const siteUrl = getMetadataBase().toString().replace(/\/$/, "");
+  const projectUrl = `${siteUrl}/${locale}/projects/${slug}`;
+
+  const projectSchema = buildProjectSchema({
+    title: project.title,
+    description: project.description,
+    url: projectUrl,
+    imageUrl: project.cover_url,
+    authorName: owner?.name || owner?.username || null,
+    authorUrl: owner?.username ? `${siteUrl}/${locale}/u/${owner.username}` : null,
+    technologies: technologies.map((t) => t.name),
+    dateCreated: project.created_at,
+  });
+
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: dictionary.nav.home, url: `${siteUrl}/${locale}` },
+    { name: dictionary.nav.projects, url: `${siteUrl}/${locale}/projects` },
+    { name: project.title, url: projectUrl },
+  ]);
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(projectSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <section className="overflow-hidden rounded-2xl app-card sm:rounded-[2.25rem]">
         <div className="grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
           <div className="p-5 sm:p-8 md:p-10">
@@ -126,7 +180,7 @@ export default async function PublicProjectPage({
               </ButtonLink>
               {owner?.username && (
                 <ButtonLink href={`/u/${owner.username}`} variant="secondary" size="sm">
-                  {dictionary.projectPage.viewCreator}
+                  {dictionary.projectPage.viewCreator}: {owner.name || owner.username}
                 </ButtonLink>
               )}
               {isOwner && (
@@ -366,7 +420,9 @@ export default async function PublicProjectPage({
               {owner.username && (
                 <div className="mt-5">
                   <ButtonLink href={`/u/${owner.username}`} variant="secondary" size="sm">
-                    {dictionary.projectPage.viewCreator}
+                    {locale === "uk"
+                      ? `Портфоліо ${owner.name || owner.username}`
+                      : `Portfolio of ${owner.name || owner.username}`}
                   </ButtonLink>
                 </div>
               )}

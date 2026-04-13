@@ -66,3 +66,178 @@ export function buildMetadata({
     },
   };
 }
+
+/* ------------------------------------------------------------------ */
+/*  Schema.org JSON-LD helpers                                        */
+/* ------------------------------------------------------------------ */
+
+export function buildOrganizationSchema() {
+  const siteUrl = getSiteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "SearchTalent",
+    url: siteUrl,
+    logo: `${siteUrl}/favicon.webp`,
+    description:
+      "SearchTalent — the best platform to hire freelancers, explore creative portfolios, and discover IT projects.",
+    sameAs: [],
+  };
+}
+
+export function buildWebSiteSchema() {
+  const siteUrl = getSiteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "SearchTalent",
+    url: siteUrl,
+    description:
+      "The best freelancing platform to search talent, explore portfolios, and hire developers and designers.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteUrl}/en/talents?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+export function buildPersonSchema({
+  name,
+  username,
+  headline,
+  avatarUrl,
+  skills,
+  url,
+}: {
+  name: string | null;
+  username: string | null;
+  headline: string | null;
+  avatarUrl: string | null;
+  skills: string[];
+  url: string;
+}) {
+  const siteUrl = getSiteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: name || username || "Specialist",
+    url,
+    ...(headline ? { jobTitle: headline } : {}),
+    ...(avatarUrl ? { image: avatarUrl } : {}),
+    ...(skills.length > 0 ? { knowsAbout: skills } : {}),
+    memberOf: {
+      "@type": "Organization",
+      name: "SearchTalent",
+      url: siteUrl,
+    },
+  };
+}
+
+export function buildProjectSchema({
+  title,
+  description,
+  url,
+  imageUrl,
+  authorName,
+  authorUrl,
+  technologies,
+  dateCreated,
+}: {
+  title: string;
+  description: string | null;
+  url: string;
+  imageUrl: string | null;
+  authorName: string | null;
+  authorUrl: string | null;
+  technologies: string[];
+  dateCreated: string | null;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: title,
+    ...(description ? { description } : {}),
+    url,
+    ...(imageUrl ? { image: imageUrl } : {}),
+    ...(authorName
+      ? {
+          author: {
+            "@type": "Person",
+            name: authorName,
+            ...(authorUrl ? { url: authorUrl } : {}),
+          },
+        }
+      : {}),
+    ...(technologies.length > 0 ? { keywords: technologies.join(", ") } : {}),
+    ...(dateCreated ? { dateCreated } : {}),
+  };
+}
+
+export function buildArticleSchema({
+  title,
+  excerpt,
+  url,
+  imageUrl,
+  authorName,
+  authorUrl,
+  datePublished,
+  dateModified,
+}: {
+  title: string;
+  excerpt: string | null;
+  url: string;
+  imageUrl: string | null;
+  authorName: string | null;
+  authorUrl: string | null;
+  datePublished: string | null;
+  dateModified: string | null;
+}) {
+  const siteUrl = getSiteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title,
+    ...(excerpt ? { description: excerpt } : {}),
+    url,
+    ...(imageUrl ? { image: imageUrl } : {}),
+    ...(authorName
+      ? {
+          author: {
+            "@type": "Person",
+            name: authorName,
+            ...(authorUrl ? { url: authorUrl } : {}),
+          },
+        }
+      : {}),
+    publisher: {
+      "@type": "Organization",
+      name: "SearchTalent",
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/favicon.webp`,
+      },
+    },
+    ...(datePublished ? { datePublished } : {}),
+    ...(dateModified ? { dateModified } : {}),
+  };
+}
+
+export function buildBreadcrumbSchema(
+  items: Array<{ name: string; url: string }>,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
