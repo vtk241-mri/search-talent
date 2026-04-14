@@ -9,12 +9,14 @@ import {
 import { defaultLocale, localeCookieName } from "@/lib/i18n/config";
 import { getMetadataBase } from "@/lib/seo";
 import { isTheme, themeCookieName } from "@/lib/theme";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
   title: {
-    default: "SearchTalent — Best Freelancing Platform | Hire Talent & Portfolios",
+    default:
+      "SearchTalent — Best Freelancing Platform | Hire Talent & Portfolios",
     template: "%s | SearchTalent",
   },
   description:
@@ -63,9 +65,14 @@ export default async function RootLayout({
     <html lang={locale} data-theme={theme} suppressHydrationWarning>
       <head>
         <ThemeScript />
+        <meta
+          name="google-site-verification"
+          content="-W2K0yXTapxiAm15YJGOXbyi0Wm0CQP1ktEJjDFXYaY"
+        />
       </head>
       <body className="min-h-screen" suppressHydrationWarning>
         <div className="flex min-h-screen flex-col">{children}</div>
+        <SpeedInsights />
       </body>
     </html>
   );
