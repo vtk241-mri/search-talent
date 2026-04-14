@@ -10,7 +10,6 @@ import {
 import { defaultLocale, localeCookieName } from "@/lib/i18n/config";
 import { getMetadataBase } from "@/lib/seo";
 import { isTheme, themeCookieName } from "@/lib/theme";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
