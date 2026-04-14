@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import ThemeScript from "@/components/theme-script";
 import {
   allowsCookieCategory,
