@@ -27,10 +27,16 @@ export default function SiteFooter({
 
   const accountLabel = isEnglish ? "Account" : "Акаунт";
 
+  const infoLabel = isEnglish ? "Info" : "Інформація";
+
+  const aboutLabel = isEnglish ? "About" : "Про нас";
+  const faqLabel = isEnglish ? "FAQ" : "FAQ";
+  const feedbackLabel = isEnglish ? "Feedback" : "Зворотний зв'язок";
+
   return (
     <footer className="border-t border-[color:var(--border)] bg-[color:var(--surface)]">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="sm:col-span-2 lg:col-span-1">
             <LocalizedLink
               href="/"
@@ -108,6 +114,32 @@ export default function SiteFooter({
                   {dictionary.dashboard.editProfile}
                 </LocalizedLink>
               )}
+            </nav>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--soft-foreground)]">
+              {infoLabel}
+            </p>
+            <nav className="mt-3 flex flex-col gap-2 text-sm text-[color:var(--muted-foreground)]">
+              <LocalizedLink
+                href="/about"
+                className="hover:text-[color:var(--foreground)]"
+              >
+                {aboutLabel}
+              </LocalizedLink>
+              <LocalizedLink
+                href="/faq"
+                className="hover:text-[color:var(--foreground)]"
+              >
+                {faqLabel}
+              </LocalizedLink>
+              <LocalizedLink
+                href="/feedback"
+                className="hover:text-[color:var(--foreground)]"
+              >
+                {feedbackLabel}
+              </LocalizedLink>
             </nav>
           </div>
         </div>

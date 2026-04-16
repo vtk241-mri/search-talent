@@ -127,7 +127,7 @@ export default function CookieConsentBanner({
             role="dialog"
             aria-modal="true"
             aria-labelledby="cookie-settings-title"
-            className="mx-auto w-full max-w-3xl rounded-[2rem] border border-[color:var(--border)] bg-[color:var(--surface)] p-6 shadow-2xl sm:p-8"
+            className="mx-auto w-full max-w-3xl max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-[2rem] border border-[color:var(--border)] bg-[color:var(--surface)] p-6 shadow-2xl sm:p-8"
           >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-2xl">

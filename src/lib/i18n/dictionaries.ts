@@ -78,6 +78,7 @@ export const dictionaries = {
     common: {
       project: "Project",
       projects: "Projects",
+      article: "Article",
       creator: "Talent",
       creators: "Talents",
       fresh: "Fresh",
@@ -158,6 +159,21 @@ export const dictionaries = {
         title: "Portfolio Project",
         description:
           "Project details — screenshots, technologies, team info, and community feedback. Explore freelance portfolios on SearchTalent.",
+      },
+      about: {
+        title: "About SearchTalent — IT Talent Platform",
+        description:
+          "Learn about SearchTalent — an open platform for IT specialists to build portfolios, showcase projects, and connect with teams.",
+      },
+      faq: {
+        title: "FAQ — SearchTalent Help & Common Questions",
+        description:
+          "Find answers to common questions about SearchTalent — creating profiles, publishing projects, ratings, and more.",
+      },
+      feedback: {
+        title: "Feedback & Suggestions — SearchTalent",
+        description:
+          "Share ideas, report bugs, or send feedback to help improve SearchTalent for the community.",
       },
     },
     home: {
@@ -392,7 +408,7 @@ export const dictionaries = {
       anonymous: "User",
     },
     verifiedBadge: {
-      label: "Verified",
+      label: "Email verified",
       tooltip: "This user has verified their email address.",
     },
     emailVerification: {
@@ -409,6 +425,10 @@ export const dictionaries = {
       description: "Profiles and projects you saved to revisit later.",
       emptyMessage: "You have not saved anything yet.",
       removeBookmark: "Remove",
+      removing: "Removing...",
+      previousPage: "Previous",
+      nextPage: "Next",
+      pageLabel: "Page",
     },
     follows: {
       follow: "Follow",
@@ -417,6 +437,34 @@ export const dictionaries = {
       title: "Following",
       description: "Authors you follow to stay updated on new projects and articles.",
       emptyMessage: "You are not following anyone yet.",
+      feedTitle: "Subscription feed",
+      feedDescription:
+        "Latest articles and projects from people you follow. Updates appear here as soon as authors publish.",
+      feedEmpty:
+        "No new posts from the authors you follow yet. As soon as someone publishes, it will show here.",
+      manageFollowing: "Manage followed authors",
+      manageFollowingDescription: "Unfollow authors whose updates you no longer want.",
+      newArticle: "Published a new article",
+      newProject: "Published a new project",
+      unfollow: "Unfollow",
+      unfollowing: "Unfollowing...",
+      openArticle: "Open article",
+      openProject: "Open project",
+      hoursAgo: "{count}h ago",
+      daysAgo: "{count}d ago",
+      justNow: "Just now",
+    },
+    emails: {
+      newFollower: {
+        subject: "{follower} started following you on Search Talent",
+        greeting: "Hi {name},",
+        intro:
+          "{follower} {handle} just followed your profile and will be notified when you publish new projects or articles.",
+        cta: "Open your profile",
+        signature:
+          "You are receiving this because you have a Search Talent profile.",
+        manageNotifications: "Manage notifications",
+      },
     },
     pdfExport: {
       download: "Download PDF",
@@ -606,6 +654,33 @@ export const dictionaries = {
         openDashboard: "Open dashboard",
         backHome: "Back to home",
       },
+      forgotPassword: {
+        eyebrow: "Forgot your password?",
+        title: "Reset your password",
+        description:
+          "Enter the email you signed up with and we will send you a secure link to create a new password.",
+        submit: "Send reset link",
+        loading: "Sending...",
+        sentTitle: "Check your inbox",
+        sentDescription:
+          "If an account exists for this email, a reset link is on its way. The link expires in 1 hour.",
+        backToLogin: "Back to login",
+        link: "Forgot password?",
+      },
+      resetPassword: {
+        eyebrow: "Secure account recovery",
+        title: "Choose a new password",
+        description:
+          "Pick a strong password you have not used before. The link expires in 1 hour.",
+        submit: "Save new password",
+        loading: "Saving...",
+        verifyingLink: "Checking the reset link...",
+        doneTitle: "Password updated",
+        doneDescription: "You can sign in now with your new password.",
+        backToLogin: "Go to login",
+        invalidSession:
+          "This recovery link has expired or is invalid. Please request a new one.",
+      },
       home: "Home",
       email: "Email",
       password: "Password",
@@ -625,10 +700,14 @@ export const dictionaries = {
         invalidCredentials: "Incorrect email or password.",
         signupFailed: "Could not create the account right now. Please try again.",
         oauthFailed: "Could not start sign-in with this provider right now.",
+        resetRequestFailed:
+          "Could not send the reset link right now. Please try again in a moment.",
+        resetUpdateFailed: "Could not update the password. Please try again.",
       },
     },
     creatorProfile: {
       backToSearch: "Back to talents",
+      backToProfile: "Back to profile",
       browseProjects: "Browse projects",
       editProfile: "Edit profile",
       manageProjects: "Manage projects",
@@ -821,6 +900,92 @@ export const dictionaries = {
       usernameTaken: "This username is already taken.",
       errorSavingProfile: "Could not save the profile right now.",
     },
+    aboutPage: {
+      eyebrow: "About the platform",
+      title: "About SearchTalent",
+      description:
+        "SearchTalent is an open platform for IT specialists to showcase their work, build public portfolios, and connect with teams looking for talent.",
+      missionTitle: "Our mission",
+      missionText:
+        "We believe every developer, designer, and specialist deserves a clean, fast way to present their skills and projects to the world. SearchTalent gives you a public profile, a project portfolio, community feedback, and discovery tools — all in one place.",
+      featuresTitle: "What you can do",
+      features: [
+        "Create a detailed public profile with skills, experience, and contacts",
+        "Publish portfolio projects with media, tech stacks, and case studies",
+        "Get discovered through search, ratings, and community votes",
+        "Follow authors and stay updated on new publications",
+        "Export your profile as a PDF resume",
+      ],
+      openSourceTitle: "Built in the open",
+      openSourceText:
+        "SearchTalent started as a university project and continues to grow with community input. Feedback and ideas are always welcome.",
+      backToHome: "Back to home",
+    },
+    faqPage: {
+      eyebrow: "Frequently asked questions",
+      title: "FAQ",
+      description:
+        "Answers to the most common questions about using SearchTalent — accounts, profiles, projects, and more.",
+      backToHome: "Back to home",
+      items: [
+        {
+          q: "Is SearchTalent free to use?",
+          a: "Yes. Creating an account, building a profile, and publishing projects is completely free.",
+        },
+        {
+          q: "How do I create a public profile?",
+          a: "Sign up, go to your dashboard, and fill in your profile details — name, skills, experience, and contacts. Once you set a username, your public page becomes available.",
+        },
+        {
+          q: "Can I publish multiple projects?",
+          a: "Absolutely. There is no limit on the number of projects you can publish. Each project gets its own public page with media, description, and community votes.",
+        },
+        {
+          q: "How does the rating system work?",
+          a: "Community members can upvote or downvote profiles and projects. The ranking factors in project depth, profile completeness, community response, and recent activity.",
+        },
+        {
+          q: "Can I export my profile?",
+          a: "Yes. You can download your profile as a PDF resume directly from your public profile page.",
+        },
+        {
+          q: "How do I report inappropriate content?",
+          a: "Use the feedback page to report any content that violates the platform guidelines. Our moderation team reviews reports promptly.",
+        },
+        {
+          q: "What languages are supported?",
+          a: "The platform is available in English and Ukrainian. You can switch the language at any time from the header.",
+        },
+        {
+          q: "How do I delete my account?",
+          a: "Contact us through the feedback page and we will process your request. All your data, projects, and profile will be permanently removed.",
+        },
+      ],
+    },
+    feedbackPage: {
+      eyebrow: "We value your input",
+      title: "Feedback & Suggestions",
+      description:
+        "Have an idea, found a bug, or want to share feedback? Let us know — every message helps make SearchTalent better.",
+      backToHome: "Back to home",
+      nameLabel: "Your name",
+      namePlaceholder: "How should we address you?",
+      emailLabel: "Email",
+      emailPlaceholder: "So we can follow up if needed",
+      categoryLabel: "Category",
+      categoryIdea: "Suggest an idea",
+      categoryBug: "Report a bug",
+      categoryFeedback: "General feedback",
+      categoryComplaint: "Complaint",
+      messageLabel: "Message",
+      messagePlaceholder: "Describe your idea, issue, or feedback in detail...",
+      submit: "Send feedback",
+      sending: "Sending...",
+      successTitle: "Thank you!",
+      successDescription:
+        "Your feedback has been received. We review every submission and will reach out if we need more details.",
+      sendAnother: "Send another",
+    },
   },
   uk: {
     localeName: "Українська",
@@ -899,6 +1064,7 @@ export const dictionaries = {
     common: {
       project: "Проєкт",
       projects: "Проєкти",
+      article: "Стаття",
       creator: "Фахівець",
       creators: "Фахівці",
       fresh: "Новий",
@@ -979,6 +1145,21 @@ export const dictionaries = {
         title: "Портфоліо-Проєкт",
         description:
           "Деталі проєкту — скріншоти, технології, команда та оцінки спільноти. Перегляньте фріланс-портфоліо на SearchTalent.",
+      },
+      about: {
+        title: "Про SearchTalent — Платформа IT-Талантів",
+        description:
+          "Дізнайтеся більше про SearchTalent — відкриту платформу для IT-фахівців, де можна створити портфоліо, публікувати проєкти та знаходити команди.",
+      },
+      faq: {
+        title: "FAQ — Поширені Запитання про SearchTalent",
+        description:
+          "Відповіді на часті запитання про SearchTalent — створення профілів, публікація проєктів, рейтинги та інше.",
+      },
+      feedback: {
+        title: "Зворотний Зв'язок та Пропозиції — SearchTalent",
+        description:
+          "Поділіться ідеями, повідомте про помилку або надішліть відгук, щоб допомогти покращити SearchTalent.",
       },
     },
     home: {
@@ -1184,7 +1365,7 @@ export const dictionaries = {
       anonymous: "Користувач",
     },
     verifiedBadge: {
-      label: "Перевірено",
+      label: "Email підтверджено",
       tooltip: "Цей користувач підтвердив свою електронну пошту.",
     },
     emailVerification: {
@@ -1201,6 +1382,10 @@ export const dictionaries = {
       description: "Профілі та проєкти, які ви зберегли, щоб повернутися пізніше.",
       emptyMessage: "Ви ще нічого не зберегли.",
       removeBookmark: "Видалити",
+      removing: "Видалення...",
+      previousPage: "Назад",
+      nextPage: "Далі",
+      pageLabel: "Сторінка",
     },
     follows: {
       follow: "Стежити",
@@ -1209,6 +1394,34 @@ export const dictionaries = {
       title: "Підписки",
       description: "Автори, за якими ви стежите, щоб бути в курсі нових проєктів та статей.",
       emptyMessage: "Ви ще ні на кого не підписані.",
+      feedTitle: "Стрічка підписок",
+      feedDescription:
+        "Найновіші статті та проєкти від авторів, на яких ви підписані. Оновлення з'являються одразу після публікації.",
+      feedEmpty:
+        "Поки що немає нових записів від авторів, на яких ви підписані. Як тільки щось буде опубліковано — побачите тут.",
+      manageFollowing: "Керувати підписками",
+      manageFollowingDescription: "Відпишіться від авторів, оновлення яких вам більше не потрібні.",
+      newArticle: "Опублікував(ла) нову статтю",
+      newProject: "Опублікував(ла) новий проєкт",
+      unfollow: "Не стежити",
+      unfollowing: "Відписуємося...",
+      openArticle: "Відкрити статтю",
+      openProject: "Відкрити проєкт",
+      hoursAgo: "{count} год тому",
+      daysAgo: "{count} дн тому",
+      justNow: "Щойно",
+    },
+    emails: {
+      newFollower: {
+        subject: "{follower} підписав(ла)ся на вас у Search Talent",
+        greeting: "Привіт, {name}!",
+        intro:
+          "{follower} {handle} щойно підписав(ла)ся на ваш профіль і отримає сповіщення, коли ви опублікуєте нові проєкти або статті.",
+        cta: "Відкрити ваш профіль",
+        signature:
+          "Ви отримали цей лист, тому що у вас є профіль у Search Talent.",
+        manageNotifications: "Керувати сповіщеннями",
+      },
     },
     pdfExport: {
       download: "Завантажити PDF",
@@ -1399,6 +1612,33 @@ export const dictionaries = {
         openDashboard: "Відкрити дашборд",
         backHome: "На головну",
       },
+      forgotPassword: {
+        eyebrow: "Забули пароль?",
+        title: "Скидання пароля",
+        description:
+          "Введіть email, з яким ви реєструвалися, і ми надішлемо вам безпечне посилання для створення нового пароля.",
+        submit: "Надіслати посилання",
+        loading: "Надсилання...",
+        sentTitle: "Перевірте пошту",
+        sentDescription:
+          "Якщо обліковий запис із таким email існує, лист із посиланням вже на шляху. Термін дії посилання — 1 година.",
+        backToLogin: "Повернутися до входу",
+        link: "Забули пароль?",
+      },
+      resetPassword: {
+        eyebrow: "Безпечне відновлення акаунту",
+        title: "Оберіть новий пароль",
+        description:
+          "Вигадайте надійний пароль, який ви раніше не використовували. Посилання діє 1 годину.",
+        submit: "Зберегти новий пароль",
+        loading: "Збереження...",
+        verifyingLink: "Перевіряємо посилання...",
+        doneTitle: "Пароль оновлено",
+        doneDescription: "Тепер ви можете увійти з новим паролем.",
+        backToLogin: "До сторінки входу",
+        invalidSession:
+          "Це посилання для відновлення вже недійсне або протерміноване. Спробуйте запросити нове.",
+      },
       home: "Головна",
       email: "Email",
       password: "Пароль",
@@ -1418,10 +1658,14 @@ export const dictionaries = {
         invalidCredentials: "Невірний email або пароль.",
         signupFailed: "Зараз не вдалося створити акаунт. Спробуйте ще раз.",
         oauthFailed: "Зараз не вдалося розпочати вхід через цей сервіс.",
+        resetRequestFailed:
+          "Зараз не вдалося надіслати посилання для скидання. Спробуйте ще раз пізніше.",
+        resetUpdateFailed: "Не вдалося оновити пароль. Спробуйте ще раз.",
       },
     },
     creatorProfile: {
       backToSearch: "Назад до талантів",
+      backToProfile: "Назад до профілю",
       browseProjects: "Переглянути проєкти",
       editProfile: "Редагувати профіль",
       manageProjects: "Керувати проєктами",
@@ -1614,6 +1858,92 @@ export const dictionaries = {
       saving: "Збереження...",
       usernameTaken: "Цей username уже зайнятий.",
       errorSavingProfile: "Зараз не вдалося зберегти профіль.",
+    },
+    aboutPage: {
+      eyebrow: "Про платформу",
+      title: "Про SearchTalent",
+      description:
+        "SearchTalent — відкрита платформа для IT-фахівців, де можна демонструвати свої роботи, створювати публічні портфоліо та знаходити команди, які шукають таланти.",
+      missionTitle: "Наша місія",
+      missionText:
+        "Ми віримо, що кожен розробник, дизайнер та фахівець заслуговує на зручний і швидкий спосіб представити свої навички та проєкти світу. SearchTalent дає вам публічний профіль, портфоліо проєктів, зворотний зв'язок від спільноти та інструменти пошуку — все в одному місці.",
+      featuresTitle: "Що ви можете робити",
+      features: [
+        "Створити детальний публічний профіль із навичками, досвідом та контактами",
+        "Публікувати портфоліо-проєкти з медіа, стеком технологій та кейсами",
+        "Бути знайденим через пошук, рейтинги та голоси спільноти",
+        "Стежити за авторами та отримувати оновлення про нові публікації",
+        "Експортувати профіль у форматі PDF-резюме",
+      ],
+      openSourceTitle: "Створено відкрито",
+      openSourceText:
+        "SearchTalent розпочався як університетський проєкт і продовжує розвиватися завдяки відгукам спільноти. Ідеї та пропозиції завжди вітаються.",
+      backToHome: "На головну",
+    },
+    faqPage: {
+      eyebrow: "Поширені запитання",
+      title: "FAQ",
+      description:
+        "Відповіді на найпоширеніші запитання про використання SearchTalent — акаунти, профілі, проєкти та інше.",
+      backToHome: "На головну",
+      items: [
+        {
+          q: "SearchTalent безкоштовний?",
+          a: "Так. Створення акаунту, заповнення профілю та публікація проєктів — повністю безкоштовні.",
+        },
+        {
+          q: "Як створити публічний профіль?",
+          a: "Зареєструйтеся, перейдіть у дашборд і заповніть дані профілю — ім'я, навички, досвід, контакти. Коли ви задасте username, ваша публічна сторінка стане доступною.",
+        },
+        {
+          q: "Чи можу я публікувати кілька проєктів?",
+          a: "Звичайно. Немає обмежень на кількість проєктів. Кожен проєкт отримує власну публічну сторінку з медіа, описом та голосами спільноти.",
+        },
+        {
+          q: "Як працює система рейтингу?",
+          a: "Учасники спільноти можуть голосувати за профілі та проєкти. Рейтинг враховує глибину проєкту, заповненість профілю, реакцію спільноти та нещодавню активність.",
+        },
+        {
+          q: "Чи можна експортувати профіль?",
+          a: "Так. Ви можете завантажити свій профіль як PDF-резюме безпосередньо зі сторінки публічного профілю.",
+        },
+        {
+          q: "Як повідомити про неприйнятний контент?",
+          a: "Скористайтеся сторінкою зворотного зв'язку, щоб повідомити про контент, який порушує правила платформи. Наша команда модерації оперативно розглядає звернення.",
+        },
+        {
+          q: "Які мови підтримуються?",
+          a: "Платформа доступна українською та англійською мовами. Ви можете змінити мову у будь-який момент через шапку сайту.",
+        },
+        {
+          q: "Як видалити акаунт?",
+          a: "Зв'яжіться з нами через сторінку зворотного зв'язку, і ми обробимо ваш запит. Усі дані, проєкти та профіль будуть видалені назавжди.",
+        },
+      ],
+    },
+    feedbackPage: {
+      eyebrow: "Ми цінуємо вашу думку",
+      title: "Зворотний зв'язок та пропозиції",
+      description:
+        "Маєте ідею, знайшли помилку або хочете поділитися думкою? Напишіть нам — кожне повідомлення допомагає зробити SearchTalent кращим.",
+      backToHome: "На головну",
+      nameLabel: "Ваше ім'я",
+      namePlaceholder: "Як до вас звертатися?",
+      emailLabel: "Email",
+      emailPlaceholder: "Щоб ми могли відповісти за потреби",
+      categoryLabel: "Категорія",
+      categoryIdea: "Запропонувати ідею",
+      categoryBug: "Повідомити про помилку",
+      categoryFeedback: "Загальний відгук",
+      categoryComplaint: "Скарга",
+      messageLabel: "Повідомлення",
+      messagePlaceholder: "Опишіть вашу ідею, проблему або відгук детально...",
+      submit: "Надіслати",
+      sending: "Надсилання...",
+      successTitle: "Дякуємо!",
+      successDescription:
+        "Ваш відгук отримано. Ми розглядаємо кожне звернення і зв'яжемося, якщо знадобляться деталі.",
+      sendAnother: "Надіслати ще",
     },
   },
 } as const;

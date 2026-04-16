@@ -1,9 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { ButtonLink } from "@/components/ui/Button";
 import type { DashboardStats, UserDashboardStats } from "@/lib/db/dashboard";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { getModerationCopy } from "@/lib/moderation-copy";
-import { buildProjectPath, type ProjectStatus } from "@/lib/projects";
 
 function formatCompactNumber(value: number, locale: Locale) {
   return new Intl.NumberFormat(locale === "uk" ? "uk-UA" : "en-US", {
@@ -21,21 +23,6 @@ function formatMonthLabel(value: string, locale: Locale) {
   }).format(date);
 }
 
-function getStatusLabel(status: string, dictionary: Dictionary) {
-  switch (status as ProjectStatus | "unknown") {
-    case "planning":
-      return dictionary.projectPage.planning;
-    case "in_progress":
-      return dictionary.projectPage.inProgress;
-    case "completed":
-      return dictionary.projectPage.completed;
-    case "on_hold":
-      return dictionary.projectPage.onHold;
-    default:
-      return dictionary.dashboard.unknownStatus;
-  }
-}
-
 function getDashboardUi(locale: Locale) {
   if (locale === "uk") {
     return {
@@ -51,7 +38,6 @@ function getDashboardUi(locale: Locale) {
       starter: "Початковий",
       growing: "Розвивається",
       complete: "Сильний",
-      topProjectsTitle: "Найсильніші проєкти",
       directionLabel: "Напрямок",
       ownerLabel: "Автор",
       likesLabel: "Лайки",
@@ -62,6 +48,61 @@ function getDashboardUi(locale: Locale) {
       savedItems: "Збережене",
       followingAuthors: "Підписки",
       writeArticle: "Написати статтю",
+      showMore: "Показати більше",
+      showLess: "Згорнути",
+      experienceDistribution: "Рівень досвіду",
+      salaryDistribution: "Зарплатні очікування",
+      salaryByCountry: "Середня зарплата по країнам",
+      salaryByCategory: "Середня зарплата по напрямкам",
+      avgSalaryLabel: "~${avg} $",
+      profilesCount: "{count} профілів",
+      workFormatDistribution: "Бажаний формат роботи",
+      employmentTypeDistribution: "Варіант зайнятості",
+      contactMethodDistribution: "Бажаний спосіб зв'язку",
+      experienceLevels: {
+        no_experience: "Без досвіду",
+        months_3: "3 міс",
+        months_6: "6 міс",
+        year_1: "1 рік",
+        years_2: "2 роки",
+        years_3: "3 роки",
+        years_4: "4 роки",
+        years_5: "5 років",
+        years_6: "6 років",
+        years_7: "7 років",
+        years_8: "8 років",
+        years_9: "9 років",
+        years_10: "10 років",
+        more_than_10_years: "> 10 років",
+      },
+      salaryRanges: {
+        under_500: "до 500 $",
+        "500_1000": "500 – 1000 $",
+        "1000_2000": "1000 – 2000 $",
+        "2000_3500": "2000 – 3500 $",
+        "3500_5000": "3500 – 5000 $",
+        "5000_plus": "5000 $ і більше",
+        custom: "Інше",
+      },
+      workFormats: {
+        remote: "Віддалено",
+        hybrid: "Гібридно",
+        office: "В офісі",
+      },
+      employmentTypes: {
+        full_time: "Повна зайнятість",
+        part_time: "Часткова зайнятість",
+        contract: "Контракт",
+        freelance: "Фриланс",
+        internship: "Стажування",
+      },
+      contactMethods: {
+        email: "Email",
+        telegram: "Telegram",
+        phone: "Телефон",
+        linkedin: "LinkedIn",
+        website: "Сайт",
+      },
     };
   }
 
@@ -78,7 +119,6 @@ function getDashboardUi(locale: Locale) {
     starter: "Starter",
     growing: "Growing",
     complete: "Strong",
-    topProjectsTitle: "Top projects",
     directionLabel: "Direction",
     ownerLabel: "Owner",
     likesLabel: "Likes",
@@ -89,27 +129,65 @@ function getDashboardUi(locale: Locale) {
     savedItems: "Saved",
     followingAuthors: "Following",
     writeArticle: "Write article",
+    showMore: "Show more",
+    showLess: "Collapse",
+    experienceDistribution: "Experience level",
+    salaryDistribution: "Salary expectations",
+    salaryByCountry: "Average salary by country",
+    salaryByCategory: "Average salary by direction",
+    avgSalaryLabel: "~${avg} $",
+    profilesCount: "{count} profiles",
+    workFormatDistribution: "Preferred work format",
+    employmentTypeDistribution: "Employment type",
+    contactMethodDistribution: "Preferred contact method",
+    experienceLevels: {
+      no_experience: "No experience",
+      months_3: "3 months",
+      months_6: "6 months",
+      year_1: "1 year",
+      years_2: "2 years",
+      years_3: "3 years",
+      years_4: "4 years",
+      years_5: "5 years",
+      years_6: "6 years",
+      years_7: "7 years",
+      years_8: "8 years",
+      years_9: "9 years",
+      years_10: "10 years",
+      more_than_10_years: "More than 10 years",
+    },
+    salaryRanges: {
+      under_500: "under $500",
+      "500_1000": "$500 – 1000",
+      "1000_2000": "$1000 – 2000",
+      "2000_3500": "$2000 – 3500",
+      "3500_5000": "$3500 – 5000",
+      "5000_plus": "$5000 and above",
+      custom: "Other",
+    },
+    workFormats: {
+      remote: "Remote",
+      hybrid: "Hybrid",
+      office: "Office",
+    },
+    employmentTypes: {
+      full_time: "Full-time",
+      part_time: "Part-time",
+      contract: "Contract",
+      freelance: "Freelance",
+      internship: "Internship",
+    },
+    contactMethods: {
+      email: "Email",
+      telegram: "Telegram",
+      phone: "Phone",
+      linkedin: "LinkedIn",
+      website: "Website",
+    },
   };
 }
 
 /* ─── Small reusable pieces ─── */
-
-function StatNumber({
-  value,
-  label,
-  accent,
-}: {
-  value: string;
-  label: string;
-  accent: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className={`text-2xl font-bold tracking-tight ${accent}`}>{value}</span>
-      <span className="text-xs font-medium uppercase tracking-wider app-soft">{label}</span>
-    </div>
-  );
-}
 
 function PersonalStatCard({
   value,
@@ -243,45 +321,72 @@ function ActivityChart({
   );
 }
 
-/* ─── Horizontal bar distribution ─── */
+/* ─── Expandable horizontal bar distribution ─── */
 
-function DistributionChart({
+const DISTRIBUTION_DEFAULT_LIMIT = 6;
+
+function ExpandableDistributionChart({
   title,
   items,
   locale,
+  ui,
 }: {
   title: string;
   items: Array<{ label: string; value: number }>;
   locale: Locale;
+  ui: ReturnType<typeof getDashboardUi>;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const maxValue = Math.max(...items.map((item) => item.value), 1);
+  const totalValue = items.reduce((sum, item) => sum + item.value, 0);
+  const shouldShowToggle = items.length > DISTRIBUTION_DEFAULT_LIMIT;
+  const visibleItems = expanded || !shouldShowToggle
+    ? items
+    : items.slice(0, DISTRIBUTION_DEFAULT_LIMIT);
 
   return (
     <section className="rounded-2xl app-card p-6">
       <h2 className="mb-5 text-lg font-semibold text-[color:var(--foreground)]">{title}</h2>
 
       <div className="space-y-3">
-        {items.length > 0 ? (
-          items.map((item) => (
-            <div key={item.label}>
-              <div className="mb-1.5 flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-[color:var(--foreground)]">{item.label}</p>
-                <p className="text-sm tabular-nums app-soft">
-                  {formatCompactNumber(item.value, locale)}
-                </p>
+        {visibleItems.length > 0 ? (
+          visibleItems.map((item) => {
+            const pct =
+              totalValue > 0 ? Math.round((item.value / totalValue) * 100) : 0;
+            return (
+              <div key={item.label}>
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium text-[color:var(--foreground)]">
+                    {item.label}
+                  </p>
+                  <p className="text-sm tabular-nums app-soft">
+                    {formatCompactNumber(item.value, locale)}{" "}
+                    <span className="app-muted">({pct}%)</span>
+                  </p>
+                </div>
+                <div className="h-2 rounded-full bg-[color:var(--surface-muted)]">
+                  <div
+                    className="h-2 rounded-full bg-[color:var(--foreground)] opacity-70"
+                    style={{ width: `${(item.value / maxValue) * 100}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-2 rounded-full bg-[color:var(--surface-muted)]">
-                <div
-                  className="h-2 rounded-full bg-[color:var(--foreground)] opacity-70"
-                  style={{ width: `${(item.value / maxValue) * 100}%` }}
-                />
-              </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <p className="text-sm app-muted">0</p>
         )}
       </div>
+
+      {shouldShowToggle && (
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className="mt-4 text-sm font-medium text-[color:var(--foreground)] hover:underline"
+        >
+          {expanded ? ui.showLess : `${ui.showMore} (${items.length - DISTRIBUTION_DEFAULT_LIMIT})`}
+        </button>
+      )}
     </section>
   );
 }
@@ -361,7 +466,9 @@ function CompletionBands({
   );
 }
 
-/* ─── Skills cloud ─── */
+/* ─── Expandable skills cloud ─── */
+
+const SKILLS_DEFAULT_LIMIT = 14;
 
 function SkillCloud({
   skills,
@@ -372,6 +479,8 @@ function SkillCloud({
   ui: ReturnType<typeof getDashboardUi>;
   dictionary: Dictionary;
 }) {
+  const [expanded, setExpanded] = useState(false);
+
   if (skills.length === 0) {
     return (
       <section className="rounded-2xl app-card p-6">
@@ -384,6 +493,10 @@ function SkillCloud({
   }
 
   const maxCount = Math.max(...skills.map((s) => s.value), 1);
+  const shouldShowToggle = skills.length > SKILLS_DEFAULT_LIMIT;
+  const visibleSkills = expanded || !shouldShowToggle
+    ? skills
+    : skills.slice(0, SKILLS_DEFAULT_LIMIT);
 
   return (
     <section className="rounded-2xl app-card p-6">
@@ -393,7 +506,7 @@ function SkillCloud({
       <p className="mb-5 text-xs app-muted">{ui.skillsDescription}</p>
 
       <div className="flex flex-wrap gap-2">
-        {skills.map((skill) => {
+        {visibleSkills.map((skill) => {
           const intensity = Math.max(0.35, skill.value / maxCount);
           return (
             <span
@@ -407,189 +520,91 @@ function SkillCloud({
           );
         })}
       </div>
+
+      {shouldShowToggle && (
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className="mt-4 text-sm font-medium text-[color:var(--foreground)] hover:underline"
+        >
+          {expanded ? ui.showLess : `${ui.showMore} (${skills.length - SKILLS_DEFAULT_LIMIT})`}
+        </button>
+      )}
     </section>
   );
 }
 
-/* ─── Top projects ─── */
+/* ─── Salary by group chart ─── */
 
-function TopProjects({
-  projects,
-  dictionary,
+function SalaryByGroupChart({
+  title,
+  items,
   locale,
   ui,
 }: {
-  projects: DashboardStats["topProjects"];
-  dictionary: Dictionary;
+  title: string;
+  items: Array<{ label: string; avgSalary: number; count: number }>;
   locale: Locale;
   ui: ReturnType<typeof getDashboardUi>;
 }) {
-  if (projects.length === 0) {
-    return (
-      <section className="rounded-2xl app-card p-6">
-        <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
-          {ui.topProjectsTitle}
-        </h2>
-        <p className="mt-3 text-sm app-muted">{dictionary.dashboard.noProjectsYet}</p>
-      </section>
-    );
-  }
-
-  const strongestScore = Math.max(...projects.map((p) => p.score), 1);
+  const [expanded, setExpanded] = useState(false);
+  const maxSalary = Math.max(...items.map((item) => item.avgSalary), 1);
+  const shouldShowToggle = items.length > DISTRIBUTION_DEFAULT_LIMIT;
+  const visibleItems =
+    expanded || !shouldShowToggle
+      ? items
+      : items.slice(0, DISTRIBUTION_DEFAULT_LIMIT);
 
   return (
     <section className="rounded-2xl app-card p-6">
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold text-[color:var(--foreground)]">
-          {ui.topProjectsTitle}
-        </h2>
-        <ButtonLink href="/projects" variant="ghost" size="sm">
-          {dictionary.home.viewAllProjects}
-        </ButtonLink>
-      </div>
+      <h2 className="mb-5 text-lg font-semibold text-[color:var(--foreground)]">
+        {title}
+      </h2>
 
       <div className="space-y-3">
-        {projects.map((project) => (
-          <a
-            key={project.id}
-            href={buildProjectPath(project.id, project.slug)}
-            className="group block rounded-xl border app-border bg-[color:var(--surface)] p-4 transition-shadow hover:shadow-sm"
-          >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <h3 className="truncate text-sm font-semibold text-[color:var(--foreground)] group-hover:underline">
-                  {project.title}
-                </h3>
-                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs app-muted">
-                  {project.ownerName && (
-                    <span>{ui.ownerLabel}: {project.ownerName}</span>
-                  )}
-                  {project.categoryName && (
-                    <span>{ui.directionLabel}: {project.categoryName}</span>
-                  )}
-                </div>
+        {visibleItems.length > 0 ? (
+          visibleItems.map((item) => (
+            <div key={item.label}>
+              <div className="mb-1.5 flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-[color:var(--foreground)]">
+                  {item.label}
+                </p>
+                <p className="text-sm tabular-nums app-soft">
+                  {ui.avgSalaryLabel.replace(
+                    "${avg}",
+                    formatCompactNumber(item.avgSalary, locale),
+                  )}{" "}
+                  <span className="app-muted">
+                    ({ui.profilesCount.replace("{count}", String(item.count))})
+                  </span>
+                </p>
               </div>
-
-              <div className="flex shrink-0 items-center gap-3 text-xs tabular-nums app-soft">
-                <span>{project.likes} {ui.likesLabel}</span>
-                <span>{project.dislikes} {ui.dislikesLabel}</span>
-                <span className="font-semibold text-[color:var(--foreground)]">
-                  {dictionary.dashboard.totalScore}: {project.score}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-3 h-1.5 rounded-full bg-[color:var(--surface-muted)]">
-              <div
-                className="h-1.5 rounded-full bg-emerald-500"
-                style={{
-                  width: `${Math.max((project.score / strongestScore) * 100, project.score > 0 ? 6 : 0)}%`,
-                }}
-              />
-            </div>
-          </a>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/* ─── Donut / ring chart ─── */
-
-function DonutChart({
-  title,
-  items,
-  dictionary,
-}: {
-  title: string;
-  items: Array<{ label: string; value: number }>;
-  dictionary: Dictionary;
-}) {
-  const total = items.reduce((sum, item) => sum + item.value, 0);
-  if (total === 0) {
-    return (
-      <section className="rounded-2xl app-card p-6">
-        <h2 className="text-lg font-semibold text-[color:var(--foreground)]">{title}</h2>
-        <p className="mt-3 text-sm app-muted">{dictionary.dashboard.noData}</p>
-      </section>
-    );
-  }
-
-  const colors = [
-    "text-sky-500",
-    "text-emerald-500",
-    "text-amber-500",
-    "text-rose-500",
-    "text-violet-500",
-    "text-cyan-500",
-    "text-orange-500",
-    "text-teal-500",
-  ];
-
-  const dotColors = [
-    "bg-sky-500",
-    "bg-emerald-500",
-    "bg-amber-500",
-    "bg-rose-500",
-    "bg-violet-500",
-    "bg-cyan-500",
-    "bg-orange-500",
-    "bg-teal-500",
-  ];
-
-  const radius = 40;
-  const circumference = 2 * Math.PI * radius;
-  let cumulativeOffset = 0;
-
-  return (
-    <section className="rounded-2xl app-card p-6">
-      <h2 className="mb-5 text-lg font-semibold text-[color:var(--foreground)]">{title}</h2>
-
-      <div className="flex flex-col items-center gap-6 sm:flex-row">
-        <div className="relative h-36 w-36 shrink-0">
-          <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-            {items.map((item, index) => {
-              const pct = item.value / total;
-              const dash = pct * circumference;
-              const offset = cumulativeOffset;
-              cumulativeOffset += dash;
-
-              return (
-                <circle
-                  key={item.label}
-                  cx="50"
-                  cy="50"
-                  r={radius}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="12"
-                  strokeDasharray={`${dash} ${circumference - dash}`}
-                  strokeDashoffset={-offset}
-                  className={colors[index % colors.length]}
+              <div className="h-2 rounded-full bg-[color:var(--surface-muted)]">
+                <div
+                  className="h-2 rounded-full bg-emerald-500 opacity-70"
+                  style={{
+                    width: `${(item.avgSalary / maxSalary) * 100}%`,
+                  }}
                 />
-              );
-            })}
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xl font-bold text-[color:var(--foreground)]">{total}</span>
-          </div>
-        </div>
-
-        <div className="flex-1 space-y-2">
-          {items.map((item, index) => {
-            const pct = Math.round((item.value / total) * 100);
-            return (
-              <div key={item.label} className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${dotColors[index % dotColors.length]}`} />
-                  <span className="text-sm text-[color:var(--foreground)]">{item.label}</span>
-                </div>
-                <span className="text-sm tabular-nums app-soft">{pct}%</span>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-sm app-muted">0</p>
+        )}
       </div>
+
+      {shouldShowToggle && (
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className="mt-4 text-sm font-medium text-[color:var(--foreground)] hover:underline"
+        >
+          {expanded
+            ? ui.showLess
+            : `${ui.showMore} (${items.length - DISTRIBUTION_DEFAULT_LIMIT})`}
+        </button>
+      )}
     </section>
   );
 }
@@ -617,6 +632,22 @@ export default function DashboardAnalytics({
       : 0;
   const completionTotal = stats.completionBreakdown.reduce((s, i) => s + i.value, 0);
 
+  const experienceLevelLabels = ui.experienceLevels as Record<string, string>;
+  const salaryRangeLabels = ui.salaryRanges as Record<string, string>;
+  const workFormatLabels = ui.workFormats as Record<string, string>;
+  const employmentTypeLabels = ui.employmentTypes as Record<string, string>;
+  const contactMethodLabels = ui.contactMethods as Record<string, string>;
+
+  function relabel(
+    items: Array<{ key: string; label: string; value: number }>,
+    lookup: Record<string, string>,
+  ) {
+    return items.map((item) => ({
+      label: lookup[item.key] || item.label || item.key,
+      value: item.value,
+    }));
+  }
+
   return (
     <div className="space-y-6">
       {/* ─── Quick actions ─── */}
@@ -624,7 +655,7 @@ export default function DashboardAnalytics({
         <ButtonLink href="/profile/edit" size="sm">
           {ui.editProfile}
         </ButtonLink>
-        <ButtonLink href="/dashboard/projects" variant="secondary" size="sm">
+        <ButtonLink href={userStats.username ? `/u/${userStats.username}/projects` : "/projects"} variant="secondary" size="sm">
           {ui.manageProjects}
         </ButtonLink>
         <ButtonLink href="/articles/new" variant="secondary" size="sm">
@@ -655,7 +686,7 @@ export default function DashboardAnalytics({
           <PersonalStatCard
             value={String(userStats.projectsCount)}
             label={dictionary.dashboard.myProjects}
-            href={`/${locale}/dashboard/projects`}
+            href={userStats.username ? `/${locale}/u/${userStats.username}/projects` : `/${locale}/projects`}
             accent="bg-emerald-500"
           />
           <PersonalStatCard
@@ -685,18 +716,18 @@ export default function DashboardAnalytics({
           <PersonalStatCard
             value={String(userStats.receivedLikes)}
             label={dictionary.dashboard.receivedLikes}
-            href={`/${locale}/dashboard/projects`}
+            href={userStats.username ? `/${locale}/u/${userStats.username}/projects` : `/${locale}/projects`}
             accent="bg-rose-500"
           />
         </div>
       </section>
 
-      {/* ─── Platform overview ─── */}
+      {/* ─── Platform overview (without total votes) ─── */}
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest app-soft">
           {dictionary.dashboard.platformOverview}
         </h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <PlatformMetricCard
             label={dictionary.dashboard.totalCreators}
             value={formatCompactNumber(stats.siteTotals.profiles, locale)}
@@ -708,12 +739,6 @@ export default function DashboardAnalytics({
             value={formatCompactNumber(stats.siteTotals.projects, locale)}
             accent="bg-emerald-500"
             hint={dictionary.dashboard.siteProjectsHint}
-          />
-          <PlatformMetricCard
-            label={dictionary.dashboard.totalVotes}
-            value={formatCompactNumber(stats.siteTotals.votes, locale)}
-            accent="bg-amber-500"
-            hint={`${formatCompactNumber(stats.siteTotals.likes, locale)} ${ui.likesLabel.toLowerCase()} / ${formatCompactNumber(stats.siteTotals.dislikes, locale)} ${ui.dislikesLabel.toLowerCase()}`}
           />
           <PlatformMetricCard
             label={dictionary.dashboard.profileCompletion}
@@ -729,15 +754,17 @@ export default function DashboardAnalytics({
 
       {/* ─── Distributions: geography & directions ─── */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <DistributionChart
+        <ExpandableDistributionChart
           title={ui.creatorOrigins}
           locale={locale}
           items={stats.countryBreakdown}
+          ui={ui}
         />
-        <DistributionChart
+        <ExpandableDistributionChart
           title={ui.creatorDirectionsMix}
           locale={locale}
           items={stats.categoryBreakdown}
+          ui={ui}
         />
       </div>
 
@@ -752,22 +779,60 @@ export default function DashboardAnalytics({
         <SkillCloud skills={stats.topSkills} ui={ui} dictionary={dictionary} />
       </div>
 
-      {/* ─── Top projects ─── */}
-      <TopProjects
-        projects={stats.topProjects}
-        dictionary={dictionary}
-        locale={locale}
-        ui={ui}
-      />
+      {/* ─── Experience & salary ─── */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ExpandableDistributionChart
+          title={ui.experienceDistribution}
+          locale={locale}
+          items={relabel(stats.experienceBreakdown, experienceLevelLabels)}
+          ui={ui}
+        />
+        <ExpandableDistributionChart
+          title={ui.salaryDistribution}
+          locale={locale}
+          items={relabel(stats.salaryBreakdown, salaryRangeLabels)}
+          ui={ui}
+        />
+      </div>
 
-      {/* ─── Project status donut ─── */}
-      <DonutChart
-        title={dictionary.dashboard.projectStatusMix}
-        dictionary={dictionary}
-        items={stats.statusBreakdown.map((item) => ({
-          label: getStatusLabel(item.key, dictionary),
-          value: item.value,
-        }))}
+      {/* ─── Salary by country & category ─── */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <SalaryByGroupChart
+          title={ui.salaryByCountry}
+          items={stats.salaryByCountry}
+          locale={locale}
+          ui={ui}
+        />
+        <SalaryByGroupChart
+          title={ui.salaryByCategory}
+          items={stats.salaryByCategory}
+          locale={locale}
+          ui={ui}
+        />
+      </div>
+
+      {/* ─── Work format & employment type ─── */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ExpandableDistributionChart
+          title={ui.workFormatDistribution}
+          locale={locale}
+          items={relabel(stats.workFormatBreakdown, workFormatLabels)}
+          ui={ui}
+        />
+        <ExpandableDistributionChart
+          title={ui.employmentTypeDistribution}
+          locale={locale}
+          items={relabel(stats.employmentTypeBreakdown, employmentTypeLabels)}
+          ui={ui}
+        />
+      </div>
+
+      {/* ─── Contact method ─── */}
+      <ExpandableDistributionChart
+        title={ui.contactMethodDistribution}
+        locale={locale}
+        items={relabel(stats.contactMethodBreakdown, contactMethodLabels)}
+        ui={ui}
       />
     </div>
   );

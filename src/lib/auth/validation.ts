@@ -46,6 +46,25 @@ export const signupSchema = z
     }
   });
 
+export const forgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
+export const resetPasswordSchema = z
+  .object({
+    password: signupPasswordSchema,
+    confirmPassword: z.string().min(1, "confirm_password_required"),
+  })
+  .superRefine(({ password, confirmPassword }, context) => {
+    if (password !== confirmPassword) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["confirmPassword"],
+        message: "passwords_do_not_match",
+      });
+    }
+  });
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type SignupInput = z.infer<typeof signupSchema>;
 export type AuthFieldName = "email" | "password" | "confirmPassword";

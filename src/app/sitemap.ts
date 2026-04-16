@@ -15,7 +15,9 @@ const staticRoutes = [
   "/signup",
   "/verify",
   "/dashboard",
-  "/dashboard/projects",
+  "/about",
+  "/faq",
+  "/feedback",
   "/dashboard/profile",
   "/articles",
 ];

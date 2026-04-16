@@ -495,3 +495,79 @@ export async function getPublicProfilePageData(
     isFollowing: Boolean(followResponse.data),
   };
 }
+
+export type UserProjectsPageResult = {
+  profile: {
+    name: string | null;
+    username: string | null;
+  };
+  projects: Array<{
+    id: string;
+    title: string;
+    slug: string | null;
+    description: string | null;
+    score: number | null;
+    cover_url: string | null;
+  }>;
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export async function getUserProjectsPage(
+  username: string,
+  options: { page: number; perPage: number },
+): Promise<UserProjectsPageResult | null> {
+  noStore();
+  const supabase = await createClient();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("user_id, username, name, moderation_status")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (!profile) {
+    return null;
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isOwner = user?.id === profile.user_id;
+
+  if (!isOwner && !isPublicModerationStatus(profile.moderation_status)) {
+    return null;
+  }
+
+  const { count } = await supabase
+    .from("projects")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", profile.user_id)
+    .eq("moderation_status", "approved");
+
+  const totalCount = count || 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / options.perPage));
+  const currentPage = Math.max(1, Math.min(options.page, totalPages));
+  const from = (currentPage - 1) * options.perPage;
+  const to = from + options.perPage - 1;
+
+  const { data: projects } = await supabase
+    .from("projects")
+    .select("id, title, slug, description, score, cover_url")
+    .eq("owner_id", profile.user_id)
+    .eq("moderation_status", "approved")
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  return {
+    profile: {
+      name: profile.name,
+      username: profile.username,
+    },
+    projects: (projects || []) as UserProjectsPageResult["projects"],
+    totalCount,
+    currentPage,
+    totalPages,
+  };
+}

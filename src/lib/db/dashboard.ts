@@ -69,6 +69,7 @@ type ProfileRelationRow = {
 
 export type UserDashboardStats = {
   name: string | null;
+  username: string | null;
   projectsCount: number;
   articlesCount: number;
   followersCount: number;
@@ -127,6 +128,41 @@ export type DashboardStats = {
   topSkills: Array<{
     name: string;
     value: number;
+  }>;
+  experienceBreakdown: Array<{
+    key: string;
+    label: string;
+    value: number;
+  }>;
+  salaryBreakdown: Array<{
+    key: string;
+    label: string;
+    value: number;
+  }>;
+  workFormatBreakdown: Array<{
+    key: string;
+    label: string;
+    value: number;
+  }>;
+  employmentTypeBreakdown: Array<{
+    key: string;
+    label: string;
+    value: number;
+  }>;
+  contactMethodBreakdown: Array<{
+    key: string;
+    label: string;
+    value: number;
+  }>;
+  salaryByCountry: Array<{
+    label: string;
+    avgSalary: number;
+    count: number;
+  }>;
+  salaryByCategory: Array<{
+    label: string;
+    avgSalary: number;
+    count: number;
   }>;
 };
 
@@ -308,6 +344,33 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const countryCounts = new Map<string, number>();
   const categoryCounts = new Map<string, number>();
   const completionCounts = new Map<"starter" | "growing" | "complete", number>([["starter", 0], ["growing", 0], ["complete", 0]]);
+  const experienceCounts = new Map<string, number>();
+  const salaryCounts = new Map<string, number>();
+  const workFormatCounts = new Map<string, number>();
+  const employmentTypeCounts = new Map<string, number>();
+  const contactMethodCounts = new Map<string, number>();
+  const salaryByCountryAcc = new Map<string, { total: number; count: number }>();
+  const salaryByCategoryAcc = new Map<string, { total: number; count: number }>();
+
+  function parseSalaryNumeric(raw: string | null): number | null {
+    if (!raw) return null;
+    const numericMatch = raw.match(/\d[\d\s.,]*/);
+    if (!numericMatch) return null;
+    const cleaned = numericMatch[0].replace(/[\s,]/g, "").replace(/\.+$/, "");
+    const value = Number.parseInt(cleaned, 10);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }
+
+  function bucketSalary(raw: string | null): string | null {
+    const numeric = parseSalaryNumeric(raw);
+    if (numeric === null) return raw ? "custom" : null;
+    if (numeric < 500) return "under_500";
+    if (numeric < 1000) return "500_1000";
+    if (numeric < 2000) return "1000_2000";
+    if (numeric < 3500) return "2000_3500";
+    if (numeric < 5000) return "3500_5000";
+    return "5000_plus";
+  }
 
   const completionScores = profiles.map((profile) => {
     const score = getProfileCompletionScore(profile, profileSkillCountMap, profileLanguageCountMap, profileEducationCountMap, profileCertificateCountMap, profileQaCountMap, profileWorkExperienceCountMap);
@@ -322,6 +385,46 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       const categoryName = categoryMap.get(profile.category_id) as string;
       categoryCounts.set(categoryName, (categoryCounts.get(categoryName) || 0) + 1);
     }
+
+    if (profile.experience_level) {
+      const expKey = profile.experience_level;
+      experienceCounts.set(expKey, (experienceCounts.get(expKey) || 0) + 1);
+    }
+
+    const salaryBucket = bucketSalary(profile.salary_expectations);
+    if (salaryBucket) {
+      salaryCounts.set(salaryBucket, (salaryCounts.get(salaryBucket) || 0) + 1);
+    }
+
+    for (const format of profile.work_formats || []) {
+      if (!format) continue;
+      workFormatCounts.set(format, (workFormatCounts.get(format) || 0) + 1);
+    }
+
+    for (const type of profile.employment_types || []) {
+      if (!type) continue;
+      employmentTypeCounts.set(type, (employmentTypeCounts.get(type) || 0) + 1);
+    }
+
+    if (profile.preferred_contact_method) {
+      const method = profile.preferred_contact_method;
+      contactMethodCounts.set(method, (contactMethodCounts.get(method) || 0) + 1);
+    }
+
+    const numericSalary = parseSalaryNumeric(profile.salary_expectations);
+    if (numericSalary !== null) {
+      if (profile.country_id && countryMap.get(profile.country_id)) {
+        const cName = countryMap.get(profile.country_id) as string;
+        const prev = salaryByCountryAcc.get(cName) || { total: 0, count: 0 };
+        salaryByCountryAcc.set(cName, { total: prev.total + numericSalary, count: prev.count + 1 });
+      }
+      if (profile.category_id && categoryMap.get(profile.category_id)) {
+        const dName = categoryMap.get(profile.category_id) as string;
+        const prev = salaryByCategoryAcc.get(dName) || { total: 0, count: 0 };
+        salaryByCategoryAcc.set(dName, { total: prev.total + numericSalary, count: prev.count + 1 });
+      }
+    }
+
     return score;
   });
 
@@ -382,11 +485,34 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     },
     monthlyActivity: monthKeys.map((key) => ({ key, profiles: profileMonthly.get(key) || 0, projects: projectsMonthly.get(key) || 0, votes: votesMonthly.get(key) || 0 })),
     statusBreakdown: [...statusCounts.entries()].map(([key, value]) => ({ key, value })).sort((left, right) => right.value - left.value),
-    categoryBreakdown: [...categoryCounts.entries()].map(([label, value]) => ({ label, value })).sort((left, right) => right.value - left.value).slice(0, 8),
-    countryBreakdown: [...countryCounts.entries()].map(([label, value]) => ({ label, value })).sort((left, right) => right.value - left.value).slice(0, 8),
+    categoryBreakdown: [...categoryCounts.entries()].map(([label, value]) => ({ label, value })).sort((left, right) => right.value - left.value).slice(0, 10),
+    countryBreakdown: [...countryCounts.entries()].map(([label, value]) => ({ label, value })).sort((left, right) => right.value - left.value).slice(0, 10),
     completionBreakdown: [...completionCounts.entries()].map(([key, value]) => ({ key, value })),
     topProjects,
     topSkills: [...combinedSkillCounts.entries()].map(([name, value]) => ({ name, value })).sort((left, right) => right.value - left.value).slice(0, 14),
+    experienceBreakdown: [...experienceCounts.entries()]
+      .map(([key, value]) => ({ key, label: key, value }))
+      .sort((left, right) => right.value - left.value),
+    salaryBreakdown: [...salaryCounts.entries()]
+      .map(([key, value]) => ({ key, label: key, value }))
+      .sort((left, right) => right.value - left.value),
+    workFormatBreakdown: [...workFormatCounts.entries()]
+      .map(([key, value]) => ({ key, label: key, value }))
+      .sort((left, right) => right.value - left.value),
+    employmentTypeBreakdown: [...employmentTypeCounts.entries()]
+      .map(([key, value]) => ({ key, label: key, value }))
+      .sort((left, right) => right.value - left.value),
+    contactMethodBreakdown: [...contactMethodCounts.entries()]
+      .map(([key, value]) => ({ key, label: key, value }))
+      .sort((left, right) => right.value - left.value),
+    salaryByCountry: [...salaryByCountryAcc.entries()]
+      .map(([label, data]) => ({ label, avgSalary: Math.round(data.total / data.count), count: data.count }))
+      .sort((left, right) => right.avgSalary - left.avgSalary)
+      .slice(0, 10),
+    salaryByCategory: [...salaryByCategoryAcc.entries()]
+      .map(([label, data]) => ({ label, avgSalary: Math.round(data.total / data.count), count: data.count }))
+      .sort((left, right) => right.avgSalary - left.avgSalary)
+      .slice(0, 10),
   };
 }
 
@@ -403,7 +529,7 @@ export async function getUserDashboardStats(userId: string): Promise<UserDashboa
   ] = await Promise.all([
     supabase.from("profiles").select("id, name, username").eq("user_id", userId).maybeSingle(),
     supabase.from("projects").select("id").eq("owner_id", userId),
-    supabase.from("articles").select("id, views_count").eq("author_id", userId),
+    supabase.from("articles").select("id, views_count").eq("author_user_id", userId),
     supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_user_id", userId),
     supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_user_id", userId),
     supabase.from("bookmarks").select("id", { count: "exact", head: true }).eq("user_id", userId),
@@ -431,6 +557,7 @@ export async function getUserDashboardStats(userId: string): Promise<UserDashboa
 
   return {
     name: profile?.name || profile?.username || null,
+    username: profile?.username || null,
     projectsCount: userProjects.length,
     articlesCount: userArticles.length,
     followersCount: followersResponse.count || 0,

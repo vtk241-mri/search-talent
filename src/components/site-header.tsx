@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import logoImage from "../../public/logo.webp";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import NavLink from "@/components/nav-link";
@@ -32,6 +33,65 @@ export default function SiteHeader({
   initialTheme,
 }: SiteHeaderProps) {
   const pathname = stripLocaleFromPathname(usePathname() || "/");
+  const profileMenuRef = useRef<HTMLDetailsElement>(null);
+  const mobileMenuRef = useRef<HTMLDetailsElement>(null);
+
+  const closeProfileMenu = () => {
+    if (profileMenuRef.current) {
+      profileMenuRef.current.open = false;
+    }
+  };
+
+  const closeMobileMenu = () => {
+    if (mobileMenuRef.current) {
+      mobileMenuRef.current.open = false;
+    }
+  };
+
+  // Close menus when clicking outside or pressing ESC.
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (
+        profileMenuRef.current?.open &&
+        !profileMenuRef.current.contains(target)
+      ) {
+        profileMenuRef.current.open = false;
+      }
+      if (
+        mobileMenuRef.current?.open &&
+        !mobileMenuRef.current.contains(target)
+      ) {
+        mobileMenuRef.current.open = false;
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (profileMenuRef.current?.open) {
+        profileMenuRef.current.open = false;
+      }
+      if (mobileMenuRef.current?.open) {
+        mobileMenuRef.current.open = false;
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  // Close both menus when the route changes (e.g. after navigation).
+  useEffect(() => {
+    closeProfileMenu();
+    closeMobileMenu();
+  }, [pathname]);
   const articlesLabel =
     dictionary.nav.search === "Search" ? "Articles" : "Статті";
   const talentsLabel =
@@ -46,8 +106,9 @@ export default function SiteHeader({
   const dashboardLinks = viewer
     ? [
         { href: "/dashboard", label: dictionary.nav.dashboard },
-        { href: "/projects/new", label: dictionary.nav.myProjects },
-        { href: "/articles/new", label: articlesLabel },
+        ...(viewer.username
+          ? [{ href: `/u/${viewer.username}/projects`, label: dictionary.nav.myProjects }]
+          : []),
       ]
     : [];
   const profileLinks = viewer
@@ -116,7 +177,7 @@ export default function SiteHeader({
         <div className="hidden items-center gap-2 lg:flex">
           {viewer ? (
             <>
-              <details className="relative">
+              <details ref={profileMenuRef} className="relative">
                 <summary className={menuTriggerClasses(profileActive)}>
                   <span className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-[color:var(--surface-muted)] text-xs font-semibold text-[color:var(--foreground)]">
                     {viewer.avatarUrl ? (
@@ -150,6 +211,7 @@ export default function SiteHeader({
                       <LocalizedLink
                         key={link.href}
                         href={link.href}
+                        onClick={closeProfileMenu}
                         className={menuLinkClasses(
                           pathname === link.href ||
                             pathname.startsWith(`${link.href}/`),
@@ -162,6 +224,7 @@ export default function SiteHeader({
                       <LocalizedLink
                         key={`${link.href}-${link.label}`}
                         href={link.href}
+                        onClick={closeProfileMenu}
                         className={menuLinkClasses(
                           pathname === link.href ||
                             pathname.startsWith(`${link.href}/`),
@@ -216,7 +279,7 @@ export default function SiteHeader({
           )}
         </div>
 
-        <details className="relative ml-auto lg:hidden">
+        <details ref={mobileMenuRef} className="relative ml-auto lg:hidden">
           <summary
             className={`${buttonStyles({
               size: "sm",
@@ -234,6 +297,7 @@ export default function SiteHeader({
                   href={link.href}
                   label={link.label}
                   mobile
+                  onClick={closeMobileMenu}
                 />
               ))}
             </div>
@@ -276,6 +340,7 @@ export default function SiteHeader({
                       <LocalizedLink
                         key={link.href}
                         href={link.href}
+                        onClick={closeMobileMenu}
                         className={menuLinkClasses(
                           pathname === link.href ||
                             pathname.startsWith(`${link.href}/`),
@@ -288,6 +353,7 @@ export default function SiteHeader({
                       <LocalizedLink
                         key={`${link.href}-${link.label}`}
                         href={link.href}
+                        onClick={closeMobileMenu}
                         className={menuLinkClasses(
                           pathname === link.href ||
                             pathname.startsWith(`${link.href}/`),
@@ -340,6 +406,7 @@ export default function SiteHeader({
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <LocalizedLink
                     href="/login"
+                    onClick={closeMobileMenu}
                     className={buttonStyles({
                       variant: "secondary",
                       className: "justify-center",
@@ -350,6 +417,7 @@ export default function SiteHeader({
 
                   <LocalizedLink
                     href="/signup"
+                    onClick={closeMobileMenu}
                     className={buttonStyles({ className: "justify-center" })}
                   >
                     {dictionary.nav.signup}

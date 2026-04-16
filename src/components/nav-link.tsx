@@ -8,6 +8,7 @@ type NavLinkProps = {
   href: string;
   label: string;
   mobile?: boolean;
+  onClick?: () => void;
 };
 
 function isActivePath(pathname: string, href: string) {
@@ -22,6 +23,7 @@ export default function NavLink({
   href,
   label,
   mobile = false,
+  onClick,
 }: NavLinkProps) {
   const pathname = stripLocaleFromPathname(usePathname() || "/");
   const isActive = isActivePath(pathname, href);
@@ -35,7 +37,11 @@ export default function NavLink({
     : "text-[color:var(--muted-foreground)] hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--foreground)]";
 
   return (
-    <LocalizedLink href={href} className={`${baseClasses} ${stateClasses}`}>
+    <LocalizedLink
+      href={href}
+      className={`${baseClasses} ${stateClasses}`}
+      onClick={onClick}
+    >
       {label}
     </LocalizedLink>
   );

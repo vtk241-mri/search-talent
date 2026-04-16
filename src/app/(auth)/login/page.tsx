@@ -168,6 +168,15 @@ export default function LoginPage() {
             <p className="text-sm text-red-500">{fieldErrors.password}</p>
           )}
 
+          <div className="flex justify-end">
+            <LocalizedLink
+              href="/forgot-password"
+              className="text-sm app-muted hover:text-[color:var(--foreground)]"
+            >
+              {dictionary.auth.forgotPassword.link}
+            </LocalizedLink>
+          </div>
+
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <Button type="submit" disabled={loading} className="justify-center">

@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { z } from "zod";
 import { parseJsonRequest } from "@/lib/validation/request";
+import { sendEmail } from "@/lib/email/resend";
+import { buildNewFollowerEmail } from "@/lib/email/templates";
+import { defaultLocale, isLocale, type Locale } from "@/lib/i18n/config";
+import { getSiteUrl } from "@/lib/seo";
 
 const followPayloadSchema = z.object({
   followingUserId: z.string().uuid(),
@@ -63,5 +68,79 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
+  // Fire-and-forget: notify the followed user by email. Never block the
+  // response or surface errors to the follower.
+  void notifyNewFollower({
+    followerUserId: user.id,
+    followingUserId,
+  }).catch((err) => {
+    console.error("[follows] notify failed", err);
+  });
+
   return NextResponse.json({ following: true });
+}
+
+async function notifyNewFollower({
+  followerUserId,
+  followingUserId,
+}: {
+  followerUserId: string;
+  followingUserId: string;
+}) {
+  const admin = createAdminClient();
+  if (!admin) {
+    // No service role configured — skip notifications silently.
+    return;
+  }
+
+  const [{ data: followerProfile }, { data: followingProfile }] =
+    await Promise.all([
+      admin
+        .from("profiles")
+        .select("name, username, headline")
+        .eq("user_id", followerUserId)
+        .maybeSingle(),
+      admin
+        .from("profiles")
+        .select("name, username")
+        .eq("user_id", followingUserId)
+        .maybeSingle(),
+    ]);
+
+  const { data: followingAuth } =
+    await admin.auth.admin.getUserById(followingUserId);
+
+  const recipientEmail = followingAuth?.user?.email;
+  if (!recipientEmail) {
+    return;
+  }
+
+  const rawLocale =
+    (followingAuth?.user?.user_metadata?.locale as string | undefined) ||
+    defaultLocale;
+  const locale: Locale = isLocale(rawLocale) ? rawLocale : defaultLocale;
+
+  const followerName =
+    followerProfile?.name?.trim() ||
+    followerProfile?.username ||
+    "Someone";
+  const recipientName =
+    followingProfile?.name?.trim() || followingProfile?.username || "";
+
+  const siteUrl = getSiteUrl().replace(/\/$/, "");
+  const profilePath = followerProfile?.username
+    ? `/${locale}/u/${followerProfile.username}`
+    : `/${locale}/talents`;
+  const profileUrl = `${siteUrl}${profilePath}`;
+
+  const { subject, html, text } = buildNewFollowerEmail({
+    recipientName,
+    followerName,
+    followerUsername: followerProfile?.username ?? null,
+    followerHeadline: followerProfile?.headline ?? null,
+    profileUrl,
+    locale,
+  });
+
+  await sendEmail({ to: recipientEmail, subject, html, text });
 }

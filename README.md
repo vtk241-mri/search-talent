@@ -1,36 +1,304 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SearchTalent
 
-## Getting Started
+Платформа для пошуку IT-талантів, демонстрації портфоліо та публікації технічних статей. Двомовний інтерфейс (українська / англійська), авторизація через Supabase, модерація контенту, рейтинги та аналітика.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Технологічний стек
+
+| Технологія | Версія | Призначення |
+|---|---|---|
+| Next.js | 16.2.3 | React-фреймворк з App Router |
+| React | 19.2.3 | UI-бібліотека |
+| TypeScript | 5 | Типізація |
+| Tailwind CSS | 4 | Утилітарні стилі |
+| Supabase | 2.99.1 | PostgreSQL, авторизація, файлове сховище |
+| Zod | 4.3.6 | Валідація схем |
+| Resend | — | Email-розсилка (опціонально) |
+| Vercel Speed Insights | 2.0.0 | Моніторинг продуктивності |
+
+**Менеджер пакетів:** pnpm
+
+---
+
+## Структура проєкту
+
+```
+search-talent/
+├── public/                          # Статичні файли (logo, og-image, robots.txt)
+├── supabase/                        # SQL-міграції та схема БД
+├── src/
+│   ├── app/
+│   │   ├── [locale]/                # Локалізовані сторінки (uk, en)
+│   │   │   ├── (auth)/              # Авторизація (login, signup, verify, ...)
+│   │   │   ├── dashboard/           # Панель користувача
+│   │   │   ├── u/[username]/        # Публічний профіль
+│   │   │   ├── projects/            # Каталог проєктів
+│   │   │   ├── articles/            # Статті
+│   │   │   ├── talents/             # Пошук талантів
+│   │   │   ├── search/              # Глобальний пошук
+│   │   │   ├── profile/             # Редагування профілю
+│   │   │   ├── about/               # Про нас
+│   │   │   ├── faq/                 # FAQ
+│   │   │   ├── feedback/            # Зворотний зв'язок
+│   │   │   ├── terms/               # Умови використання
+│   │   │   ├── privacy/             # Політика конфіденційності
+│   │   │   ├── cookies/             # Політика cookies
+│   │   │   └── legal/               # Юридичний хаб
+│   │   ├── api/                     # API-ендпоінти
+│   │   ├── layout.tsx               # Кореневий layout
+│   │   ├── sitemap.ts               # XML Sitemap
+│   │   └── globals.css              # Глобальні стилі та Tailwind-тема
+│   ├── components/
+│   │   ├── ui/                      # Базові UI-компоненти (Button, FormSelect, ...)
+│   │   └── [feature-components]     # Компоненти фічей
+│   ├── lib/
+│   │   ├── auth/                    # Валідація авторизації
+│   │   ├── db/                      # Запити до бази даних
+│   │   ├── email/                   # Email-сервіс (Resend)
+│   │   ├── i18n/                    # Інтернаціоналізація
+│   │   ├── security/                # CSP, заголовки безпеки
+│   │   ├── supabase/                # Клієнти Supabase (client, server, admin)
+│   │   ├── validation/              # Zod-схеми валідації
+│   │   └── [utilities]              # Допоміжні модулі
+│   └── types/                       # TypeScript-типи
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Основні можливості
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Пошук талантів
 
-## Learn More
+Фільтрація за навичками, досвідом, країною, форматом роботи, рівнем зарплати. Збереження пошукових запитів. Рейтинги найкращих розробників.
 
-To learn more about Next.js, take a look at the following resources:
+### Портфоліо проєктів
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Створення проєктів із описом, технологіями, медіа (зображення/відео), посиланнями на репозиторій та демо. Рейтингова система з лайками/дизлайками. Коментарі.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Публічні профілі
 
-## Deploy on Vercel
+Кастомізовані профілі з секціями: біографія, досвід роботи, освіта, сертифікати, навички, мови, Q&A, контакти. Налаштування видимості секцій, теми оформлення (кольори, шрифти, фон), експорт у PDF.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Статті
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Публікація технічних статей із категоріями (новини, гайди, кейси, кар'єра). Лайки, перегляди, коментарі, розрахунок часу читання.
+
+### Соціальні функції
+
+- Підписка на авторів (follow/unfollow) з email-сповіщеннями
+- Збереження профілів та проєктів (bookmarks)
+- Голосування за профілі та проєкти
+- Коментарі до проєктів та статей
+- Скарги на контент
+
+### Dashboard
+
+Аналітика: кількість проєктів, статей, підписників, переглядів, лайків. Загальна статистика платформи з графіками активності по місяцях. Управління проєктами, статтями, збереженими елементами, підписками.
+
+### Модерація
+
+Система скарг на контент (профілі, проєкти, статті). Причини: порушення авторських прав, неприйнятний контент, спам, харасмент тощо. Автоматичний пріоритет (normal/high/urgent). Черга модерації для адміністраторів. Статуси: approved, under_review, restricted, removed.
+
+---
+
+## Маршрути
+
+### Публічні сторінки
+
+| Маршрут | Опис |
+|---|---|
+| `/` | Головна (лідерборди, виклик до дії) |
+| `/talents` | Пошук талантів з фільтрами |
+| `/projects` | Каталог проєктів |
+| `/projects/[slug]` | Сторінка проєкту |
+| `/articles` | Список статей |
+| `/articles/[slug]` | Сторінка статті |
+| `/u/[username]` | Публічний профіль |
+| `/u/[username]/projects` | Проєкти користувача |
+| `/search` | Глобальний пошук |
+| `/about` | Про нас |
+| `/faq` | Часті запитання |
+| `/feedback` | Зворотний зв'язок |
+| `/terms` | Умови використання |
+| `/privacy` | Політика конфіденційності |
+| `/cookies` | Політика cookies |
+
+### Авторизація
+
+| Маршрут | Опис |
+|---|---|
+| `/login` | Вхід (email/пароль, Google, GitHub) |
+| `/signup` | Реєстрація |
+| `/verify` | Підтвердження email |
+| `/forgot-password` | Відновлення паролю |
+| `/reset-password` | Скидання паролю |
+
+### Захищені сторінки (потрібна авторизація)
+
+| Маршрут | Опис |
+|---|---|
+| `/dashboard` | Панель користувача з аналітикою |
+| `/dashboard/following` | Підписки |
+| `/dashboard/saved` | Збережені елементи |
+| `/profile/edit` | Редагування профілю |
+| `/projects/new` | Створення проєкту |
+| `/projects/edit/[id]` | Редагування проєкту |
+| `/articles/new` | Створення статті |
+| `/articles/edit/[id]` | Редагування статті |
+| `/dashboard/moderation` | Черга модерації (тільки адміни) |
+
+> Усі маршрути мають префікс `/[locale]/` (наприклад, `/uk/projects`, `/en/talents`).
+
+---
+
+## API-ендпоінти
+
+### Авторизація
+
+| Метод | Шлях | Опис |
+|---|---|---|
+| GET | `/api/auth/callback` | OAuth-колбек (Google, GitHub) |
+| POST | `/api/auth/logout` | Вихід |
+| POST | `/api/email-verification` | Перевірка email |
+
+### Профілі
+
+| Метод | Шлях | Опис |
+|---|---|---|
+| GET/POST/PATCH | `/api/profile` | CRUD профілю |
+| GET/POST | `/api/profile-vote` | Голосування за профілі |
+| GET/POST | `/api/follows` | Підписки |
+| GET/POST | `/api/bookmarks` | Збережені елементи |
+
+### Проєкти
+
+| Метод | Шлях | Опис |
+|---|---|---|
+| GET/POST/PATCH/DELETE | `/api/projects` | CRUD проєктів |
+| GET/PATCH/DELETE | `/api/projects/[id]` | Операції з проєктом |
+| POST | `/api/projects/[id]/comments` | Коментарі до проєкту |
+| GET/POST | `/api/top-projects` | Топ проєктів |
+| POST | `/api/vote` | Голосування |
+
+### Статті
+
+| Метод | Шлях | Опис |
+|---|---|---|
+| GET/POST | `/api/articles` | Список/створення |
+| GET/PATCH/DELETE | `/api/articles/[id]` | CRUD статті |
+| POST | `/api/articles/[id]/like` | Лайк статті |
+| GET | `/api/articles/[id]/view` | Перегляд статті |
+| POST | `/api/articles/[id]/comments` | Коментарі |
+
+### Пошук та інше
+
+| Метод | Шлях | Опис |
+|---|---|---|
+| GET | `/api/search` | Глобальний пошук |
+| GET | `/api/top-creators` | Топ авторів |
+| POST | `/api/reports` | Скарга на контент |
+| POST | `/api/feedback` | Зворотний зв'язок |
+| GET/POST | `/api/saved-searches` | Збережені пошуки |
+
+### Адміністрування
+
+| Метод | Шлях | Опис |
+|---|---|---|
+| GET/POST | `/api/admin/moderation` | Модерація контенту |
+| GET/PATCH | `/api/admin/articles/[id]` | Управління статтями |
+| POST | `/api/admin/refresh-scores` | Перерахунок рейтингів |
+
+---
+
+## Інтернаціоналізація (i18n)
+
+Підтримувані мови: **українська** (uk, за замовчуванням), **англійська** (en).
+
+- URL-формат: `/{locale}/{route}` (наприклад, `/uk/projects`, `/en/talents`)
+- Словники: `src/lib/i18n/dictionaries.ts`
+- Серверні компоненти: `getDictionary(locale)`
+- Клієнтські компоненти: хук `useDictionary()`
+- Визначення мови: cookie `locale` → заголовок `Accept-Language` → `uk`
+
+---
+
+## Авторизація
+
+Supabase Auth із трьома методами входу:
+
+- **Email/пароль** — реєстрація з підтвердженням email
+- **Google OAuth** — вхід через Google
+- **GitHub OAuth** — вхід через GitHub
+
+Вимоги до паролю: 8–72 символи, літери верхнього та нижнього регістру, цифри.
+
+Захищені маршрути (`/dashboard`, `/profile/edit`, `/projects/new` тощо) перенаправляють на `/login` для неавторизованих користувачів.
+
+---
+
+## Рейтингова система
+
+Оцінювання профілів та проєктів через систему ваг:
+
+**Профілі:**
+- Повнота профілю — 25%
+- Портфоліо — 30%
+- Довіра спільноти (голоси) — 20%
+- Продуктивність — 15%
+- Технічна широта — 10%
+
+**Проєкти:**
+- Довіра спільноти — 35%
+- Якість контенту — 30%
+- Медіа — 15%
+- Технічна широта — 10%
+- Свіжість — 10%
+
+Використовується інтервал довіри Вілсона для голосів, затухання у часі, окремі рейтинги all-time та за місяць.
+
+---
+
+## Безпека
+
+- **Row-Level Security (RLS)** на всіх таблицях Supabase
+- **Content Security Policy (CSP)** — дозволяє лише Supabase, Resend, Vercel
+- **HSTS** — включено у продакшні (2 роки)
+- **Zod-валідація** всіх вхідних даних
+- **Rate limiting** на API-ендпоінтах (in-memory sliding window)
+- **HTML-санітизація** користувацького контенту
+- **Permissions-Policy** — вимкнено камеру, мікрофон, геолокацію
+
+---
+
+## Cookie Consent
+
+GDPR-сумісна система згоди на cookies із 4 категоріями:
+
+- **Essential** — обов'язкові (авторизація, безпека)
+- **Preferences** — тема, мова
+- **Analytics** — аналітика (підготовлено)
+- **Marketing** — маркетинг (підготовлено)
+
+Банер із варіантами: відхилити необов'язкові, обмежене використання, налаштувати, дозволити всі.
+
+---
+
+## Конфігурація зображень
+
+Next.js Image Optimization із підтримкою:
+- Supabase Storage (публічні файли)
+- Google аватари (`lh3.googleusercontent.com`)
+- GitHub аватари (`avatars.githubusercontent.com`)
+- Формати: AVIF, WebP
+- Кеш: 30 днів
+
+---
+
+## SEO
+
+- Мета-теги (title, description, Open Graph) для кожної сторінки
+- XML Sitemap (`/sitemap.xml`) — статичні маршрути + динамічні (профілі, проєкти, статті)
+- Schema.org розмітка: Organization, WebSite (SearchAction), Person, CreativeWork, Article, BreadcrumbList
+- Канонічні URL з hreflang-альтернативами для обох мов
+- Google Site Verification

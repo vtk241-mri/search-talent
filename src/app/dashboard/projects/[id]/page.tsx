@@ -7,5 +7,5 @@ export default async function LegacyDashboardProjectEditRedirect({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  redirect(`/${defaultLocale}/dashboard/projects/${id}`);
+  redirect(`/${defaultLocale}/projects/edit/${id}`);
 }

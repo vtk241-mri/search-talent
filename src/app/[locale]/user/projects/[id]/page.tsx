@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createLocalePath, isLocale } from "@/lib/i18n/config";
 
-export default async function LegacyDashboardProjectEditRedirect({
+export default async function UserProjectEditRedirect({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
