@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import PublicProfileShowcase from "@/components/public-profile-showcase";
 import { getPublicProfilePageData } from "@/lib/db/public";
 import { isLocale } from "@/lib/i18n/config";
+import { getCurrentViewerRole } from "@/lib/moderation-server";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import {
   buildMetadata,
@@ -73,7 +74,10 @@ export default async function PublicProfilePage({
 }) {
   const { locale, username } = await getRouteParams(params);
   const dictionary = getDictionary(locale);
-  const data = await getPublicProfilePageData(username);
+  const [data, viewer] = await Promise.all([
+    getPublicProfilePageData(username),
+    getCurrentViewerRole(),
+  ]);
 
   if (!data) {
     notFound();
@@ -110,7 +114,12 @@ export default async function PublicProfilePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <PublicProfileShowcase locale={locale} dictionary={dictionary} data={data} />
+      <PublicProfileShowcase
+        locale={locale}
+        dictionary={dictionary}
+        data={data}
+        isAdmin={viewer.isAdmin}
+      />
     </>
   );
 }

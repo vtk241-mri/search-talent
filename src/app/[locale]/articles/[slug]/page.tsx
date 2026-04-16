@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import AdminContentQuickActions from "@/components/admin-content-quick-actions";
 import ArticleInteractions from "@/components/article-interactions";
 import ArticlePinButton from "@/components/article-pin-button";
 import ReportArticleButton from "@/components/report-article-button";
@@ -86,6 +87,12 @@ export default async function ArticleDetailPage({
         category: "Категорія",
         noCategory: "Без категорії",
         moderatorNote: "Нотатка модератора",
+        adminDelete: "Видалити як адмін",
+        adminConfirmTitle: "Видалити статтю як адміністратор?",
+        adminConfirmMessage:
+          "Дію не можна скасувати. Стаття буде прибрана назавжди.",
+        adminConfirmButton: "Видалити",
+        cancel: "Скасувати",
       }
     : {
         back: "All articles",
@@ -99,6 +106,12 @@ export default async function ArticleDetailPage({
         category: "Category",
         noCategory: "No category",
         moderatorNote: "Moderator note",
+        adminDelete: "Delete as admin",
+        adminConfirmTitle: "Delete article as administrator?",
+        adminConfirmMessage:
+          "This action cannot be undone. The article will be removed permanently.",
+        adminConfirmButton: "Delete",
+        cancel: "Cancel",
       };
 
   const siteUrl = getMetadataBase().toString().replace(/\/$/, "");
@@ -162,8 +175,21 @@ export default async function ArticleDetailPage({
                 pendingLabel={ui.deleting}
                 confirmMessage={ui.confirmDelete}
                 errorFallback={ui.deleteFailed}
-                redirectHref="/articles/new"
+                redirectHref={
+                  article.author?.username
+                    ? `/u/${article.author.username}/articles`
+                    : "/articles"
+                }
                 variant="secondary"
+              />
+            ) : null}
+            {!isOwner && isAdmin ? (
+              <AdminContentQuickActions
+                targetType="article"
+                targetId={article.id}
+                currentStatus={article.moderationStatus}
+                locale={safeLocale}
+                redirectAfterDelete="/articles"
               />
             ) : null}
             {article.category ? (

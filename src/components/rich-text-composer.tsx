@@ -10,6 +10,9 @@ import {
   type ReactNode,
 } from "react";
 import dynamic from "next/dynamic";
+import emojiData from "@emoji-mart/data";
+import emojiI18nEn from "@emoji-mart/data/i18n/en.json";
+import emojiI18nUk from "@emoji-mart/data/i18n/uk.json";
 import {
   extractPlainTextFromRichText,
   extractYouTubeVideoId,
@@ -561,6 +564,8 @@ export default function RichTextComposer({
               {emojiOpen && (
                 <div className="absolute left-0 top-[calc(100%+0.5rem)] z-30">
                   <EmojiPicker
+                    data={emojiData}
+                    i18n={isUk ? emojiI18nUk : emojiI18nEn}
                     locale={isUk ? "uk" : "en"}
                     theme="dark"
                     previewPosition="none"

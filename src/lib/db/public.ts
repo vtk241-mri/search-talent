@@ -194,7 +194,18 @@ export async function getPublicProjectPageData(
   const typedProject = project as PublicProjectRow;
   const isOwner = user?.id === typedProject.owner_id;
 
-  if (!isOwner && !isPublicModerationStatus(typedProject.moderation_status)) {
+  let isAdmin = false;
+
+  if (user && !isOwner) {
+    const { data: adminRecord } = await supabase
+      .from("platform_admins")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    isAdmin = Boolean(adminRecord);
+  }
+
+  if (!isOwner && !isAdmin && !isPublicModerationStatus(typedProject.moderation_status)) {
     return null;
   }
 
@@ -313,7 +324,18 @@ export async function getPublicProfilePageData(
   const typedProfile = profile as PublicProfileRow;
   const isOwner = user?.id === typedProfile.user_id;
 
-  if (!isOwner && !isPublicModerationStatus(typedProfile.moderation_status)) {
+  let isAdmin = false;
+
+  if (user && !isOwner) {
+    const { data: adminRecord } = await supabase
+      .from("platform_admins")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    isAdmin = Boolean(adminRecord);
+  }
+
+  if (!isOwner && !isAdmin && !isPublicModerationStatus(typedProfile.moderation_status)) {
     return null;
   }
 
@@ -513,6 +535,206 @@ export type UserProjectsPageResult = {
   currentPage: number;
   totalPages: number;
 };
+
+export type UserArticlesPageResult = {
+  profile: {
+    name: string | null;
+    username: string | null;
+  };
+  articles: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string | null;
+    content: string | null;
+    cover_image_url: string | null;
+    hero_video_url: string | null;
+    views_count: number;
+    likes_count: number;
+    comments_count: number;
+    published_at: string | null;
+    created_at: string | null;
+    pinned_until: string | null;
+    category: {
+      id: number;
+      slug: string;
+      name: string;
+      nameUk: string | null;
+      description: string | null;
+      adminOnly: boolean;
+    } | null;
+    author: {
+      userId: string;
+      username: string | null;
+      name: string | null;
+      avatarUrl: string | null;
+    } | null;
+  }>;
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+};
+
+export async function getUserArticlesPage(
+  username: string,
+  options: { page: number; perPage: number },
+): Promise<UserArticlesPageResult | null> {
+  noStore();
+  const supabase = await createClient();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("user_id, username, name, avatar_url, moderation_status")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (!profile) {
+    return null;
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isOwner = user?.id === profile.user_id;
+
+  if (!isOwner && !isPublicModerationStatus(profile.moderation_status)) {
+    return null;
+  }
+
+  const baseFilter = supabase
+    .from("articles")
+    .select("id", { count: "exact", head: true })
+    .eq("author_user_id", profile.user_id)
+    .eq("status", "published")
+    .eq("moderation_status", "approved");
+
+  const { count } = await baseFilter;
+
+  const totalCount = count || 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / options.perPage));
+  const currentPage = Math.max(1, Math.min(options.page, totalPages));
+  const from = (currentPage - 1) * options.perPage;
+  const to = from + options.perPage - 1;
+
+  const { data: articles } = await supabase
+    .from("articles")
+    .select(
+      "id, slug, title, excerpt, content, cover_image_url, hero_video_url, views_count, published_at, created_at, pinned_until, category_id",
+    )
+    .eq("author_user_id", profile.user_id)
+    .eq("status", "published")
+    .eq("moderation_status", "approved")
+    .order("published_at", { ascending: false })
+    .range(from, to);
+
+  const rows = (articles || []) as Array<{
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string | null;
+    content: string | null;
+    cover_image_url: string | null;
+    hero_video_url: string | null;
+    views_count: number | null;
+    published_at: string | null;
+    created_at: string | null;
+    pinned_until: string | null;
+    category_id: number | null;
+  }>;
+  const articleIds = rows.map((item) => item.id);
+  const categoryIds = Array.from(
+    new Set(
+      rows
+        .map((item) => item.category_id)
+        .filter((item): item is number => typeof item === "number"),
+    ),
+  );
+
+  const [likesResponse, commentsResponse, categoriesResponse] = await Promise.all([
+    articleIds.length > 0
+      ? supabase.from("article_likes").select("article_id").in("article_id", articleIds)
+      : Promise.resolve({ data: [] }),
+    articleIds.length > 0
+      ? supabase
+          .from("article_comments")
+          .select("article_id")
+          .in("article_id", articleIds)
+      : Promise.resolve({ data: [] }),
+    categoryIds.length > 0
+      ? supabase
+          .from("article_categories")
+          .select("id, slug, name, name_uk, description, admin_only")
+          .in("id", categoryIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const likeRows = (likesResponse.data || []) as Array<{ article_id: string }>;
+  const commentRows = (commentsResponse.data || []) as Array<{ article_id: string }>;
+  const categoryRows = (categoriesResponse.data || []) as Array<{
+    id: number;
+    slug: string;
+    name: string;
+    name_uk: string | null;
+    description: string | null;
+    admin_only: boolean | null;
+  }>;
+
+  const likesMap = new Map<string, number>();
+  for (const row of likeRows) {
+    likesMap.set(row.article_id, (likesMap.get(row.article_id) || 0) + 1);
+  }
+  const commentsMap = new Map<string, number>();
+  for (const row of commentRows) {
+    commentsMap.set(row.article_id, (commentsMap.get(row.article_id) || 0) + 1);
+  }
+  const categoryMap = new Map(
+    categoryRows.map((item) => [
+      item.id,
+      {
+        id: item.id,
+        slug: item.slug,
+        name: item.name,
+        nameUk: item.name_uk,
+        description: item.description,
+        adminOnly: Boolean(item.admin_only),
+      },
+    ]),
+  );
+
+  const author = {
+    userId: profile.user_id as string,
+    username: profile.username as string | null,
+    name: profile.name as string | null,
+    avatarUrl: (profile as { avatar_url: string | null }).avatar_url,
+  };
+
+  return {
+    profile: {
+      name: profile.name,
+      username: profile.username,
+    },
+    articles: rows.map((item) => ({
+      id: item.id,
+      slug: item.slug,
+      title: item.title,
+      excerpt: item.excerpt,
+      content: item.content,
+      cover_image_url: item.cover_image_url,
+      hero_video_url: item.hero_video_url,
+      views_count: item.views_count || 0,
+      likes_count: likesMap.get(item.id) || 0,
+      comments_count: commentsMap.get(item.id) || 0,
+      published_at: item.published_at,
+      created_at: item.created_at,
+      pinned_until: item.pinned_until,
+      category: item.category_id ? categoryMap.get(item.category_id) || null : null,
+      author,
+    })),
+    totalCount,
+    currentPage,
+    totalPages,
+  };
+}
 
 export async function getUserProjectsPage(
   username: string,

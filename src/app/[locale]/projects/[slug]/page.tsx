@@ -5,9 +5,11 @@ import OptimizedImage from "@/components/ui/optimized-image";
 import ProjectComments from "@/components/project-comments";
 import ProjectGallery from "@/components/project-gallery";
 import VoteButtons from "@/components/vote-buttons";
+import AdminContentQuickActions from "@/components/admin-content-quick-actions";
 import { ButtonLink } from "@/components/ui/Button";
 import { getPublicProjectPageData } from "@/lib/db/public";
 import { isLocale } from "@/lib/i18n/config";
+import { getCurrentViewerRole } from "@/lib/moderation-server";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import {
   buildMetadata,
@@ -130,7 +132,10 @@ export default async function PublicProjectPage({
 }) {
   const { locale, slug } = await getRouteParams(params);
   const dictionary = getDictionary(locale);
-  const data = await getPublicProjectPageData(slug);
+  const [data, viewer] = await Promise.all([
+    getPublicProjectPageData(slug),
+    getCurrentViewerRole(),
+  ]);
 
   if (!data) {
     notFound();
@@ -138,6 +143,7 @@ export default async function PublicProjectPage({
 
   const { owner, project, technologies, media, voteSummary, isAuthenticated, isOwner, isBookmarked } =
     data;
+  const isAdmin = viewer.isAdmin;
   const statusLabel = getStatusLabel(project.project_status, dictionary);
 
   const siteUrl = getMetadataBase().toString().replace(/\/$/, "");
@@ -187,6 +193,15 @@ export default async function PublicProjectPage({
                 <ButtonLink href={`/projects/edit/${project.id}`} size="sm">
                   {dictionary.projectPage.manageProject}
                 </ButtonLink>
+              )}
+              {!isOwner && isAdmin && (
+                <AdminContentQuickActions
+                  targetType="project"
+                  targetId={project.id}
+                  currentStatus={project.moderation_status}
+                  locale={locale}
+                  redirectAfterDelete="/projects"
+                />
               )}
             </div>
 

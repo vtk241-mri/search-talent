@@ -692,7 +692,7 @@ export default function DashboardAnalytics({
           <PersonalStatCard
             value={String(userStats.articlesCount)}
             label={dictionary.dashboard.myArticles}
-            href={`/${locale}/articles`}
+            href={userStats.username ? `/${locale}/u/${userStats.username}/articles` : `/${locale}/articles`}
             accent="bg-violet-500"
           />
           <PersonalStatCard

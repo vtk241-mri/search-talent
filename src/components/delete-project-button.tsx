@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import type { ButtonSize, ButtonVariant } from "@/components/ui/button-styles";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useLocalizedRouter } from "@/lib/i18n/client";
 
 type DeleteProjectButtonProps = {
@@ -10,10 +11,14 @@ type DeleteProjectButtonProps = {
   label: string;
   pendingLabel: string;
   confirmMessage: string;
+  confirmTitle?: string;
+  confirmButtonLabel?: string;
+  cancelLabel?: string;
   errorFallback: string;
   redirectHref?: string;
   size?: ButtonSize;
   variant?: ButtonVariant;
+  adminEndpoint?: boolean;
 };
 
 export default function DeleteProjectButton({
@@ -21,36 +26,42 @@ export default function DeleteProjectButton({
   label,
   pendingLabel,
   confirmMessage,
+  confirmTitle,
+  confirmButtonLabel,
+  cancelLabel,
   errorFallback,
   redirectHref,
   size = "sm",
   variant = "ghost",
+  adminEndpoint = false,
 }: DeleteProjectButtonProps) {
   const router = useLocalizedRouter();
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleDelete = async () => {
-    if (!window.confirm(confirmMessage)) {
-      return;
-    }
-
+  const handleConfirm = async () => {
     setIsDeleting(true);
     setErrorMessage(null);
 
     try {
-      const response = await fetch(`/api/projects/${projectId}`, {
-        method: "DELETE",
-      });
+      const endpoint = adminEndpoint
+        ? `/api/admin/projects/${projectId}`
+        : `/api/projects/${projectId}`;
+      const response = await fetch(endpoint, { method: "DELETE" });
 
-      const payload = (await response.json()) as {
+      const payload = (await response.json().catch(() => ({}))) as {
         error?: string;
       };
 
       if (!response.ok) {
         setErrorMessage(payload.error || errorFallback);
+        setIsDeleting(false);
         return;
       }
+
+      setDialogOpen(false);
+      setIsDeleting(false);
 
       if (redirectHref) {
         router.replace(redirectHref);
@@ -62,23 +73,42 @@ export default function DeleteProjectButton({
       setErrorMessage(
         error instanceof Error ? error.message : errorFallback,
       );
-    } finally {
       setIsDeleting(false);
     }
   };
 
   return (
-    <div className="space-y-2">
+    <>
       <Button
         variant={variant}
         size={size}
-        onClick={handleDelete}
+        onClick={() => {
+          setErrorMessage(null);
+          setDialogOpen(true);
+        }}
         disabled={isDeleting}
       >
         {isDeleting ? pendingLabel : label}
       </Button>
 
-      {errorMessage && <p className="text-sm text-rose-500">{errorMessage}</p>}
-    </div>
+      <ConfirmDialog
+        open={dialogOpen}
+        title={confirmTitle || label}
+        description={confirmMessage}
+        confirmLabel={confirmButtonLabel || label}
+        cancelLabel={cancelLabel || "Cancel"}
+        confirmVariant="primary"
+        pending={isDeleting}
+        pendingLabel={pendingLabel}
+        errorMessage={errorMessage}
+        onCancel={() => {
+          if (!isDeleting) {
+            setDialogOpen(false);
+            setErrorMessage(null);
+          }
+        }}
+        onConfirm={() => void handleConfirm()}
+      />
+    </>
   );
 }

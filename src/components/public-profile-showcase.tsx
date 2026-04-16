@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
+import AdminContentQuickActions from "@/components/admin-content-quick-actions";
 import BookmarkButton from "@/components/bookmark-button";
 import ExpandableProfileBio from "@/components/expandable-profile-bio";
 import FollowButton from "@/components/follow-button";
@@ -210,10 +211,12 @@ export default function PublicProfileShowcase({
   locale,
   dictionary,
   data,
+  isAdmin = false,
 }: {
   locale: string;
   dictionary: Dictionary;
   data: PublicProfilePageData;
+  isAdmin?: boolean;
 }) {
   const {
     profile,
@@ -269,6 +272,15 @@ export default function PublicProfileShowcase({
                     {dictionary.creatorProfile.backToSearch}
                   </ButtonLink>
                   {isOwner && <ButtonLink href="/profile/edit" size="sm">{dictionary.creatorProfile.editProfile}</ButtonLink>}
+                  {!isOwner && isAdmin && (
+                    <AdminContentQuickActions
+                      targetType="profile"
+                      targetId={profile.id}
+                      currentStatus={profile.moderation_status}
+                      locale={locale}
+                      redirectAfterDelete="/talents"
+                    />
+                  )}
                   <ProfilePdfExport data={data} />
                 </div>
 
