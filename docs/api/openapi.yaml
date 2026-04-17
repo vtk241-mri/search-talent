@@ -1,0 +1,546 @@
+openapi: 3.1.0
+info:
+  title: SearchTalent API
+  version: 1.0.0
+  summary: API documentation for selected SearchTalent endpoints
+  description: >
+    OpenAPI description for two implemented endpoints of the SearchTalent project.
+    The contract is based on the current Next.js route handlers in the repository.
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+tags:
+  - name: Search
+    description: Global discovery of talents and projects
+  - name: Projects
+    description: Portfolio project management
+paths:
+  /api/search:
+    get:
+      tags:
+        - Search
+      summary: Global search for talents and projects
+      description: >
+        Returns filtered collections of public profiles and projects.
+        This endpoint is public and only exposes items with public moderation status.
+      operationId: searchContent
+      parameters:
+        - name: q
+          in: query
+          description: Free-text query used for matching titles, usernames, headlines, descriptions and skills.
+          schema:
+            type: string
+        - name: scope
+          in: query
+          description: Limits the result to profiles, projects, or both.
+          schema:
+            type: string
+            enum: [all, creators, projects]
+            default: all
+        - name: sort
+          in: query
+          description: Sorting strategy for returned results.
+          schema:
+            type: string
+            enum: [relevance, rating, newest]
+            default: relevance
+        - name: countryId
+          in: query
+          description: Filter profiles by country identifier.
+          schema:
+            type: integer
+            minimum: 1
+        - name: categoryId
+          in: query
+          description: Filter profiles by category identifier.
+          schema:
+            type: integer
+            minimum: 1
+        - name: skillIds
+          in: query
+          description: Comma-separated list of skill identifiers.
+          schema:
+            type: string
+            example: "1,5,8"
+        - name: languageIds
+          in: query
+          description: Comma-separated list of language identifiers.
+          schema:
+            type: string
+            example: "1,2"
+        - name: experienceLevel
+          in: query
+          description: Filter profiles by normalized experience bucket.
+          schema:
+            type: string
+            enum:
+              - no_experience
+              - months_3
+              - months_6
+              - year_1
+              - years_2
+              - years_3
+              - years_4
+              - years_5
+              - years_6
+              - years_7
+              - years_8
+              - years_9
+              - years_10
+              - more_than_10_years
+        - name: employmentTypes
+          in: query
+          description: Comma-separated list of employment types.
+          schema:
+            type: string
+            example: "full_time,contract"
+        - name: workFormats
+          in: query
+          description: Comma-separated list of work formats.
+          schema:
+            type: string
+            example: "remote,hybrid"
+        - name: projectStatus
+          in: query
+          description: Filter projects by status.
+          schema:
+            type: string
+            enum: [planning, in_progress, completed, on_hold]
+        - name: hasMedia
+          in: query
+          description: Set to 1 to return only projects with attached media.
+          schema:
+            type: string
+            enum: ["0", "1"]
+        - name: hasAvatar
+          in: query
+          description: Set to 1 to return only profiles with avatar.
+          schema:
+            type: string
+            enum: ["0", "1"]
+        - name: minScore
+          in: query
+          description: Minimum score threshold for projects and profiles.
+          schema:
+            type: integer
+        - name: maxScore
+          in: query
+          description: Maximum score threshold for projects and profiles.
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Search results returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+              examples:
+                default:
+                  summary: Example search response
+                  value:
+                    projects:
+                      - id: "97e7cf53-3f58-4bc8-90d4-bfddcc3db1d9"
+                        title: "Developer Portfolio Platform"
+                        slug: "developer-portfolio-platform"
+                        description: "A platform to showcase developer projects."
+                        score: 91
+                        cover_url: null
+                        project_status: "completed"
+                        owner_id: "67a4d394-6254-4d0d-b89f-14599e230ff7"
+                        created_at: "2026-04-12T10:15:00.000Z"
+                        moderation_status: "approved"
+                        ownerName: "Ivan Petrenko"
+                        ownerUsername: "ivan.petrenko"
+                        technologies:
+                          - id: 1
+                            name: "Next.js"
+                          - id: 2
+                            name: "TypeScript"
+                        mediaCount: 3
+                        relevance: 15
+                    users:
+                      - id: "6a3209af-5f40-4c48-91be-6761ef3d5345"
+                        user_id: "67a4d394-6254-4d0d-b89f-14599e230ff7"
+                        username: "ivan.petrenko"
+                        name: "Ivan Petrenko"
+                        headline: "Frontend Engineer"
+                        avatar_url: "https://example.com/avatar.webp"
+                        country_id: 1
+                        city: "Kyiv"
+                        category_id: 2
+                        experience_level: "years_5"
+                        employment_types:
+                          - "full_time"
+                        work_formats:
+                          - "remote"
+                        moderation_status: "approved"
+                        score: 88
+                        created_at: "2026-04-01T09:00:00.000Z"
+                        technologies:
+                          - id: 1
+                            name: "Next.js"
+                        countryName: "Ukraine"
+                        categoryName: "Frontend Developer"
+                        languageIds:
+                          - 1
+                          - 2
+                        relevance: 14
+                    totals:
+                      projects: 1
+                      users: 1
+  /api/projects:
+    post:
+      tags:
+        - Projects
+      summary: Create a new project
+      description: >
+        Creates a project for the currently authenticated user.
+        Requires an active Supabase-authenticated web session.
+      operationId: createProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectRequest"
+            examples:
+              default:
+                summary: Example create project payload
+                value:
+                  title: "SearchTalent Mobile Concept"
+                  slug: "searchtalent-mobile-concept"
+                  description: "Concept of a mobile-first version of the platform."
+                  role: "Product Designer"
+                  projectStatus: "planning"
+                  teamSize: 3
+                  projectUrl: "https://example.com/demo"
+                  repositoryUrl: "https://github.com/example/searchtalent-mobile"
+                  startedOn: "2026-04-01"
+                  completedOn: null
+                  problem: "Users need faster access to profiles on mobile devices."
+                  solution: "Create a simplified mobile-first experience."
+                  results: "Clickable prototype and validated UX flow."
+                  skillIds:
+                    - 1
+                    - 5
+      responses:
+        "200":
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateProjectResponse"
+              examples:
+                default:
+                  value:
+                    success: true
+                    projectId: "97e7cf53-3f58-4bc8-90d4-bfddcc3db1d9"
+                    slug: "searchtalent-mobile-concept"
+        "400":
+          description: Validation or persistence error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidDate:
+                  value:
+                    error: "Project completion date cannot be earlier than the start date"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                unauthorized:
+                  value:
+                    error: "Unauthorized"
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+    SkillRef:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    SearchProjectItem:
+      type: object
+      required:
+        - id
+        - title
+        - slug
+        - owner_id
+        - technologies
+        - mediaCount
+        - relevance
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type:
+            - string
+            - "null"
+        score:
+          type:
+            - integer
+            - "null"
+        cover_url:
+          type:
+            - string
+            - "null"
+        project_status:
+          type:
+            - string
+            - "null"
+        owner_id:
+          type: string
+          format: uuid
+        created_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        moderation_status:
+          type:
+            - string
+            - "null"
+        ownerName:
+          type:
+            - string
+            - "null"
+        ownerUsername:
+          type:
+            - string
+            - "null"
+        technologies:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillRef"
+        mediaCount:
+          type: integer
+        relevance:
+          type: integer
+    SearchUserItem:
+      type: object
+      required:
+        - id
+        - user_id
+        - username
+        - technologies
+        - languageIds
+        - relevance
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        name:
+          type:
+            - string
+            - "null"
+        headline:
+          type:
+            - string
+            - "null"
+        avatar_url:
+          type:
+            - string
+            - "null"
+        country_id:
+          type:
+            - integer
+            - "null"
+        city:
+          type:
+            - string
+            - "null"
+        category_id:
+          type:
+            - integer
+            - "null"
+        experience_level:
+          type:
+            - string
+            - "null"
+        employment_types:
+          type:
+            - array
+            - "null"
+          items:
+            type: string
+        work_formats:
+          type:
+            - array
+            - "null"
+          items:
+            type: string
+        moderation_status:
+          type:
+            - string
+            - "null"
+        score:
+          type:
+            - integer
+            - "null"
+        created_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        technologies:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillRef"
+        countryName:
+          type:
+            - string
+            - "null"
+        categoryName:
+          type:
+            - string
+            - "null"
+        languageIds:
+          type: array
+          items:
+            type: integer
+        relevance:
+          type: integer
+    SearchTotals:
+      type: object
+      required:
+        - projects
+        - users
+      properties:
+        projects:
+          type: integer
+        users:
+          type: integer
+    SearchResponse:
+      type: object
+      required:
+        - projects
+        - users
+        - totals
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchProjectItem"
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchUserItem"
+        totals:
+          $ref: "#/components/schemas/SearchTotals"
+    CreateProjectRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+        slug:
+          type:
+            - string
+            - "null"
+        description:
+          type:
+            - string
+            - "null"
+          maxLength: 5000
+        role:
+          type:
+            - string
+            - "null"
+          maxLength: 160
+        projectStatus:
+          type:
+            - string
+            - "null"
+          enum: [planning, in_progress, completed, on_hold, null]
+        teamSize:
+          type:
+            - integer
+            - "null"
+          minimum: 1
+        projectUrl:
+          type:
+            - string
+            - "null"
+          format: uri
+        repositoryUrl:
+          type:
+            - string
+            - "null"
+          format: uri
+        startedOn:
+          type:
+            - string
+            - "null"
+          format: date
+        completedOn:
+          type:
+            - string
+            - "null"
+          format: date
+        problem:
+          type:
+            - string
+            - "null"
+          maxLength: 5000
+        solution:
+          type:
+            - string
+            - "null"
+          maxLength: 5000
+        results:
+          type:
+            - string
+            - "null"
+          maxLength: 5000
+        skillIds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          default: []
+    CreateProjectResponse:
+      type: object
+      required:
+        - success
+        - projectId
+        - slug
+      properties:
+        success:
+          type: boolean
+          const: true
+        projectId:
+          type: string
+          format: uuid
+        slug:
+          type: string
+

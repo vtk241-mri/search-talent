@@ -1,0 +1,104 @@
+{
+  "info": {
+    "name": "SearchTalent API",
+    "_postman_id": "2d7464bd-1a2f-4b99-9cce-bf8f0e80b4c7",
+    "description": "Postman collection for two documented SearchTalent endpoints: global search and project creation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "supabaseSessionCookie",
+      "value": "sb-access-token=replace-with-real-session-cookie"
+    }
+  ],
+  "item": [
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "GET /api/search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/search?q=next&scope=all&sort=relevance&skillIds=1,2&hasAvatar=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "next"
+                },
+                {
+                  "key": "scope",
+                  "value": "all"
+                },
+                {
+                  "key": "sort",
+                  "value": "relevance"
+                },
+                {
+                  "key": "skillIds",
+                  "value": "1,2"
+                },
+                {
+                  "key": "hasAvatar",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Returns public profiles and projects according to the provided filters."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "POST /api/projects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{supabaseSessionCookie}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"SearchTalent Mobile Concept\",\n  \"slug\": \"searchtalent-mobile-concept\",\n  \"description\": \"Concept of a mobile-first version of the platform.\",\n  \"role\": \"Product Designer\",\n  \"projectStatus\": \"planning\",\n  \"teamSize\": 3,\n  \"projectUrl\": \"https://example.com/demo\",\n  \"repositoryUrl\": \"https://github.com/example/searchtalent-mobile\",\n  \"startedOn\": \"2026-04-01\",\n  \"completedOn\": null,\n  \"problem\": \"Users need faster access to profiles on mobile devices.\",\n  \"solution\": \"Create a simplified mobile-first experience.\",\n  \"results\": \"Clickable prototype and validated UX flow.\",\n  \"skillIds\": [1, 5]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects"
+              ]
+            },
+            "description": "Creates a new project for the authenticated user."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
+
