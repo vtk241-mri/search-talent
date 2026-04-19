@@ -34,6 +34,7 @@ export async function generateMetadata({
     pathname: "/dashboard/saved",
     title: dictionary.bookmarks.title,
     description: dictionary.bookmarks.description,
+    noindex: true,
   });
 }
 

@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { isLocale } from "@/lib/i18n/config";
-
+import SeoFaqSection from "@/components/seo-faq-section";
+import { isLocale, type Locale } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { getMarketingContent } from "@/lib/marketing-content";
+import { buildMetadata } from "@/lib/seo";
+import { notFound } from "next/navigation";
 
 const DiscoveryPage = dynamic(() => import("@/components/discovery-page"), {
   loading: () => (
-    <div className="mx-auto max-w-6xl animate-pulse px-4 py-10 sm:px-6">
+    <div className="animate-pulse">
       <div className="h-48 rounded-[2.25rem] bg-[color:var(--surface-muted)]" />
     </div>
   ),
 });
-import { getDictionary } from "@/lib/i18n/dictionaries";
-import { buildMetadata } from "@/lib/seo";
-import { notFound } from "next/navigation";
 
 async function getLocaleValue(params: Promise<{ locale: string }>) {
   const { locale } = await params;
@@ -40,6 +41,21 @@ export async function generateMetadata({
   });
 }
 
-export default async function LocalizedProjectsPage() {
-  return <DiscoveryPage mode="projects" />;
+export default async function LocalizedProjectsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const locale = (await getLocaleValue(params)) as Locale;
+  const marketing = getMarketingContent(locale);
+
+  return (
+    <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <DiscoveryPage mode="projects" />
+
+      <div className="mt-6 sm:mt-8">
+        <SeoFaqSection title={marketing.projects.faqTitle} items={marketing.projects.faq} />
+      </div>
+    </main>
+  );
 }

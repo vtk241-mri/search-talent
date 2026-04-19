@@ -8,13 +8,13 @@ import VoteButtons from "@/components/vote-buttons";
 import AdminContentQuickActions from "@/components/admin-content-quick-actions";
 import { ButtonLink } from "@/components/ui/Button";
 import { getPublicProjectPageData } from "@/lib/db/public";
-import { isLocale } from "@/lib/i18n/config";
+import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getCurrentViewerRole } from "@/lib/moderation-server";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import {
-  buildMetadata,
   buildProjectSchema,
   buildBreadcrumbSchema,
+  buildProjectPageMetadata,
   getMetadataBase,
 } from "@/lib/seo";
 
@@ -28,7 +28,7 @@ async function getRouteParams(
   }
 
   return {
-    locale,
+    locale: locale as Locale,
     slug,
   };
 }
@@ -92,36 +92,30 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await getRouteParams(params);
-  const dictionary = getDictionary(locale);
   const data = await getPublicProjectPageData(slug);
 
-  const projectTitle = data?.project.title || null;
-  const ownerName =
-    data?.owner?.name || data?.owner?.username || null;
+  const descriptionText = [
+    data?.project.description,
+    data?.project.problem,
+    data?.project.solution,
+    data?.project.results,
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(" ");
+  const wordCount = descriptionText
+    .split(/\s+/)
+    .filter((word) => word.length > 0).length;
+  const isThin = !data || wordCount < 150;
 
-  let title: string;
-  if (projectTitle && ownerName) {
-    title =
-      locale === "uk"
-        ? `${projectTitle} – Портфоліо ${ownerName}`
-        : `${projectTitle} – Portfolio of ${ownerName}`;
-  } else if (projectTitle) {
-    title = projectTitle;
-  } else {
-    title = dictionary.metadata.projectDetail.title;
-  }
-
-  const description = data?.project.description
-    ? locale === "uk"
-        ? `${data.project.description.slice(0, 130)}… Перегляньте деталі проєкту, технології та портфоліо автора на SearchTalent.`
-        : `${data.project.description.slice(0, 130)}… Explore project details, tech stack, and the author's portfolio on SearchTalent.`
-    : dictionary.metadata.projectDetail.description;
-
-  return buildMetadata({
+  return buildProjectPageMetadata({
     locale,
     pathname: `/projects/${slug}`,
-    title,
-    description,
+    projectTitle: data?.project.title || null,
+    topTechnologies: data?.technologies.map((technology) => technology.name) || [],
+    authorName: data?.owner?.name || data?.owner?.username || null,
+    category: data?.project.role || null,
+    descriptionText,
+    noindex: isThin,
   });
 }
 
@@ -141,8 +135,16 @@ export default async function PublicProjectPage({
     notFound();
   }
 
-  const { owner, project, technologies, media, voteSummary, isAuthenticated, isOwner, isBookmarked } =
-    data;
+  const {
+    owner,
+    project,
+    technologies,
+    media,
+    voteSummary,
+    isAuthenticated,
+    isOwner,
+    isBookmarked,
+  } = data;
   const isAdmin = viewer.isAdmin;
   const statusLabel = getStatusLabel(project.project_status, dictionary);
 
@@ -156,8 +158,11 @@ export default async function PublicProjectPage({
     imageUrl: project.cover_url,
     authorName: owner?.name || owner?.username || null,
     authorUrl: owner?.username ? `${siteUrl}/${locale}/u/${owner.username}` : null,
-    technologies: technologies.map((t) => t.name),
+    technologies: technologies.map((technology) => technology.name),
     dateCreated: project.created_at,
+    dateModified: project.completed_on || null,
+    demoUrl: project.project_url || null,
+    codeRepository: project.repository_url || null,
   });
 
   const breadcrumbSchema = buildBreadcrumbSchema([

@@ -12,6 +12,7 @@ import {
   type ArticleCategory,
 } from "@/lib/articles";
 import { createClient } from "@/lib/supabase/client";
+import { compressImageFile } from "@/lib/image-compression";
 import { sanitizeStorageFileName } from "@/lib/profile-sections";
 
 function inferAssetKind(file: File) {
@@ -150,16 +151,20 @@ export default function ArticleComposer({
           "Start writing, add headings, quotes, lists, and drop media right into the canvas.",
       };
 
-  const uploadAsset = async (file: File, mode: "cover" | "hero" | "inline") => {
+  const uploadAsset = async (rawFile: File, mode: "cover" | "hero" | "inline") => {
     setUploadingAsset(mode);
     setErrorMessage(null);
 
     try {
-      const kind = inferAssetKind(file);
+      const kind = inferAssetKind(rawFile);
+      const file =
+        kind === "image"
+          ? await compressImageFile(rawFile, mode === "cover" ? "cover" : "inline")
+          : rawFile;
       const filePath = `article-media/${userId}/${Date.now()}-${crypto.randomUUID()}-${sanitizeStorageFileName(file.name)}`;
       const { error } = await supabase.storage
         .from("project-media")
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, file, { upsert: true, contentType: file.type });
 
       if (error) {
         throw error;

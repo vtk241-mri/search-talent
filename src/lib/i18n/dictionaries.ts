@@ -1948,8 +1948,76 @@ export const dictionaries = {
   },
 } as const;
 
+const dictionaryOverrides = {
+  en: {
+    metadata: {
+      home: {
+        title: "Find IT Talent & Real Project Portfolios",
+        description:
+          "SearchTalent is the platform where developers, designers, and IT professionals showcase real projects with technology stacks, code samples, and work samples - not just resumes.",
+      },
+      talents: {
+        title: "Find IT Talents with Real Project Portfolios",
+        description:
+          "Browse public profiles of developers, designers, and IT specialists with real project portfolios, technology stacks, and visible proof of work.",
+      },
+      projects: {
+        title: "Real IT Project Portfolios",
+        description:
+          "Explore real IT project portfolios with screenshots, stacks, and public creator context. Discover shipped work before you contact the talent behind it.",
+      },
+    },
+    home: {
+      title: "Find IT Talent & Real Project Portfolios",
+      description:
+        "SearchTalent is the platform where developers, designers, and IT professionals showcase real projects with technology stacks, code samples, and work samples - not just resumes. Browse verified portfolios, read technical articles, and hire specialists by actual skills.",
+    },
+  },
+  uk: {
+    metadata: {
+      home: {
+        title: "Знайдіть IT-таланти з реальними портфоліо проєктів",
+        description:
+          "SearchTalent - платформа, де розробники, дизайнери та IT-фахівці показують реальні проєкти з технологічним стеком, прикладами коду та зразками робіт, а не просто резюме.",
+      },
+      talents: {
+        title: "Знайдіть IT-фахівців з реальними портфоліо",
+        description:
+          "Переглядайте публічні профілі розробників, дизайнерів та IT-фахівців з реальними портфоліо проєктів, стеком технологій і видимими доказами роботи.",
+      },
+      projects: {
+        title: "Реальні IT-проєкти",
+        description:
+          "Переглядайте реальні IT-проєкти зі скриншотами, стеком технологій і публічним контекстом автора. Досліджуйте виконані роботи до першого контакту.",
+      },
+    },
+    home: {
+      title: "Знайдіть IT-таланти з портфоліо реальних проєктів",
+      description:
+        "SearchTalent - платформа, де розробники, дизайнери та IT-фахівці показують реальні проєкти з технологічним стеком і зразками робіт, а не просто резюме. Переглядайте портфоліо, читайте технічні статті та знаходьте спеціалістів за реальними навичками.",
+    },
+  },
+} as const;
+
 export type Dictionary = (typeof dictionaries)[Locale];
 
 export function getDictionary(locale: Locale) {
-  return dictionaries[locale] ?? dictionaries[defaultLocale];
+  const dictionary = dictionaries[locale] ?? dictionaries[defaultLocale];
+  const overrides = dictionaryOverrides[locale];
+
+  if (!overrides) {
+    return dictionary;
+  }
+
+  return {
+    ...dictionary,
+    metadata: {
+      ...dictionary.metadata,
+      ...overrides.metadata,
+    },
+    home: {
+      ...dictionary.home,
+      ...overrides.home,
+    },
+  } as unknown as Dictionary;
 }

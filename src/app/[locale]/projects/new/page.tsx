@@ -42,6 +42,7 @@ export async function generateMetadata({
     pathname: "/projects/new",
     title: dictionary.forms.createProject,
     description: dictionary.metadata.dashboardProjects.description,
+    noindex: true,
   });
 }
 

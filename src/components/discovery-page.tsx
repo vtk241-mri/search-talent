@@ -67,6 +67,7 @@ type Sort = "relevance" | "rating" | "newest";
 
 type DiscoveryPageProps = {
   mode: DiscoveryMode;
+  initialCategoryId?: number | null;
 };
 
 type DiscoveryCopy = {
@@ -449,7 +450,10 @@ function getDiscoveryCopy(locale: Locale): DiscoveryCopy {
   };
 }
 
-export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
+export default function DiscoveryPage({
+  mode,
+  initialCategoryId = null,
+}: DiscoveryPageProps) {
   const dictionary = useDictionary();
   const locale = useCurrentLocale();
   const copy = useMemo(() => getDiscoveryCopy(locale), [locale]);
@@ -470,7 +474,7 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("relevance");
   const [countryId, setCountryId] = useState<number | null>(null);
-  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [categoryId, setCategoryId] = useState<number | null>(initialCategoryId);
   const [languageIds, setLanguageIds] = useState<number[]>([]);
   const [skillIds, setSkillIds] = useState<number[]>([]);
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | "">(
@@ -809,7 +813,7 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
   };
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <section>
       <section className="rounded-[2.25rem] border app-border bg-[linear-gradient(145deg,_rgba(15,23,42,0.97),_rgba(30,64,175,0.9)_58%,_rgba(245,158,11,0.72))] p-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.18)] sm:p-10">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -1346,6 +1350,6 @@ export default function DiscoveryPage({ mode }: DiscoveryPageProps) {
           </section>
         </div>
       </section>
-    </main>
+    </section>
   );
 }

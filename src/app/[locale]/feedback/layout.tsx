@@ -23,6 +23,7 @@ export async function generateMetadata({
     pathname: "/feedback",
     title: dictionary.metadata.feedback.title,
     description: dictionary.metadata.feedback.description,
+    noindex: true,
   });
 }
 

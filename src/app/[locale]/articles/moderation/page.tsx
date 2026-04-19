@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
 import ArticleModerationActions from "@/components/article-moderation-actions";
 import { ButtonLink } from "@/components/ui/Button";
 import {
@@ -10,9 +11,31 @@ import { getArticleModerationQueue } from "@/lib/db/articles";
 import { createLocalePath, isLocale } from "@/lib/i18n/config";
 import { requireAdmin } from "@/lib/moderation-server";
 import { normalizeModerationStatus } from "@/lib/moderation";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) {
+    notFound();
+  }
+  const isUk = locale === "uk";
+  return buildMetadata({
+    locale,
+    pathname: "/articles/moderation",
+    title: isUk ? "Модерація статей" : "Article moderation",
+    description: isUk
+      ? "Панель модерації статей SearchTalent."
+      : "SearchTalent article moderation panel.",
+    noindex: true,
+  });
+}
 
 function getModerationLabel(status: string | null, locale: string) {
   switch (normalizeModerationStatus(status)) {

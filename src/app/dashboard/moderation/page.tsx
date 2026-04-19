@@ -41,6 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
     pathname: "/dashboard/moderation",
     title: copy.dashboard.title,
     description: copy.dashboard.description,
+    noindex: true,
   });
 }
 

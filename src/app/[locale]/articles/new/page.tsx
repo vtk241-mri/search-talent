@@ -1,9 +1,11 @@
+import type { Metadata } from "next";
 import nextDynamic from "next/dynamic";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ButtonLink } from "@/components/ui/Button";
 import { getDashboardArticles } from "@/lib/db/articles";
 import { createLocalePath, isLocale } from "@/lib/i18n/config";
 import { getCurrentViewerRole } from "@/lib/moderation-server";
+import { buildMetadata } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 
 const ArticleComposer = nextDynamic(
@@ -20,6 +22,27 @@ const ArticleComposer = nextDynamic(
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) {
+    notFound();
+  }
+  const isUk = locale === "uk";
+  return buildMetadata({
+    locale,
+    pathname: "/articles/new",
+    title: isUk ? "Нова стаття" : "New article",
+    description: isUk
+      ? "Створіть нову статтю на SearchTalent."
+      : "Create a new article on SearchTalent.",
+    noindex: true,
+  });
+}
 
 export default async function NewArticlePage({
   params,

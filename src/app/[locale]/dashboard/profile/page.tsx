@@ -42,6 +42,7 @@ export async function generateMetadata({
     pathname: "/dashboard/profile",
     title: dictionary.metadata.dashboardProfile.title,
     description: dictionary.metadata.dashboardProfile.description,
+    noindex: true,
   });
 }
 

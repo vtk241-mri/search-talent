@@ -26,5 +26,6 @@ export async function generateMetadata({
     pathname: "/reset-password",
     title: dictionary.auth.resetPassword.title,
     description: dictionary.auth.resetPassword.description,
+    noindex: true,
   });
 }

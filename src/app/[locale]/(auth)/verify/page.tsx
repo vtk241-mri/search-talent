@@ -28,6 +28,7 @@ export async function generateMetadata({
     pathname: "/verify",
     title: dictionary.metadata.verify.title,
     description: dictionary.metadata.verify.description,
+    noindex: true,
   });
 }
 

@@ -26,5 +26,6 @@ export async function generateMetadata({
     pathname: "/forgot-password",
     title: dictionary.auth.forgotPassword.title,
     description: dictionary.auth.forgotPassword.description,
+    noindex: true,
   });
 }

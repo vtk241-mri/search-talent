@@ -34,6 +34,7 @@ export async function generateMetadata({
     pathname: "/dashboard/following",
     title: dictionary.follows.feedTitle,
     description: dictionary.follows.feedDescription,
+    noindex: true,
   });
 }
 

@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { isLocale } from "@/lib/i18n/config";
-
+import SeoFaqSection from "@/components/seo-faq-section";
+import { getPopularTechnologies } from "@/lib/db/marketing";
+import { isLocale, type Locale } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { getMarketingContent } from "@/lib/marketing-content";
+import { buildMetadata } from "@/lib/seo";
+import { notFound } from "next/navigation";
 
 const DiscoveryPage = dynamic(() => import("@/components/discovery-page"), {
   loading: () => (
-    <div className="mx-auto max-w-6xl animate-pulse px-4 py-10 sm:px-6">
+    <div className="animate-pulse">
       <div className="h-48 rounded-[2.25rem] bg-[color:var(--surface-muted)]" />
     </div>
   ),
 });
-import { getDictionary } from "@/lib/i18n/dictionaries";
-import { buildMetadata } from "@/lib/seo";
-import { notFound } from "next/navigation";
 
 async function getLocaleValue(params: Promise<{ locale: string }>) {
   const { locale } = await params;
@@ -40,6 +42,44 @@ export async function generateMetadata({
   });
 }
 
-export default async function LocalizedTalentsPage() {
-  return <DiscoveryPage mode="creators" />;
+export default async function LocalizedTalentsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const locale = (await getLocaleValue(params)) as Locale;
+  const marketing = getMarketingContent(locale);
+  const technologies = await getPopularTechnologies(20);
+
+  return (
+    <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <DiscoveryPage mode="creators" />
+
+      <section className="mt-6 rounded-[2rem] app-card p-5 sm:mt-8 sm:p-7">
+        <div className="max-w-3xl">
+          <h2 className="text-2xl font-semibold text-[color:var(--foreground)]">
+            {marketing.talents.popularTechnologiesTitle}
+          </h2>
+          <p className="mt-3 text-sm leading-7 app-muted sm:text-base">
+            {marketing.talents.popularTechnologiesDescription}
+          </p>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          {technologies.map((technology) => (
+            <span
+              key={technology.id}
+              className="rounded-full border app-border px-3 py-1.5 text-sm text-[color:var(--foreground)]"
+            >
+              {technology.name}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <div className="mt-6 sm:mt-8">
+        <SeoFaqSection title={marketing.talents.faqTitle} items={marketing.talents.faq} />
+      </div>
+    </main>
+  );
 }

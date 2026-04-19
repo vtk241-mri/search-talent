@@ -174,6 +174,10 @@ export default function SiteHeader({
           ))}
         </nav>
 
+        <div className="ml-auto flex items-center lg:ml-0">
+          <LanguageSwitcher />
+        </div>
+
         <div className="hidden items-center gap-2 lg:flex">
           {viewer ? (
             <>
@@ -235,20 +239,11 @@ export default function SiteHeader({
                     ))}
                   </div>
 
-                  <div className="mt-4 space-y-3 rounded-2xl border border-[color:var(--border)] p-4">
-                    <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
-                        {dictionary.language.switchLabel}
-                      </p>
-                      <LanguageSwitcher />
-                    </div>
-
-                    <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
-                        {dictionary.theme.toggleLabel}
-                      </p>
-                      <ThemeToggle initialTheme={initialTheme} />
-                    </div>
+                  <div className="mt-4 rounded-2xl border border-[color:var(--border)] p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
+                      {dictionary.theme.toggleLabel}
+                    </p>
+                    <ThemeToggle initialTheme={initialTheme} />
                   </div>
 
                   <div className="mt-4">
@@ -259,7 +254,6 @@ export default function SiteHeader({
             </>
           ) : (
             <>
-              <LanguageSwitcher />
               <ThemeToggle initialTheme={initialTheme} />
 
               <LocalizedLink
@@ -279,7 +273,7 @@ export default function SiteHeader({
           )}
         </div>
 
-        <details ref={mobileMenuRef} className="relative ml-auto lg:hidden">
+        <details ref={mobileMenuRef} className="relative lg:hidden">
           <summary
             className={`${buttonStyles({
               size: "sm",
@@ -365,20 +359,11 @@ export default function SiteHeader({
                   </div>
                 </div>
 
-                <div className="mt-3 space-y-2.5 rounded-2xl border border-[color:var(--border)] p-3">
-                  <div>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
-                      {dictionary.language.switchLabel}
-                    </p>
-                    <LanguageSwitcher />
-                  </div>
-
-                  <div>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
-                      {dictionary.theme.toggleLabel}
-                    </p>
-                    <ThemeToggle initialTheme={initialTheme} />
-                  </div>
+                <div className="mt-3 rounded-2xl border border-[color:var(--border)] p-3">
+                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
+                    {dictionary.theme.toggleLabel}
+                  </p>
+                  <ThemeToggle initialTheme={initialTheme} />
                 </div>
 
                 <div className="mt-3">
@@ -387,20 +372,11 @@ export default function SiteHeader({
               </>
             ) : (
               <>
-                <div className="mt-3 space-y-2.5 rounded-2xl border border-[color:var(--border)] p-3">
-                  <div>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
-                      {dictionary.language.switchLabel}
-                    </p>
-                    <LanguageSwitcher />
-                  </div>
-
-                  <div>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
-                      {dictionary.theme.toggleLabel}
-                    </p>
-                    <ThemeToggle initialTheme={initialTheme} />
-                  </div>
+                <div className="mt-3 rounded-2xl border border-[color:var(--border)] p-3">
+                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] app-soft">
+                    {dictionary.theme.toggleLabel}
+                  </p>
+                  <ThemeToggle initialTheme={initialTheme} />
                 </div>
 
                 <div className="mt-3 grid grid-cols-2 gap-2">

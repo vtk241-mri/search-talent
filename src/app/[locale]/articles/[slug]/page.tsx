@@ -9,14 +9,20 @@ import ReportArticleButton from "@/components/report-article-button";
 import DeleteArticleButton from "@/components/delete-article-button";
 import RichTextRenderer from "@/components/rich-text-renderer";
 import { ButtonLink } from "@/components/ui/Button";
-import { formatArticleDate, getArticleReadingTime, getCategoryDisplayName } from "@/lib/articles";
+import {
+  formatArticleDate,
+  getArticleReadingTime,
+  getCategoryDisplayName,
+} from "@/lib/articles";
 import { getArticleDetail } from "@/lib/db/articles";
 import { isLocale } from "@/lib/i18n/config";
-import { normalizeModerationStatus } from "@/lib/moderation";
+import { isPublicModerationStatus, normalizeModerationStatus } from "@/lib/moderation";
+import { extractPlainTextFromRichText } from "@/lib/rich-text";
 import {
-  buildMetadata,
+  buildArticlePageMetadata,
   buildArticleSchema,
   buildBreadcrumbSchema,
+  countWords,
   getMetadataBase,
 } from "@/lib/seo";
 
@@ -45,15 +51,23 @@ export async function generateMetadata({
   const safeLocale = isLocale(locale) ? locale : "en";
   const data = await getArticleDetail(slug);
 
-  return buildMetadata({
+  const isDraft = data?.article.status !== "published";
+  const isNotPublicModeration = !isPublicModerationStatus(
+    data?.article.moderationStatus ?? null,
+  );
+  const isThin = !data || isDraft || isNotPublicModeration;
+  const excerpt =
+    data?.article.excerpt ||
+    (data?.article.content
+      ? extractPlainTextFromRichText(data.article.content)
+      : null);
+
+  return buildArticlePageMetadata({
     locale: safeLocale,
     pathname: `/articles/${slug}`,
-    title: data?.article.title || (safeLocale === "uk" ? "Стаття" : "Article"),
-    description:
-      data?.article.excerpt ||
-      (safeLocale === "uk"
-        ? "Детальна сторінка статті на SearchTalent."
-        : "Article detail page on SearchTalent."),
+    title: data?.article.title || null,
+    excerpt,
+    noindex: isThin,
   });
 }
 
@@ -117,6 +131,21 @@ export default async function ArticleDetailPage({
   const siteUrl = getMetadataBase().toString().replace(/\/$/, "");
   const articleUrl = `${siteUrl}/${safeLocale}/articles/${slug}`;
 
+  const articlePlainText = article.content
+    ? extractPlainTextFromRichText(article.content)
+    : "";
+  const articleSection =
+    article.category
+      ? isUkrainian
+        ? article.category.nameUk || article.category.name
+        : article.category.name
+      : null;
+  const articleKeywords = article.category
+    ? [article.category.name, article.category.nameUk].filter(
+        (value): value is string => Boolean(value),
+      )
+    : [];
+
   const articleSchema = buildArticleSchema({
     title: article.title,
     excerpt: article.excerpt || null,
@@ -128,6 +157,9 @@ export default async function ArticleDetailPage({
       : null,
     datePublished: article.publishedAt || article.createdAt || null,
     dateModified: null,
+    articleSection,
+    keywords: articleKeywords,
+    wordCount: countWords(articlePlainText),
   });
 
   const breadcrumbSchema = buildBreadcrumbSchema([

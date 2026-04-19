@@ -48,6 +48,7 @@ export async function generateMetadata({
     pathname: "/projects/edit",
     title: dictionary.metadata.dashboardProjectEdit.title,
     description: dictionary.metadata.dashboardProjectEdit.description,
+    noindex: true,
   });
 }
 

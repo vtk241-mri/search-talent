@@ -31,6 +31,7 @@ export async function generateMetadata({
     pathname: "/dashboard",
     title: dictionary.metadata.dashboard.title,
     description: dictionary.metadata.dashboard.description,
+    noindex: true,
   });
 }
 

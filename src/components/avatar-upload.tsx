@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useDictionary } from "@/lib/i18n/client";
+import { compressImageFile } from "@/lib/image-compression";
 import { createClient } from "@/lib/supabase/client";
 
 function extractAvatarStoragePath(url: string | null) {
@@ -46,12 +47,13 @@ export default function AvatarUpload({
       setUploading(true);
       setErrorMessage(null);
 
-      const file = event.target.files?.[0];
-      if (!file) {
+      const rawFile = event.target.files?.[0];
+      if (!rawFile) {
         return;
       }
 
-      const fileExt = file.name.split(".").pop()?.toLowerCase() || "png";
+      const file = await compressImageFile(rawFile, "avatar");
+      const fileExt = file.name.split(".").pop()?.toLowerCase() || "webp";
       const filePath = `${userId}/avatar.${fileExt}`;
       const previousPath = extractAvatarStoragePath(avatarUrl);
 
@@ -59,6 +61,7 @@ export default function AvatarUpload({
         .from("avatars")
         .upload(filePath, file, {
           upsert: true,
+          contentType: file.type,
         });
 
       if (error) throw error;

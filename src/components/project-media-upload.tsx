@@ -5,6 +5,7 @@ import { startTransition, useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
 import { useDictionary, useLocalizedRouter } from "@/lib/i18n/client";
+import { compressImageFile } from "@/lib/image-compression";
 import {
   formatFileSize,
   inferProjectMediaKind,
@@ -73,7 +74,12 @@ export default function ProjectMediaUpload({
       const uploadedItems: ProjectMediaItem[] = [];
       let nextCoverUrl = coverUrl;
 
-      for (const file of files) {
+      for (const rawFile of files) {
+        const initialKind = inferProjectMediaKind(rawFile.type, rawFile.name);
+        const file =
+          initialKind === "image"
+            ? await compressImageFile(rawFile, "inline")
+            : rawFile;
         const mediaKind = inferProjectMediaKind(file.type, file.name);
         const maxSize = getAllowedSize(mediaKind);
 
@@ -85,7 +91,7 @@ export default function ProjectMediaUpload({
 
         const { error: uploadError } = await supabase.storage
           .from("project-media")
-          .upload(filePath, file);
+          .upload(filePath, file, { contentType: file.type });
 
         if (uploadError) {
           throw uploadError;
