@@ -8,10 +8,11 @@ import { useDictionary, useLocalizedRouter } from "@/lib/i18n/client";
 type Comment = {
   id: string;
   project_id: string;
-  author_user_id: string;
+  author_user_id: string | null;
   parent_id: string | null;
   body: string;
   created_at: string;
+  author_deleted?: boolean;
   author: {
     username: string | null;
     name: string | null;
@@ -99,8 +100,11 @@ function CommentItem({
   submitting: boolean;
   dictionary: ReturnType<typeof useDictionary>;
 }) {
-  const authorName =
-    comment.author.name || comment.author.username || dictionary.projectComments.anonymous;
+  const authorName = comment.author_deleted
+    ? dictionary.projectComments.deletedUser
+    : comment.author.name ||
+      comment.author.username ||
+      dictionary.projectComments.anonymous;
 
   return (
     <div className="group">

@@ -364,6 +364,7 @@ async function renderPublicView({
                   commentsCount: item.comments_count,
                   category: item.category,
                   author: item.author,
+                  authorDeleted: false,
                   pinnedUntil: item.pinned_until,
                 };
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { notFound, redirect } from "next/navigation";
 import AvatarUpload from "@/components/avatar-upload";
+import DeleteAccountSection from "@/components/delete-account-section";
 import EmailVerificationButton from "@/components/email-verification-button";
 import { ButtonLink } from "@/components/ui/Button";
 
@@ -133,6 +134,8 @@ export default async function DashboardProfilePage({
       <section className="mt-8 rounded-[2rem] app-card p-6 sm:p-8">
         <ProfileForm profile={profile} />
       </section>
+
+      <DeleteAccountSection email={user.email ?? ""} />
     </main>
   );
 }

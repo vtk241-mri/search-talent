@@ -35,6 +35,7 @@ export type ArticleFeedItem = {
   commentsCount: number;
   category: ArticleCategory | null;
   author: ArticleAuthor | null;
+  authorDeleted: boolean;
   pinnedUntil: string | null;
 };
 
@@ -44,6 +45,7 @@ export type ArticleComment = {
   body: string;
   createdAt: string | null;
   author: ArticleAuthor | null;
+  authorDeleted: boolean;
   replies: ArticleComment[];
 };
 

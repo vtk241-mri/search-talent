@@ -16,7 +16,7 @@ import { createClient } from "@/lib/supabase/server";
 
 type ArticleRow = {
   id: string;
-  author_user_id: string;
+  author_user_id: string | null;
   category_id: number | null;
   title: string;
   slug: string;
@@ -52,7 +52,7 @@ type ArticleLikeRow = {
 type ArticleCommentRow = {
   id: string;
   article_id: string;
-  author_user_id: string;
+  author_user_id: string | null;
   parent_id: string | null;
   body: string | null;
   created_at: string | null;
@@ -111,12 +111,16 @@ function buildCommentTree(
   const roots: ArticleComment[] = [];
 
   for (const row of rows) {
+    const author = row.author_user_id
+      ? authorMap.get(row.author_user_id) || null
+      : null;
     commentMap.set(row.id, {
       id: row.id,
       parentId: row.parent_id,
       body: row.body || "",
       createdAt: row.created_at,
-      author: authorMap.get(row.author_user_id) || null,
+      author,
+      authorDeleted: row.author_user_id === null,
       replies: [],
     });
   }
@@ -195,7 +199,8 @@ function toFeedItem(
     likesCount: likesCountMap.get(row.id) || 0,
     commentsCount: commentsCountMap.get(row.id) || 0,
     category: row.category_id ? categoryMap.get(row.category_id) || null : null,
-    author: authorMap.get(row.author_user_id) || null,
+    author: row.author_user_id ? authorMap.get(row.author_user_id) || null : null,
+    authorDeleted: row.author_user_id === null,
     pinnedUntil: row.pinned_until,
   };
 }
@@ -260,10 +265,17 @@ export async function getArticleFeed(params?: {
     const authorQuery = params.authorQuery.trim().toLowerCase();
     const authorsMap = await getAuthorsMap(
       supabase,
-      Array.from(new Set(rows.map((item) => item.author_user_id))),
+      Array.from(
+        new Set(
+          rows
+            .map((item) => item.author_user_id)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ),
     );
 
     rows = rows.filter((item) => {
+      if (!item.author_user_id) return false;
       const author = authorsMap.get(item.author_user_id);
       const candidate = `${author?.name || ""} ${author?.username || ""}`.toLowerCase();
       return candidate.includes(authorQuery);
@@ -291,7 +303,13 @@ export async function getArticleFeed(params?: {
       ),
       getAuthorsMap(
         supabase,
-        Array.from(new Set(rows.map((item) => item.author_user_id))),
+        Array.from(
+          new Set(
+            rows
+              .map((item) => item.author_user_id)
+              .filter((id): id is string => Boolean(id)),
+          ),
+        ),
       ),
       getArticleCategories(),
     ]);
@@ -371,7 +389,10 @@ export async function getArticleDetail(slug: string) {
         supabase,
         article.category_id ? [article.category_id] : [],
       ),
-      getAuthorsMap(supabase, [article.author_user_id]),
+      getAuthorsMap(
+        supabase,
+        article.author_user_id ? [article.author_user_id] : [],
+      ),
       supabase.from("article_likes").select("article_id, user_id").eq("article_id", article.id),
       supabase
         .from("article_comments")
@@ -391,7 +412,13 @@ export async function getArticleDetail(slug: string) {
   const commentRows = (commentsResponse.data || []) as ArticleCommentRow[];
   const commentAuthorMap = await getAuthorsMap(
     supabase,
-    Array.from(new Set(commentRows.map((item) => item.author_user_id))),
+    Array.from(
+      new Set(
+        commentRows
+          .map((item) => item.author_user_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ),
   );
   const likesCountMap = buildCountMap(
     ((likesResponse.data || []) as ArticleLikeRow[]).map((item) => ({
@@ -555,7 +582,13 @@ export async function getArticleModerationQueue() {
     ),
     getAuthorsMap(
       supabase,
-      Array.from(new Set(rows.map((item) => item.author_user_id))),
+      Array.from(
+        new Set(
+          rows
+            .map((item) => item.author_user_id)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ),
     ),
   ]);
 

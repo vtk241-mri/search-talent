@@ -15,8 +15,11 @@ export default function ArticleCard({
   locale: string;
 }) {
   const isUkrainian = locale === "uk";
-  const authorLabel =
-    article.author?.name || article.author?.username || (isUkrainian ? "Автор" : "Author");
+  const authorLabel = article.authorDeleted
+    ? isUkrainian
+      ? "Видалений користувач"
+      : "Deleted user"
+    : article.author?.name || article.author?.username || (isUkrainian ? "Автор" : "Author");
   const authorInitial = authorLabel.slice(0, 1).toUpperCase();
   const publishedLabel = formatArticleDate(article.publishedAt || article.createdAt, locale);
   const readingTime = getArticleReadingTime(article.content || article.excerpt || "", locale);

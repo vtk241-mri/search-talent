@@ -5,7 +5,6 @@ import { ButtonLink } from "@/components/ui/Button";
 import type { DashboardStats, UserDashboardStats } from "@/lib/db/dashboard";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { getModerationCopy } from "@/lib/moderation-copy";
 
 function formatCompactNumber(value: number, locale: Locale) {
   return new Intl.NumberFormat(locale === "uk" ? "uk-UA" : "en-US", {
@@ -625,7 +624,6 @@ export default function DashboardAnalytics({
   isAdmin: boolean;
 }) {
   const ui = getDashboardUi(locale);
-  const moderationCopy = getModerationCopy(locale);
   const publicProfilesRate =
     stats.siteTotals.profiles > 0
       ? Math.round((stats.siteTotals.publicProfiles / stats.siteTotals.profiles) * 100)
@@ -671,8 +669,8 @@ export default function DashboardAnalytics({
           {ui.followingAuthors}
         </ButtonLink>
         {isAdmin && (
-          <ButtonLink href="/dashboard/moderation" variant="ghost" size="sm">
-            {moderationCopy.dashboard.openQueue}
+          <ButtonLink href="/admin" variant="ghost" size="sm">
+            {dictionary.nav.adminConsole}
           </ButtonLink>
         )}
       </nav>

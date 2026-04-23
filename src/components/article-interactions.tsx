@@ -107,9 +107,13 @@ function CommentThread({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-medium text-[color:var(--foreground)]">
-                  {comment.author?.name ||
-                    comment.author?.username ||
-                    (locale === "uk" ? "Користувач" : "User")}
+                  {comment.authorDeleted
+                    ? locale === "uk"
+                      ? "Видалений користувач"
+                      : "Deleted user"
+                    : comment.author?.name ||
+                      comment.author?.username ||
+                      (locale === "uk" ? "Користувач" : "User")}
                 </p>
                 {comment.createdAt ? (
                   <span className="text-xs app-soft">

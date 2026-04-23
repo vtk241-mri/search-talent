@@ -85,9 +85,12 @@ export default async function ArticleDetailPage({
   }
 
   const { article, viewerUserId, isOwner, isAdmin } = data;
-  const authorLabel = article.author?.name || article.author?.username || "SearchTalent";
-  const authorInitial = authorLabel.slice(0, 1).toUpperCase();
   const isUkrainian = safeLocale === "uk";
+  const deletedUserLabel = isUkrainian ? "Видалений користувач" : "Deleted user";
+  const authorLabel = article.authorDeleted
+    ? deletedUserLabel
+    : article.author?.name || article.author?.username || "SearchTalent";
+  const authorInitial = authorLabel.slice(0, 1).toUpperCase();
   const ui = isUkrainian
     ? {
         back: "Усі статті",

@@ -153,7 +153,14 @@ export default async function ArticlesModerationPage({
 
                     <div className="mt-4 flex flex-wrap gap-4 text-sm app-muted">
                       <span>
-                        {ui.author}: {article.author?.name || article.author?.username || "SearchTalent"}
+                        {ui.author}:{" "}
+                        {article.authorDeleted
+                          ? isUkrainian
+                            ? "Видалений користувач"
+                            : "Deleted user"
+                          : article.author?.name ||
+                            article.author?.username ||
+                            "SearchTalent"}
                       </span>
                       <span>
                         {ui.category}: {getCategoryDisplayName(article.category, safeLocale) || ui.noCategory}

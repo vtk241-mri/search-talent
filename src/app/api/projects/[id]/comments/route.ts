@@ -46,7 +46,11 @@ export async function GET(
   }
 
   const authorIds = [
-    ...new Set((comments || []).map((c) => c.author_user_id)),
+    ...new Set(
+      (comments || [])
+        .map((c) => c.author_user_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
   ];
 
   let authors: Record<
@@ -76,7 +80,8 @@ export async function GET(
 
   const enriched = (comments || []).map((c) => ({
     ...c,
-    author: authors[c.author_user_id] || {
+    author_deleted: c.author_user_id === null,
+    author: (c.author_user_id && authors[c.author_user_id]) || {
       username: null,
       name: null,
       avatar_url: null,

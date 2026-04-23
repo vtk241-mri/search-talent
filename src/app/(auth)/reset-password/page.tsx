@@ -36,7 +36,6 @@ export default function ResetPasswordPage() {
         const hashParams = new URLSearchParams(window.location.hash.slice(1));
         const queryParams = new URLSearchParams(window.location.search);
 
-        // Supabase may deliver recovery tokens via hash fragment or search params.
         const accessToken = hashParams.get("access_token");
         const refreshToken = hashParams.get("refresh_token");
         const tokenType = hashParams.get("type") || queryParams.get("type");
@@ -54,7 +53,6 @@ export default function ResetPasswordPage() {
             return;
           }
 
-          // Clean URL
           window.history.replaceState(null, "", window.location.pathname);
           setSessionState("ready");
           return;
@@ -75,7 +73,6 @@ export default function ResetPasswordPage() {
           return;
         }
 
-        // Fallback — maybe the user already has a session (came back to this tab).
         const {
           data: { session },
         } = await supabase.auth.getSession();

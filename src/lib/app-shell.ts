@@ -11,6 +11,7 @@ export type AppViewer = {
   email: string | null;
   username: string | null;
   avatarUrl: string | null;
+  isAdmin: boolean;
 } | null;
 
 function normalizeViewerAvatarUrl(value: string | null | undefined) {
@@ -59,17 +60,25 @@ export async function getAppShellData(locale: Locale): Promise<{
   let viewer: AppViewer = null;
 
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("name, username, avatar_url")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const [{ data: profile }, { data: adminRecord }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("name, username, avatar_url")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("platform_admins")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
 
     viewer = {
       displayName: profile?.name || null,
       email: user.email || null,
       username: profile?.username || null,
       avatarUrl: normalizeViewerAvatarUrl(profile?.avatar_url),
+      isAdmin: Boolean(adminRecord),
     };
   }
 

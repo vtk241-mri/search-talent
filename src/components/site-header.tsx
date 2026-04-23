@@ -19,6 +19,7 @@ type Viewer = {
   email: string | null;
   username: string | null;
   avatarUrl: string | null;
+  isAdmin: boolean;
 } | null;
 
 type SiteHeaderProps = {
@@ -108,6 +109,9 @@ export default function SiteHeader({
         { href: "/dashboard", label: dictionary.nav.dashboard },
         ...(viewer.username
           ? [{ href: `/u/${viewer.username}/projects`, label: dictionary.nav.myProjects }]
+          : []),
+        ...(viewer.isAdmin
+          ? [{ href: "/admin", label: dictionary.nav.adminConsole }]
           : []),
       ]
     : [];

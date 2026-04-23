@@ -18,10 +18,13 @@ export default async function Image({
   const data = await getArticleDetail(slug);
 
   const title = data?.article.title || (isUk ? "Стаття" : "Article");
-  const authorLabel =
-    data?.article.author?.name ||
-    data?.article.author?.username ||
-    "SearchTalent";
+  const authorLabel = data?.article.authorDeleted
+    ? isUk
+      ? "Видалений користувач"
+      : "Deleted user"
+    : data?.article.author?.name ||
+      data?.article.author?.username ||
+      "SearchTalent";
   const excerpt = (data?.article.excerpt || "").slice(0, 160);
 
   return new ImageResponse(
