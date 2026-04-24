@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { useDictionary } from "@/lib/i18n/client";
 import { formatFileSize, type ProjectMediaItem } from "@/lib/project-media";
+import OptimizedImage from "@/components/ui/optimized-image";
 
 function getFileLabel(item: ProjectMediaItem) {
   return item.file_name || item.url.split("/").pop() || item.url;
@@ -48,10 +48,11 @@ export default function ProjectGallery({ media }: { media: ProjectMediaItem[] })
                   className="block w-full text-left"
                 >
                   <div className="relative aspect-[16/10] bg-[color:var(--surface-muted)]">
-                    <Image
+                    <OptimizedImage
                       src={item.url}
                       alt={label}
                       fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
                       className="object-cover transition duration-300 hover:scale-[1.02]"
                     />
                   </div>
@@ -106,7 +107,7 @@ export default function ProjectGallery({ media }: { media: ProjectMediaItem[] })
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6"
           onClick={() => setActiveImage(null)}
         >
-          <Image
+          <OptimizedImage
             src={activeImage}
             alt="Expanded project media"
             width={1600}

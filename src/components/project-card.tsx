@@ -1,7 +1,7 @@
-import Image from "next/image";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import LocalizedLink from "@/components/ui/localized-link";
 import { buttonStyles } from "@/components/ui/button-styles";
+import OptimizedImage from "@/components/ui/optimized-image";
 import { buildProjectPath } from "@/lib/projects";
 
 type ProjectCardData = {
@@ -35,10 +35,11 @@ export default function ProjectCard({
     >
       <div className="relative aspect-[16/10] bg-[color:var(--surface-muted)]">
         {project.cover_url ? (
-          <Image
+          <OptimizedImage
             src={project.cover_url}
             alt={project.title}
             fill
+            sizePreset="card"
             className="object-cover transition duration-300 group-hover:scale-[1.02]"
           />
         ) : (

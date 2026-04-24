@@ -1,5 +1,4 @@
 import type { CSSProperties, ReactNode } from "react";
-import Image from "next/image";
 import AdminContentQuickActions from "@/components/admin-content-quick-actions";
 import BookmarkButton from "@/components/bookmark-button";
 import ExpandableProfileBio from "@/components/expandable-profile-bio";
@@ -9,6 +8,7 @@ import ProfileVoteButtons from "@/components/profile-vote-buttons";
 import ProjectCard from "@/components/project-card";
 import VerifiedBadge from "@/components/verified-badge";
 import { ButtonLink } from "@/components/ui/Button";
+import OptimizedImage from "@/components/ui/optimized-image";
 import type { PublicProfilePageData } from "@/lib/db/public";
 import {
   getProfileFontStack,
@@ -258,7 +258,7 @@ export default function PublicProfileShowcase({
   return (
     <main className="mx-auto max-w-[88rem] px-3 py-4 sm:px-6 sm:py-8">
       <div className="relative overflow-hidden rounded-[2.5rem] border" style={{ ...getThemeStyle(presentation), background: !presentation.backgroundUrl || presentation.backgroundMode === "gradient" ? `linear-gradient(135deg, ${presentation.surfaceColor} 0%, ${presentation.panelColor} 58%, ${presentation.accentColor} 100%)` : presentation.surfaceColor, color: presentation.textColor, fontFamily: getProfileFontStack(presentation.fontPreset) }}>
-        {presentation.backgroundUrl && presentation.backgroundMode === "image" && <div className="absolute inset-0"><Image src={presentation.backgroundUrl} alt={displayName} fill className="object-cover" /></div>}
+        {presentation.backgroundUrl && presentation.backgroundMode === "image" && <div className="absolute inset-0"><OptimizedImage src={presentation.backgroundUrl} alt={displayName} fill sizePreset="banner" className="object-cover" /></div>}
         {presentation.backgroundUrl && presentation.backgroundMode === "video" && <div className="absolute inset-0"><video autoPlay muted loop playsInline preload="metadata" className="h-full w-full object-cover"><source src={presentation.backgroundUrl} /></video></div>}
         <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${withAlpha(presentation.surfaceColor, Math.min(0.95, 0.45 + presentation.overlayStrength / 100))} 0%, ${withAlpha(presentation.panelColor, Math.min(0.92, 0.34 + presentation.overlayStrength / 120))} 55%, ${withAlpha(presentation.accentColor, 0.42)} 100%)` }} />
 
@@ -286,7 +286,7 @@ export default function PublicProfileShowcase({
 
                 <div className={`mt-5 flex gap-4 sm:mt-8 sm:gap-5 ${presentation.heroAlignment === "center" ? "flex-col items-center" : "flex-col items-start sm:flex-row"}`}>
                   <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl app-panel text-3xl font-semibold text-[color:var(--foreground)] sm:h-28 sm:w-28 sm:rounded-[2rem] sm:text-4xl">
-                    {profile.avatar_url ? <Image src={profile.avatar_url} alt={displayName} fill className="object-cover" /> : <span>{displayName.slice(0, 1).toUpperCase()}</span>}
+                    {profile.avatar_url ? <OptimizedImage src={profile.avatar_url} alt={displayName} fill sizes="(max-width: 640px) 80px, 112px" className="object-cover" /> : <span>{displayName.slice(0, 1).toUpperCase()}</span>}
                   </div>
 
                   <div className="min-w-0">

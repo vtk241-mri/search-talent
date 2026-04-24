@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { useDictionary } from "@/lib/i18n/client";
+import OptimizedImage from "@/components/ui/optimized-image";
 import { compressImageFile } from "@/lib/image-compression";
 import { createClient } from "@/lib/supabase/client";
 
@@ -102,10 +102,11 @@ export default function AvatarUpload({
       <div className="flex items-center gap-4">
         <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border app-border bg-[color:var(--surface-muted)] text-2xl font-semibold text-[color:var(--foreground)]">
           {avatarUrl ? (
-            <Image
+            <OptimizedImage
               src={avatarUrl}
               alt={dictionary.dashboardProfile.currentAvatar}
               fill
+              sizes="80px"
               className="object-cover"
             />
           ) : (

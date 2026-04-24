@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import HydrationCleanupScript from "@/components/hydration-cleanup-script";
 import ThemeScript from "@/components/theme-script";
 import {
   allowsCookieCategory,
@@ -65,6 +66,7 @@ export default async function RootLayout({
     <html lang={locale} data-theme={theme} suppressHydrationWarning>
       <head>
         <ThemeScript />
+        <HydrationCleanupScript />
         <meta
           name="google-site-verification"
           content="-W2K0yXTapxiAm15YJGOXbyi0Wm0CQP1ktEJjDFXYaY"

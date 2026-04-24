@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import logoImage from "../../public/logo.webp";
@@ -11,6 +10,7 @@ import LanguageSwitcher from "@/components/language-switcher";
 import ThemeToggle from "@/components/theme-toggle";
 import { buttonStyles } from "@/components/ui/button-styles";
 import LocalizedLink from "@/components/ui/localized-link";
+import OptimizedImage from "@/components/ui/optimized-image";
 import { stripLocaleFromPathname } from "@/lib/i18n/config";
 import type { Theme } from "@/lib/theme";
 
@@ -162,7 +162,7 @@ export default function SiteHeader({
           href="/"
           className="relative block h-10 w-[124px] shrink-0"
         >
-          <Image
+          <OptimizedImage
             src={logoImage}
             alt={dictionary.site.name}
             fill
@@ -189,10 +189,11 @@ export default function SiteHeader({
                 <summary className={menuTriggerClasses(profileActive)}>
                   <span className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-[color:var(--surface-muted)] text-xs font-semibold text-[color:var(--foreground)]">
                     {viewer.avatarUrl ? (
-                      <Image
+                      <OptimizedImage
                         src={viewer.avatarUrl}
                         alt={dictionary.nav.profile}
                         fill
+                        sizes="28px"
                         className="object-cover"
                       />
                     ) : (
@@ -306,10 +307,11 @@ export default function SiteHeader({
                   <div className="flex items-center gap-3">
                     <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] text-sm font-semibold text-[color:var(--foreground)]">
                       {viewer.avatarUrl ? (
-                        <Image
+                        <OptimizedImage
                           src={viewer.avatarUrl}
                           alt={dictionary.nav.profile}
                           fill
+                          sizes="36px"
                           className="object-cover"
                         />
                       ) : (

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import DeleteProjectButton from "@/components/delete-project-button";
 import ProjectCard from "@/components/project-card";
 import { ButtonLink } from "@/components/ui/Button";
+import OptimizedImage from "@/components/ui/optimized-image";
 import { getMyProjectsPage } from "@/lib/db/projects";
 import { getUserProjectsPage } from "@/lib/db/public";
 import { normalizeModerationStatus } from "@/lib/moderation";
@@ -176,10 +176,11 @@ async function renderOwnerView({
                   <article key={project.id} className="rounded-[1.75rem] app-panel p-5">
                     <div className="relative aspect-[16/10] overflow-hidden rounded-[1.25rem] bg-[color:var(--surface-muted)]">
                       {project.cover_url ? (
-                        <Image
+                        <OptimizedImage
                           src={project.cover_url}
                           alt={project.title}
                           fill
+                          sizePreset="card"
                           className="object-cover"
                         />
                       ) : (

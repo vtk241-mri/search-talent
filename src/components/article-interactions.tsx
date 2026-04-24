@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import FormTextarea from "@/components/ui/form-textarea";
+import OptimizedImage from "@/components/ui/optimized-image";
 import { createLocalePath } from "@/lib/i18n/config";
 import type { ArticleComment } from "@/lib/articles";
 
@@ -94,12 +94,13 @@ function CommentThread({
           <div className="flex items-start gap-3">
             <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[color:var(--surface-muted)]">
               {comment.author?.avatarUrl ? (
-                <Image
+                <OptimizedImage
                   src={comment.author.avatarUrl}
                   alt={
                     comment.author.name || comment.author.username || "author"
                   }
                   fill
+                  sizes="40px"
                   className="object-cover"
                 />
               ) : null}

@@ -1,7 +1,7 @@
-import Image from "next/image";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import LocalizedLink from "@/components/ui/localized-link";
 import { buttonStyles } from "@/components/ui/button-styles";
+import OptimizedImage from "@/components/ui/optimized-image";
 
 type CreatorCardData = {
   username: string | null;
@@ -31,10 +31,11 @@ export default function CreatorCard({
       <div className="flex items-center gap-3">
         <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full app-panel text-sm font-semibold text-[color:var(--foreground)]">
           {creator.avatar_url ? (
-            <Image
+            <OptimizedImage
               src={creator.avatar_url}
               alt={name}
               fill
+              sizes="48px"
               className="object-cover"
             />
           ) : (

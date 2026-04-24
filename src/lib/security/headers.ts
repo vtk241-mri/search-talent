@@ -19,6 +19,8 @@ function buildContentSecurityPolicy(): string {
   const supabaseHosts = supabase ? [supabase] : [];
   // Supabase Realtime uses a wss: endpoint derived from the REST URL.
   const supabaseWs = supabase ? [supabase.replace(/^https?:/, "wss:")] : [];
+  const devScriptSources =
+    process.env.NODE_ENV === "production" ? [] : ["blob:"];
 
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
@@ -29,6 +31,7 @@ function buildContentSecurityPolicy(): string {
       // not currently route a per-request nonce through the middleware.
       "'unsafe-inline'",
       "'unsafe-eval'",
+      ...devScriptSources,
       "https://va.vercel-scripts.com",
       "https://vitals.vercel-insights.com",
     ],

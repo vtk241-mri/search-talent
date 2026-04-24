@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { startTransition, useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/Button";
+import OptimizedImage from "@/components/ui/optimized-image";
 import { createClient } from "@/lib/supabase/client";
 import { useDictionary, useLocalizedRouter } from "@/lib/i18n/client";
 import { compressImageFile } from "@/lib/image-compression";
@@ -282,10 +282,11 @@ export default function ProjectMediaUpload({
               >
                 <div className="relative aspect-[16/10] bg-[color:var(--surface-muted)]">
                   {item.media_kind === "image" ? (
-                    <Image
+                    <OptimizedImage
                       src={item.url}
                       alt={fileLabel}
                       fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover"
                     />
                   ) : item.media_kind === "video" ? (

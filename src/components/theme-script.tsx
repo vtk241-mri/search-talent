@@ -27,5 +27,10 @@ export default function ThemeScript() {
     })();
   `;
 
-  return <script dangerouslySetInnerHTML={{ __html: code }} />;
+  return (
+    <script
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: code }}
+    />
+  );
 }

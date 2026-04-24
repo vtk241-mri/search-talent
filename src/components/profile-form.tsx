@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCurrentLocale, useDictionary } from "@/lib/i18n/client";
 import {
@@ -60,6 +59,7 @@ import { profilePayloadSchema } from "@/lib/validation/profile";
 import type { ProfileCategory } from "@/lib/profile-categories";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import OptimizedImage from "@/components/ui/optimized-image";
 import FormSelect from "@/components/ui/form-select";
 import FormTextarea from "@/components/ui/form-textarea";
 import RichTextComposer from "@/components/rich-text-composer";
@@ -1976,10 +1976,11 @@ export default function ProfileForm({ profile }: { profile: ProfileRecord }) {
         >
           {presentation.backgroundUrl &&
             presentation.backgroundMode === "image" && (
-              <Image
+              <OptimizedImage
                 src={presentation.backgroundUrl}
                 alt=""
                 fill
+                sizes="(max-width: 768px) 100vw, 720px"
                 className="object-cover"
               />
             )}

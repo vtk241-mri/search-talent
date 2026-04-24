@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AdminContentQuickActions from "@/components/admin-content-quick-actions";
@@ -9,6 +8,7 @@ import ReportArticleButton from "@/components/report-article-button";
 import DeleteArticleButton from "@/components/delete-article-button";
 import RichTextRenderer from "@/components/rich-text-renderer";
 import { ButtonLink } from "@/components/ui/Button";
+import OptimizedImage from "@/components/ui/optimized-image";
 import {
   formatArticleDate,
   getArticleReadingTime,
@@ -260,10 +260,11 @@ export default async function ArticleDetailPage({
               >
                 <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border app-border bg-[color:var(--surface-muted)] text-sm font-semibold text-[color:var(--foreground)]">
                   {article.author.avatarUrl ? (
-                    <Image
+                    <OptimizedImage
                       src={article.author.avatarUrl}
                       alt={authorLabel}
                       fill
+                      sizes="44px"
                       className="object-cover"
                     />
                   ) : (
@@ -303,10 +304,11 @@ export default async function ArticleDetailPage({
 
         {article.coverImageUrl ? (
           <div className="relative aspect-[16/8]">
-            <Image
+            <OptimizedImage
               src={article.coverImageUrl}
               alt={article.title}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1200px"
               className="object-cover"
             />
           </div>

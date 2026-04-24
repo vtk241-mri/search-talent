@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import type { RankedCreator, RankedProject } from "@/lib/db/leaderboards";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { buildProjectPath } from "@/lib/projects";
 import LocalizedLink from "@/components/ui/localized-link";
+import OptimizedImage from "@/components/ui/optimized-image";
 
 type HomeTopRatedProps = {
   dictionary: Dictionary;
@@ -136,10 +136,11 @@ export default function HomeTopRated({
 
                   <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border app-border bg-[color:var(--surface-muted)] text-sm font-semibold text-[color:var(--foreground)] sm:h-14 sm:w-14 sm:text-base">
                     {creator.avatar_url ? (
-                      <Image
+                      <OptimizedImage
                         src={creator.avatar_url}
                         alt={creator.name || creator.username}
                         fill
+                        sizes="(max-width: 640px) 44px, 56px"
                         className="object-cover"
                       />
                     ) : (
@@ -236,10 +237,11 @@ export default function HomeTopRated({
 
                     <div className="relative h-16 w-24 overflow-hidden rounded-2xl border app-border bg-[color:var(--surface-muted)] sm:h-20 sm:w-28 sm:rounded-[1.25rem]">
                       {project.cover_url ? (
-                        <Image
+                        <OptimizedImage
                           src={project.cover_url}
                           alt={project.title}
                           fill
+                          sizes="(max-width: 640px) 96px, 112px"
                           className="object-cover"
                         />
                       ) : (

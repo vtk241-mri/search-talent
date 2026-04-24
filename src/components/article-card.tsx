@@ -1,4 +1,4 @@
-import Image from "next/image";
+import OptimizedImage from "@/components/ui/optimized-image";
 import LocalizedLink from "@/components/ui/localized-link";
 import {
   formatArticleDate,
@@ -38,10 +38,11 @@ export default function ArticleCard({
           </span>
         )}
         {article.coverImageUrl ? (
-          <Image
+          <OptimizedImage
             src={article.coverImageUrl}
             alt={article.title}
             fill
+            sizePreset="card"
             className="object-cover transition duration-300 group-hover:scale-[1.02]"
           />
         ) : article.heroVideoUrl ? (
@@ -81,10 +82,11 @@ export default function ArticleCard({
           <span className="flex items-center gap-3">
             <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border app-border bg-[color:var(--surface-muted)] text-xs font-semibold text-[color:var(--foreground)]">
               {article.author?.avatarUrl ? (
-                <Image
+                <OptimizedImage
                   src={article.author.avatarUrl}
                   alt={authorLabel}
                   fill
+                  sizes="36px"
                   className="object-cover"
                 />
               ) : (
